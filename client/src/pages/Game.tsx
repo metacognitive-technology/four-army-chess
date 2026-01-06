@@ -100,8 +100,8 @@ export default function Game() {
     // Setup phase - toggle walls
     if (phase === 'setup') {
       const isOwnHalf = playerColor === 'white' 
-        ? position.row >= 8 
-        : position.row < 8;
+        ? position.row >= 6 
+        : position.row < 6;
       
       if (!isOwnHalf) return;
       

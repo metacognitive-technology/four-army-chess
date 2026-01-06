@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import type { GameState, Board, Square, Piece, Position, PlayerColor, Move, PieceType, GameMessage } from "@shared/schema";
 import type { WebSocket } from "ws";
 
-const BOARD_SIZE = 16;
+const BOARD_SIZE = 12;
 const MAX_MOVE_DISTANCE = 8;
 
 interface Player {
@@ -336,11 +336,11 @@ class GameManager {
       board.push(boardRow);
     }
     
-    const offset = 4;
+    const offset = 2;
     const blackBackRow = 0;
     const blackPawnRow = 1;
-    const whiteBackRow = 15;
-    const whitePawnRow = 14;
+    const whiteBackRow = 11;
+    const whitePawnRow = 10;
     
     const backRowPieces: PieceType[] = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
     

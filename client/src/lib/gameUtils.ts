@@ -1,6 +1,6 @@
 import type { Board, Square, Piece, Position, PlayerColor, PieceType, Move, GameState } from "@shared/schema";
 
-export const BOARD_SIZE = 16;
+export const BOARD_SIZE = 12;
 export const MAX_MOVE_DISTANCE = 8;
 
 export const PIECE_SYMBOLS: Record<PieceType, { white: string; black: string }> = {
@@ -28,17 +28,17 @@ export function createInitialBoard(): Board {
     board.push(boardRow);
   }
   
-  // Place pieces centered on the 16x16 board
-  // Traditional layout offset by 4 columns to center
-  const offset = 4;
+  // Place pieces centered on the 12x12 board
+  // Traditional layout offset by 2 columns to center
+  const offset = 2;
   
   // Black pieces (rows 0-1, centered)
   const blackBackRow = 0;
   const blackPawnRow = 1;
   
-  // White pieces (rows 14-15, centered)
-  const whiteBackRow = 15;
-  const whitePawnRow = 14;
+  // White pieces (rows 10-11, centered)
+  const whiteBackRow = 11;
+  const whitePawnRow = 10;
   
   // Back row piece order
   const backRowPieces: PieceType[] = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
@@ -250,7 +250,7 @@ export function findHangingPieces(board: Board, color: PlayerColor): Position[] 
   }
   
   // Check if attacked pieces are defended
-  for (const key of attackedSquares) {
+  Array.from(attackedSquares).forEach(key => {
     const [row, col] = key.split(',').map(Number);
     const pos = { row, col };
     
@@ -270,7 +270,7 @@ export function findHangingPieces(board: Board, color: PlayerColor): Position[] 
     if (!isDefended) {
       hanging.push(pos);
     }
-  }
+  });
   
   return hanging;
 }
