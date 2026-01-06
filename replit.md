@@ -1,0 +1,104 @@
+# Battle Chess - A Novel Chess Variant
+
+## Overview
+
+Battle Chess is a real-time multiplayer chess variant game featuring a 16x16 board with unique mechanics including walls, dice-based pawn attacks, and bishop arrow attacks. Players can create or join games via shareable links and compete in turn-based gameplay with WebSocket-powered real-time synchronization.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript
+- **Routing**: Wouter for lightweight client-side routing
+- **State Management**: TanStack React Query for server state, React hooks for local state
+- **UI Components**: shadcn/ui component library built on Radix UI primitives
+- **Styling**: Tailwind CSS with CSS variables for theming (light/dark mode support)
+- **Build Tool**: Vite with hot module replacement
+
+### Backend Architecture
+- **Runtime**: Node.js with Express
+- **Language**: TypeScript with ESM modules
+- **Real-time Communication**: WebSocket server (ws library) for game state synchronization
+- **API Pattern**: REST endpoints for standard HTTP requests, WebSocket for game events
+
+### Game State Management
+- **GameManager**: Server-side singleton managing all active game rooms
+- **State Flow**: Client sends actions via WebSocket → Server validates and updates state → Server broadcasts to all players in room
+- **Reconnection**: Players can reconnect to games using their player ID and game ID
+
+### Data Layer
+- **ORM**: Drizzle ORM with PostgreSQL dialect
+- **Schema Location**: `shared/schema.ts` - shared between client and server
+- **Validation**: Zod schemas generated from Drizzle for type-safe validation
+- **Current Storage**: In-memory storage for game state (MemStorage class), database configured for user data
+
+### Project Structure
+```
+├── client/src/          # React frontend
+│   ├── components/      # UI components (game board, panels, controls)
+│   ├── hooks/           # Custom hooks (useWebSocket, use-toast)
+│   ├── lib/             # Utilities (gameUtils, queryClient)
+│   └── pages/           # Route components
+├── server/              # Express backend
+│   ├── gameManager.ts   # WebSocket game logic
+│   ├── routes.ts        # API and WebSocket routes
+│   └── storage.ts       # Data persistence layer
+└── shared/              # Shared types and schemas
+    └── schema.ts        # Drizzle schema + game types
+```
+
+### Key Design Decisions
+
+**16x16 Board with 8-Square Movement Limit**
+- Provides larger playing field while maintaining strategic constraints
+- Pieces centered on board with offset positioning
+
+**Wall Placement Phase**
+- Players place walls on their half before gameplay begins
+- Configurable number of walls per player
+- Walls block all piece movement
+
+**Dice-Based Combat**
+- Pawn attacks require successful dice rolls
+- Bishops have arrow attack mode for ranged captures
+- Adds probabilistic elements to traditional chess mechanics
+
+**WebSocket Game Protocol**
+- Message types: join, move, wall, ready, resign, reconnect
+- Server broadcasts state updates to all players in a room
+- Handles disconnection and reconnection gracefully
+
+## External Dependencies
+
+### Database
+- **PostgreSQL**: Primary database (configured via DATABASE_URL environment variable)
+- **Drizzle Kit**: Database migrations and schema management
+- **connect-pg-simple**: Session storage (available but not currently used)
+
+### Frontend Libraries
+- **@tanstack/react-query**: Async state management
+- **Radix UI**: Accessible component primitives (dialog, dropdown, toast, etc.)
+- **Lucide React**: Icon library
+- **wouter**: Lightweight routing
+- **embla-carousel-react**: Carousel component
+- **react-day-picker**: Date picker component
+- **recharts**: Charting library
+
+### Backend Libraries
+- **ws**: WebSocket server implementation
+- **express**: HTTP server framework
+- **drizzle-orm**: Database ORM
+- **zod**: Schema validation
+
+### Build Tools
+- **Vite**: Frontend bundler with React plugin
+- **esbuild**: Server bundling for production
+- **tsx**: TypeScript execution for development
+
+### Replit-Specific
+- **@replit/vite-plugin-runtime-error-modal**: Error overlay for development
+- **@replit/vite-plugin-cartographer**: Development tooling
+- **@replit/vite-plugin-dev-banner**: Development environment indicator

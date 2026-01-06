@@ -107,7 +107,7 @@ export function getValidMoves(board: Board, position: Position, includeAttacks: 
       break;
       
     case 'knight':
-      // Knight moves in L-shape
+      // Knight moves in L-shape but cannot leap over walls
       const knightMoves = [
         [-2, -1], [-2, 1], [-1, -2], [-1, 2],
         [1, -2], [1, 2], [2, -1], [2, 1],
@@ -116,6 +116,21 @@ export function getValidMoves(board: Board, position: Position, includeAttacks: 
         const newRow = position.row + dr;
         const newCol = position.col + dc;
         if (isValidPosition(newRow, newCol) && !board[newRow][newCol].isWall) {
+          // Check intermediate squares for walls - knight cannot leap walls
+          // Two possible L-paths exist; if BOTH are blocked by walls, move is invalid
+          const rowSign = dr > 0 ? 1 : -1;
+          const colSign = dc > 0 ? 1 : -1;
+          
+          // Path 1: move along row first, Path 2: move along col first
+          // Check if both paths are blocked
+          const sq1 = board[position.row + rowSign][position.col]; // row-adjacent
+          const sq2 = board[position.row][position.col + colSign]; // col-adjacent
+          
+          // If both adjacent squares toward target have walls, knight cannot leap
+          if (sq1.isWall && sq2.isWall) {
+            continue; // Both paths blocked
+          }
+          
           const targetPiece = board[newRow][newCol].piece;
           if (!targetPiece || (includeAttacks && targetPiece.color !== piece.color)) {
             moves.push({ row: newRow, col: newCol });
