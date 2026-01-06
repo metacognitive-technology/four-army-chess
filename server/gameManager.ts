@@ -1,9 +1,10 @@
 import { randomUUID } from "crypto";
-import type { GameState, Board, Square, Piece, Position, PlayerColor, Move, PieceType, GameMessage } from "@shared/schema";
+import type { GameState, Board, Square, Piece, Position, PlayerColor, Move, PieceType, GameMessage, GameMode } from "@shared/schema";
 import type { WebSocket } from "ws";
 
 const BOARD_SIZE = 12;
 const MAX_MOVE_DISTANCE = 8;
+const AI_PLAYER_ID = 'ai-player';
 
 interface Player {
   ws: WebSocket;
@@ -21,20 +22,24 @@ class GameManager {
   private games: Map<string, GameRoom> = new Map();
   private playerToGame: Map<string, string> = new Map();
 
-  createGame(ws: WebSocket, maxWalls: number): { gameId: string; playerId: string; color: PlayerColor } {
+  createGame(ws: WebSocket, maxWalls: number, gameMode: GameMode = 'pvp'): { gameId: string; playerId: string; color: PlayerColor } {
     const gameId = randomUUID().slice(0, 8);
     const playerId = randomUUID();
+    
+    const isVsComputer = gameMode === 'pvc';
     
     const state: GameState = {
       id: gameId,
       board: this.createInitialBoard(),
       currentTurn: 'white',
-      phase: 'waiting',
+      phase: isVsComputer ? (maxWalls > 0 ? 'setup' : 'playing') : 'waiting',
+      gameMode,
+      aiColor: isVsComputer ? 'black' : undefined,
       setupWallsRemaining: { white: maxWalls, black: maxWalls },
       maxWallsPerPlayer: maxWalls,
       moveHistory: [],
       capturedPieces: { white: [], black: [] },
-      players: { white: playerId, black: null },
+      players: { white: playerId, black: isVsComputer ? AI_PLAYER_ID : null },
       winner: null,
     };
     
@@ -44,10 +49,51 @@ class GameManager {
       readyPlayers: new Set(),
     };
     
+    // For vs computer, auto-ready the AI and place random walls
+    if (isVsComputer) {
+      room.readyPlayers.add(AI_PLAYER_ID);
+      this.placeAIWalls(state, maxWalls);
+    }
+    
     this.games.set(gameId, room);
     this.playerToGame.set(playerId, gameId);
     
     return { gameId, playerId, color: 'white' };
+  }
+  
+  private placeAIWalls(state: GameState, count: number): void {
+    const aiColor = state.aiColor;
+    if (!aiColor) return;
+    
+    const isWhiteAI = aiColor === 'white';
+    const startRow = isWhiteAI ? BOARD_SIZE / 2 : 0;
+    const endRow = isWhiteAI ? BOARD_SIZE : BOARD_SIZE / 2;
+    
+    let placed = 0;
+    const attempts: Position[] = [];
+    
+    // Collect valid positions
+    for (let row = startRow; row < endRow; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        if (!state.board[row][col].piece && !state.board[row][col].isWall) {
+          attempts.push({ row, col });
+        }
+      }
+    }
+    
+    // Shuffle and place walls
+    for (let i = attempts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [attempts[i], attempts[j]] = [attempts[j], attempts[i]];
+    }
+    
+    for (const pos of attempts) {
+      if (placed >= count) break;
+      state.board[pos.row][pos.col].isWall = true;
+      placed++;
+    }
+    
+    state.setupWallsRemaining[aiColor] = 0;
   }
 
   joinGame(ws: WebSocket, gameId: string): { playerId: string; color: PlayerColor } | null {
@@ -318,6 +364,239 @@ class GameManager {
       }
       this.playerToGame.delete(playerId);
     }
+  }
+
+  isAITurn(gameId: string): boolean {
+    const room = this.games.get(gameId);
+    if (!room) return false;
+    return room.state.gameMode === 'pvc' && 
+           room.state.currentTurn === room.state.aiColor &&
+           room.state.phase === 'playing';
+  }
+
+  makeAIMove(gameId: string): { state: GameState; diceRoll?: { value: number; type: 'd4' | 'd6'; success: boolean } } | null {
+    const room = this.games.get(gameId);
+    if (!room || !this.isAITurn(gameId)) return null;
+
+    const state = room.state;
+    const aiColor = state.aiColor!;
+    const board = state.board;
+
+    // Collect all possible moves for AI
+    interface AIMove { from: Position; to: Position; score: number; isArrow?: boolean }
+    const possibleMoves: AIMove[] = [];
+
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        const piece = board[row][col].piece;
+        if (piece && piece.color === aiColor) {
+          const from = { row, col };
+          const moves = this.getValidMoves(board, from);
+          
+          for (const to of moves) {
+            const targetPiece = board[to.row][to.col].piece;
+            let score = Math.random() * 0.5; // Small random factor
+            
+            // Prioritize captures (higher value pieces = higher score)
+            if (targetPiece) {
+              const values: Record<PieceType, number> = {
+                pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
+              };
+              score += values[targetPiece.type] * 10;
+              
+              // Pawns have low capture success (1/6), so reduce their score
+              if (piece.type === 'pawn') {
+                score *= 0.17; // 1/6 chance
+              }
+            }
+            
+            // Bonus for advancing pawns
+            if (piece.type === 'pawn') {
+              const advancement = aiColor === 'white' ? (BOARD_SIZE - 1 - to.row) : to.row;
+              score += advancement * 0.1;
+            }
+            
+            // Bonus for central control
+            const centerDist = Math.abs(to.row - BOARD_SIZE / 2) + Math.abs(to.col - BOARD_SIZE / 2);
+            score += (BOARD_SIZE - centerDist) * 0.05;
+            
+            possibleMoves.push({ from, to, score });
+          }
+          
+          // Add arrow attacks for bishops
+          if (piece.type === 'bishop') {
+            const arrowTargets = this.getArrowTargets(board, from, aiColor);
+            for (const to of arrowTargets) {
+              const targetPiece = board[to.row][to.col].piece;
+              if (targetPiece) {
+                const values: Record<PieceType, number> = {
+                  pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
+                };
+                const distance = Math.abs(to.row - from.row);
+                const successChance = (5 - distance) / 4; // d4 roll: 1-4, need <= roll
+                const score = values[targetPiece.type] * 10 * successChance + Math.random() * 0.5;
+                possibleMoves.push({ from, to, score, isArrow: true });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (possibleMoves.length === 0) {
+      // No moves available - stalemate or checkmate
+      return null;
+    }
+
+    // Sort by score and pick the best move (with some randomness in top choices)
+    possibleMoves.sort((a, b) => b.score - a.score);
+    
+    // Pick from top 3 moves with weighted probability
+    const topMoves = possibleMoves.slice(0, Math.min(3, possibleMoves.length));
+    const selectedMove = topMoves[Math.floor(Math.random() * topMoves.length)];
+
+    // Execute the move
+    if (selectedMove.isArrow) {
+      return this.executeAIArrowAttack(gameId, selectedMove.from, selectedMove.to);
+    } else {
+      return this.executeAIMove(gameId, selectedMove.from, selectedMove.to);
+    }
+  }
+
+  private getArrowTargets(board: Board, from: Position, color: PlayerColor): Position[] {
+    const targets: Position[] = [];
+    const directions = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+    
+    for (const [dr, dc] of directions) {
+      for (let dist = 1; dist <= 4; dist++) {
+        const newRow = from.row + dr * dist;
+        const newCol = from.col + dc * dist;
+        
+        if (!this.isValidPosition(newRow, newCol)) break;
+        if (board[newRow][newCol].isWall) break;
+        
+        const targetPiece = board[newRow][newCol].piece;
+        if (targetPiece) {
+          if (targetPiece.color !== color && 
+              targetPiece.type !== 'knight' && 
+              targetPiece.type !== 'rook') {
+            targets.push({ row: newRow, col: newCol });
+          }
+          break;
+        }
+      }
+    }
+    
+    return targets;
+  }
+
+  private executeAIMove(gameId: string, from: Position, to: Position): { state: GameState; diceRoll?: { value: number; type: 'd4' | 'd6'; success: boolean } } | null {
+    const room = this.games.get(gameId);
+    if (!room) return null;
+
+    const state = room.state;
+    const aiColor = state.aiColor!;
+    const board = state.board;
+    const piece = board[from.row][from.col].piece;
+    if (!piece) return null;
+
+    const targetPiece = board[to.row][to.col].piece;
+    let diceRoll: { value: number; type: 'd4' | 'd6'; success: boolean } | undefined;
+
+    // Pawn attack requires dice roll
+    if (piece.type === 'pawn' && targetPiece) {
+      const roll = Math.floor(Math.random() * 6) + 1;
+      const success = roll === 1;
+      diceRoll = { value: roll, type: 'd6', success };
+      state.lastDiceRoll = diceRoll;
+
+      if (!success) {
+        state.currentTurn = aiColor === 'white' ? 'black' : 'white';
+        return { state, diceRoll };
+      }
+    }
+
+    // Execute move
+    board[from.row][from.col].piece = null;
+
+    if (targetPiece) {
+      state.capturedPieces[aiColor].push(targetPiece);
+      if (targetPiece.type === 'king') {
+        state.winner = aiColor;
+        state.phase = 'finished';
+      }
+    }
+
+    board[to.row][to.col].piece = { ...piece, hasMoved: true };
+
+    const move: Move = {
+      from,
+      to,
+      piece,
+      captured: targetPiece || undefined,
+      diceRoll: diceRoll?.value,
+      diceRequired: piece.type === 'pawn' && targetPiece ? 6 : undefined,
+      success: diceRoll ? diceRoll.success : undefined,
+      notation: this.getMoveNotation(piece, from, to, targetPiece || undefined, diceRoll?.value),
+    };
+    state.moveHistory.push(move);
+
+    state.currentTurn = aiColor === 'white' ? 'black' : 'white';
+
+    if (this.isCheckmate(board, state.currentTurn)) {
+      state.winner = aiColor;
+      state.phase = 'finished';
+    }
+
+    return { state, diceRoll };
+  }
+
+  private executeAIArrowAttack(gameId: string, from: Position, to: Position): { state: GameState; diceRoll: { value: number; type: 'd4' | 'd6'; success: boolean } } | null {
+    const room = this.games.get(gameId);
+    if (!room) return null;
+
+    const state = room.state;
+    const aiColor = state.aiColor!;
+    const board = state.board;
+    const piece = board[from.row][from.col].piece;
+    if (!piece) return null;
+
+    const targetPiece = board[to.row][to.col].piece;
+    if (!targetPiece) return null;
+
+    const distance = Math.abs(to.row - from.row);
+    const roll = Math.floor(Math.random() * 4) + 1;
+    const success = distance <= roll;
+
+    const diceRoll = { value: roll, type: 'd4' as const, success };
+    state.lastDiceRoll = diceRoll;
+
+    const move: Move = {
+      from,
+      to,
+      piece,
+      captured: success ? targetPiece : undefined,
+      isArrowAttack: true,
+      diceRoll: roll,
+      diceRequired: 4,
+      success,
+      notation: this.getMoveNotation(piece, from, to, success ? targetPiece : undefined, roll, true),
+    };
+    state.moveHistory.push(move);
+
+    if (success) {
+      state.capturedPieces[aiColor].push(targetPiece);
+      board[to.row][to.col].piece = null;
+
+      if (targetPiece.type === 'king') {
+        state.winner = aiColor;
+        state.phase = 'finished';
+      }
+    }
+
+    state.currentTurn = aiColor === 'white' ? 'black' : 'white';
+
+    return { state, diceRoll };
   }
 
   private createInitialBoard(): Board {

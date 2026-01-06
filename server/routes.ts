@@ -22,7 +22,7 @@ export async function registerRoutes(
         switch (message.type) {
           case 'join': {
             if (message.payload.action === 'create') {
-              const result = gameManager.createGame(ws, message.payload.maxWalls || 8);
+              const result = gameManager.createGame(ws, message.payload.maxWalls || 8, message.payload.gameMode || 'pvp');
               currentPlayerId = result.playerId;
               currentGameId = result.gameId;
 
@@ -129,6 +129,22 @@ export async function registerRoutes(
                     type: 'state',
                     payload: { state },
                   });
+                  
+                  // Check if AI should move after game starts
+                  if (gameManager.isAITurn(currentGameId)) {
+                    setTimeout(() => {
+                      const aiResult = gameManager.makeAIMove(currentGameId!);
+                      if (aiResult) {
+                        const aiRoom = gameManager.getRoom(currentGameId!);
+                        if (aiRoom) {
+                          broadcastToRoom(aiRoom, {
+                            type: 'state',
+                            payload: { state: aiResult.state },
+                          });
+                        }
+                      }
+                    }, 500);
+                  }
                 }
               }
             }
@@ -150,6 +166,22 @@ export async function registerRoutes(
                     type: 'state',
                     payload: { state: result.state },
                   });
+                  
+                  // Check if AI should move after human move
+                  if (gameManager.isAITurn(currentGameId)) {
+                    setTimeout(() => {
+                      const aiResult = gameManager.makeAIMove(currentGameId!);
+                      if (aiResult) {
+                        const aiRoom = gameManager.getRoom(currentGameId!);
+                        if (aiRoom) {
+                          broadcastToRoom(aiRoom, {
+                            type: 'state',
+                            payload: { state: aiResult.state },
+                          });
+                        }
+                      }
+                    }, 800);
+                  }
                 }
               }
             }
@@ -170,6 +202,22 @@ export async function registerRoutes(
                     type: 'state',
                     payload: { state: result.state },
                   });
+                  
+                  // Check if AI should move after human arrow attack
+                  if (gameManager.isAITurn(currentGameId)) {
+                    setTimeout(() => {
+                      const aiResult = gameManager.makeAIMove(currentGameId!);
+                      if (aiResult) {
+                        const aiRoom = gameManager.getRoom(currentGameId!);
+                        if (aiRoom) {
+                          broadcastToRoom(aiRoom, {
+                            type: 'state',
+                            payload: { state: aiResult.state },
+                          });
+                        }
+                      }
+                    }, 800);
+                  }
                 }
               }
             }

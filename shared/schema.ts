@@ -54,12 +54,15 @@ export interface Move {
 }
 
 export type GamePhase = 'waiting' | 'setup' | 'playing' | 'finished';
+export type GameMode = 'pvp' | 'pvc';
 
 export interface GameState {
   id: string;
   board: Board;
   currentTurn: PlayerColor;
   phase: GamePhase;
+  gameMode: GameMode;
+  aiColor?: PlayerColor;
   setupWallsRemaining: { white: number; black: number };
   maxWallsPerPlayer: number;
   moveHistory: Move[];

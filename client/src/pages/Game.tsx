@@ -13,7 +13,7 @@ import { getValidMoves, getArrowTargets, findHangingPieces, isInCheck, isCheckma
 import type { Position, GameState } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Wifi, WifiOff, Plus, Link2 } from "lucide-react";
+import { Loader2, Wifi, WifiOff, Plus, Link2, Bot, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -213,11 +213,22 @@ export default function Game() {
               <Button 
                 className="w-full gap-2" 
                 size="lg"
-                onClick={() => createGame(maxWalls)}
+                onClick={() => createGame(maxWalls, 'pvc')}
+                data-testid="button-play-computer"
+              >
+                <Bot className="w-5 h-5" />
+                Play vs Computer
+              </Button>
+              
+              <Button 
+                className="w-full gap-2" 
+                size="lg"
+                variant="outline"
+                onClick={() => createGame(maxWalls, 'pvp')}
                 data-testid="button-create-game"
               >
-                <Plus className="w-5 h-5" />
-                Create New Game
+                <Users className="w-5 h-5" />
+                Create Multiplayer Game
               </Button>
               
               <div className="relative">
@@ -258,8 +269,9 @@ export default function Game() {
     );
   }
   
+  const isVsComputer = gameState.gameMode === 'pvc';
   const whitePlayer = gameState.players.white;
-  const blackPlayer = gameState.players.black;
+  const blackPlayer = isVsComputer && gameState.aiColor === 'black' ? 'Computer' : gameState.players.black;
   
   return (
     <div className="min-h-screen bg-background p-4">

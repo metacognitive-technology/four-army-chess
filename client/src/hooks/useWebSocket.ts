@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { GameMessage, GameState } from "@shared/schema";
+import type { GameMessage, GameState, GameMode } from "@shared/schema";
 
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
@@ -9,7 +9,7 @@ interface UseWebSocketReturn {
   playerColor: 'white' | 'black' | null;
   connectionStatus: ConnectionStatus;
   sendMessage: (message: GameMessage) => void;
-  createGame: (maxWalls: number) => void;
+  createGame: (maxWalls: number, gameMode?: GameMode) => void;
   joinGame: (gameId: string) => void;
   lastError: string | null;
 }
@@ -116,7 +116,7 @@ export function useWebSocket(): UseWebSocketReturn {
     }
   }, [playerId]);
   
-  const createGame = useCallback((maxWalls: number) => {
+  const createGame = useCallback((maxWalls: number, gameMode: GameMode = 'pvp') => {
     connect();
     
     // Wait for connection then send create message
@@ -124,7 +124,7 @@ export function useWebSocket(): UseWebSocketReturn {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({
           type: 'join',
-          payload: { action: 'create', maxWalls },
+          payload: { action: 'create', maxWalls, gameMode },
         }));
       } else {
         setTimeout(checkAndSend, 100);
