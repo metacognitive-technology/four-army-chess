@@ -16,3 +16,69 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// Game Types
+export type PieceType = 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'pawn';
+export type PlayerColor = 'white' | 'black';
+
+export interface Piece {
+  type: PieceType;
+  color: PlayerColor;
+  hasMoved?: boolean;
+}
+
+export interface Square {
+  row: number;
+  col: number;
+  piece: Piece | null;
+  isWall: boolean;
+}
+
+export type Board = Square[][];
+
+export interface Position {
+  row: number;
+  col: number;
+}
+
+export interface Move {
+  from: Position;
+  to: Position;
+  piece: Piece;
+  captured?: Piece;
+  isArrowAttack?: boolean;
+  diceRoll?: number;
+  diceRequired?: number;
+  success?: boolean;
+  notation: string;
+}
+
+export type GamePhase = 'waiting' | 'setup' | 'playing' | 'finished';
+
+export interface GameState {
+  id: string;
+  board: Board;
+  currentTurn: PlayerColor;
+  phase: GamePhase;
+  setupWallsRemaining: { white: number; black: number };
+  maxWallsPerPlayer: number;
+  moveHistory: Move[];
+  capturedPieces: { white: Piece[]; black: Piece[] };
+  players: { white: string | null; black: string | null };
+  winner: PlayerColor | 'draw' | null;
+  lastDiceRoll?: { value: number; type: 'd4' | 'd6'; success: boolean };
+  pendingArrowTarget?: Position;
+  selectedPiece?: Position;
+}
+
+export interface GameMessage {
+  type: 'join' | 'setup_wall' | 'ready' | 'move' | 'arrow_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect';
+  payload: any;
+  playerId?: string;
+}
+
+export const gameConfigSchema = z.object({
+  maxWallsPerPlayer: z.number().min(0).max(32).default(8),
+});
+
+export type GameConfig = z.infer<typeof gameConfigSchema>;
