@@ -111,9 +111,14 @@ export function GameBoard({
                   <span 
                     className={cn(
                       "text-[clamp(0.875rem,2.5vw,2rem)] select-none transition-transform duration-200",
-                      piece.color === 'white' ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" : "text-gray-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]",
+                      piece.color === 'white' ? "text-white" : "text-gray-900",
                       showSelected && "scale-110",
                     )}
+                    style={piece.color === 'white' ? {
+                      textShadow: '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000, 0 2px 3px rgba(0,0,0,0.5)'
+                    } : {
+                      textShadow: '0 1px 1px rgba(255,255,255,0.3)'
+                    }}
                   >
                     {PIECE_SYMBOLS[piece.type][piece.color]}
                   </span>
