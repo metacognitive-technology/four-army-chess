@@ -260,23 +260,27 @@ export default function Game() {
               
               <div className="space-y-2">
                 <Label htmlFor="game-id">Game ID</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="game-id"
-                    placeholder="Enter game ID..."
-                    value={joinGameId}
-                    onChange={(e) => setJoinGameId(e.target.value)}
-                    data-testid="input-game-id"
-                  />
-                  <Button
-                    variant="secondary"
-                    onClick={() => joinGameId && joinGame(joinGameId)}
-                    disabled={!joinGameId}
-                    data-testid="button-join-game"
-                  >
-                    <Link2 className="w-4 h-4" />
-                  </Button>
-                </div>
+                <Input
+                  id="game-id"
+                  placeholder="Enter game ID..."
+                  value={joinGameId}
+                  onChange={(e) => setJoinGameId(e.target.value)}
+                  data-testid="input-game-id"
+                />
+                <Button
+                  className="w-full gap-2"
+                  variant="secondary"
+                  onClick={() => {
+                    if (joinGameId) {
+                      joinGame(joinGameId.trim());
+                    }
+                  }}
+                  disabled={!joinGameId.trim()}
+                  data-testid="button-join-game"
+                >
+                  <Link2 className="w-4 h-4" />
+                  Join Game
+                </Button>
               </div>
             </div>
             
