@@ -251,11 +251,21 @@ export async function registerRoutes(
     });
   });
 
-  function broadcastToRoom(room: { players: Map<string, { ws: WebSocket }> }, message: GameMessage, excludePlayerId?: string) {
-    const msgString = JSON.stringify(message);
+  function broadcastToRoom(room: { players: Map<string, { ws: WebSocket; color: 'white' | 'black' }> }, message: GameMessage, excludePlayerId?: string) {
     room.players.forEach((player, playerId) => {
       if (playerId !== excludePlayerId && player.ws.readyState === WebSocket.OPEN) {
-        player.ws.send(msgString);
+        // Always include player's color in state messages to prevent color loss
+        const personalizedMessage = message.type === 'state' || message.type === 'player_joined' || message.type === 'player_left'
+          ? {
+              ...message,
+              payload: {
+                ...message.payload,
+                playerId,
+                color: player.color,
+              },
+            }
+          : message;
+        player.ws.send(JSON.stringify(personalizedMessage));
       }
     });
   }
