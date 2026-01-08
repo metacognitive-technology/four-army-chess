@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Wifi, WifiOff, Plus, Link2, Bot, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Game() {
   const searchParams = new URLSearchParams(useSearch());
@@ -207,6 +208,23 @@ export default function Game() {
                   <span className="text-muted-foreground">Not connected</span>
                 </>
               )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="walls-per-player">Walls per player</Label>
+              <Select 
+                value={maxWalls.toString()} 
+                onValueChange={(v) => setMaxWalls(parseInt(v))}
+              >
+                <SelectTrigger id="walls-per-player" data-testid="select-walls">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[0, 4, 8, 12, 16, 24, 32].map(n => (
+                    <SelectItem key={n} value={n.toString()}>{n} walls</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="space-y-4">
