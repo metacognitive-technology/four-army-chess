@@ -27,7 +27,7 @@ export function MoveHistory({ moves }: MoveHistoryProps) {
         <CardTitle className="text-sm font-medium">Move History</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[200px] px-4 pb-4">
+        <ScrollArea className="h-[120px] sm:h-[200px] px-4 pb-4">
           {movePairs.length === 0 ? (
             <p className="text-sm text-muted-foreground italic py-2">No moves yet</p>
           ) : (

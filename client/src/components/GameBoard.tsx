@@ -67,12 +67,11 @@ export function GameBoard({
   return (
     <div className="relative">
       <div 
-        className="grid gap-0 border-2 border-foreground/20 rounded-md overflow-hidden shadow-lg"
+        className="grid gap-0 border-2 border-foreground/20 rounded-md overflow-hidden shadow-lg w-full"
         style={{ 
           gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
           aspectRatio: '1 / 1',
-          maxWidth: 'min(70vw, 70vh)',
-          maxHeight: 'min(70vw, 70vh)',
+          maxWidth: 'min(95vw, 60vh, 600px)',
         }}
         data-testid="game-board"
       >
@@ -111,7 +110,7 @@ export function GameBoard({
                 {piece && (
                   <span 
                     className={cn(
-                      "text-[clamp(1rem,4vw,2.5rem)] select-none transition-transform duration-200",
+                      "text-[clamp(0.875rem,2.5vw,2rem)] select-none transition-transform duration-200",
                       piece.color === 'white' ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" : "text-gray-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]",
                       showSelected && "scale-110",
                     )}

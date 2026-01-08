@@ -98,7 +98,7 @@ export function GameStatus({
       status.variant === 'error' && "bg-red-500/10 border-red-500/50",
       status.variant === 'warning' && "bg-yellow-500/10 border-yellow-500/50",
     )}>
-      <CardContent className="flex items-center justify-center gap-3 py-3">
+      <CardContent className="flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3">
         {status.icon && (
           <span className={cn(
             status.variant === 'success' && "text-green-500",
@@ -109,7 +109,7 @@ export function GameStatus({
           </span>
         )}
         <span className={cn(
-          "text-base font-medium",
+          "text-sm sm:text-base font-medium text-center",
           status.variant === 'success' && "text-green-500",
           status.variant === 'error' && "text-red-500",
           status.variant === 'warning' && "text-yellow-500",

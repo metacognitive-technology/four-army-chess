@@ -33,14 +33,14 @@ export function PlayerPanel({
       )}
       data-testid={`player-panel-${color}`}
     >
-      <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-        <div className="flex items-center gap-3">
+      <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 p-3 sm:p-6 pb-2 sm:pb-2">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Avatar className={cn(
-            "w-10 h-10 border-2",
+            "w-8 h-8 sm:w-10 sm:h-10 border-2",
             color === 'white' ? "bg-white border-gray-300" : "bg-gray-800 border-gray-600"
           )}>
             <AvatarFallback className={color === 'white' ? "text-gray-800" : "text-white"}>
-              <User className="w-5 h-5" />
+              <User className="w-4 h-4 sm:w-5 sm:h-5" />
             </AvatarFallback>
           </Avatar>
           <div>
@@ -68,7 +68,7 @@ export function PlayerPanel({
         )}
       </CardHeader>
       
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-6 pt-0">
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Score</span>
           <span className="text-lg font-bold tabular-nums" data-testid={`score-${color}`}>

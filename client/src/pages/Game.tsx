@@ -274,11 +274,11 @@ export default function Game() {
   const blackPlayer = isVsComputer && gameState.aiColor === 'black' ? 'Computer' : gameState.players.black;
   
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-2 sm:p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-3 sm:gap-6">
           {/* Left panel - Black player */}
-          <div className="lg:w-64 space-y-4 order-2 lg:order-1">
+          <div className="lg:w-64 space-y-3 sm:space-y-4 order-2 lg:order-1">
             <PlayerPanel
               color="black"
               playerName={blackPlayer}
@@ -293,7 +293,7 @@ export default function Game() {
           </div>
           
           {/* Center - Game board */}
-          <div className="flex-1 flex flex-col items-center gap-4 order-1 lg:order-2">
+          <div className="flex-1 flex flex-col items-center gap-2 sm:gap-4 order-1 lg:order-2">
             <GameStatus
               phase={phase}
               currentTurn={currentTurn}
@@ -335,7 +335,7 @@ export default function Game() {
           </div>
           
           {/* Right panel - White player & controls */}
-          <div className="lg:w-64 space-y-4 order-3">
+          <div className="lg:w-64 space-y-3 sm:space-y-4 order-3">
             <PlayerPanel
               color="white"
               playerName={whitePlayer}

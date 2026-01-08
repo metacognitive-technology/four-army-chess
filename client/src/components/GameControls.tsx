@@ -43,10 +43,10 @@ export function GameControls({
   
   return (
     <Card>
-      <CardHeader className="pb-2">
+      <CardHeader className="p-3 sm:p-6 pb-2">
         <CardTitle className="text-sm font-medium">Game Controls</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-6 pt-0">
         {gameId && phase === 'waiting' && (
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground">Game ID</Label>
