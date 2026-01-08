@@ -67,11 +67,12 @@ export function GameBoard({
   return (
     <div className="relative">
       <div 
-        className="grid gap-0 border-2 border-foreground/20 rounded-md overflow-hidden shadow-lg w-full"
+        className="grid gap-0 border-2 border-foreground/20 rounded-md overflow-hidden shadow-lg"
         style={{ 
           gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
           aspectRatio: '1 / 1',
-          maxWidth: 'min(95vw, 60vh, 600px)',
+          width: 'min(95vw, 80vh, 700px)',
+          maxWidth: '100%',
         }}
         data-testid="game-board"
       >
