@@ -183,10 +183,7 @@ export function GameBoard({
                     )}
                     style={{
                       fontSize: 'min(calc(560px / 12 * 0.85), calc((min(90vw, calc(100vh - 280px)) / 12) * 0.85))',
-                      ...(piece.color === 'white' ? {
-                        WebkitTextStroke: '1px #000',
-                        textShadow: '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000'
-                      } : {
+                      ...(piece.color === 'black' && {
                         textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                       })
                     }}
