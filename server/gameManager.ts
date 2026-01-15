@@ -617,8 +617,11 @@ class GameManager {
     const aiColor = state.aiColor!;
     const board = state.board;
 
+    // Check if AI is currently in check
+    const inCheck = this.isInCheck(board, aiColor);
+
     // Collect all possible moves for AI
-    interface AIMove { from: Position; to: Position; score: number; isArrow?: boolean }
+    interface AIMove { from: Position; to: Position; score: number; isArrow?: boolean; escapesCheck?: boolean }
     const possibleMoves: AIMove[] = [];
 
     for (let row = 0; row < BOARD_SIZE; row++) {
@@ -631,6 +634,21 @@ class GameManager {
           for (const to of moves) {
             const targetPiece = board[to.row][to.col].piece;
             let score = Math.random() * 0.5; // Small random factor
+            
+            // Simulate the move to check if it escapes check
+            const newBoard: Board = JSON.parse(JSON.stringify(board));
+            newBoard[to.row][to.col].piece = piece;
+            newBoard[from.row][from.col].piece = null;
+            const escapesCheck = !this.isInCheck(newBoard, aiColor);
+            
+            // If in check, heavily prioritize moves that escape check
+            if (inCheck) {
+              if (escapesCheck) {
+                score += 1000; // Massive bonus for escaping check
+              } else {
+                score -= 2000; // Heavily penalize moves that don't escape check
+              }
+            }
             
             // Prioritize captures (higher value pieces = higher score)
             if (targetPiece) {
@@ -655,11 +673,11 @@ class GameManager {
             const centerDist = Math.abs(to.row - BOARD_SIZE / 2) + Math.abs(to.col - BOARD_SIZE / 2);
             score += (BOARD_SIZE - centerDist) * 0.05;
             
-            possibleMoves.push({ from, to, score });
+            possibleMoves.push({ from, to, score, escapesCheck });
           }
           
-          // Add arrow attacks for bishops
-          if (piece.type === 'bishop') {
+          // Add arrow attacks for bishops (only if not in check - arrows don't escape check)
+          if (piece.type === 'bishop' && !inCheck) {
             const arrowTargets = this.getArrowTargets(board, from, aiColor);
             for (const to of arrowTargets) {
               const targetPiece = board[to.row][to.col].piece;
@@ -686,8 +704,17 @@ class GameManager {
     // Sort by score and pick the best move (with some randomness in top choices)
     possibleMoves.sort((a, b) => b.score - a.score);
     
+    // If in check, only consider moves that escape check
+    let validMoves = possibleMoves;
+    if (inCheck) {
+      const checkEscapingMoves = possibleMoves.filter(m => m.escapesCheck);
+      if (checkEscapingMoves.length > 0) {
+        validMoves = checkEscapingMoves;
+      }
+    }
+    
     // Pick from top 3 moves with weighted probability
-    const topMoves = possibleMoves.slice(0, Math.min(3, possibleMoves.length));
+    const topMoves = validMoves.slice(0, Math.min(3, validMoves.length));
     const selectedMove = topMoves[Math.floor(Math.random() * topMoves.length)];
 
     // Execute the move
