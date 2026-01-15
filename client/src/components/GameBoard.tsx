@@ -117,13 +117,13 @@ export function GameBoard({
       
       {/* Board container with scroll when zoomed */}
       <div 
-        className="overflow-auto max-h-[calc(100vh-300px)]"
+        className="overflow-scroll max-h-[calc(100vh-300px)]"
         style={{ 
           maxWidth: 'min(90vw, 560px)',
         }}
       >
         <div 
-          className="grid gap-0 border-2 border-foreground/20 rounded-md overflow-hidden shadow-lg origin-top-left transition-transform duration-200"
+          className="grid gap-0 border-2 border-foreground/20 rounded-md overflow-hidden shadow-lg"
           style={{ 
             gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
             aspectRatio: '1 / 1',
@@ -150,18 +150,16 @@ export function GameBoard({
               <div
                 key={`${rowIndex}-${colIndex}`}
                 className={cn(
-                  "relative flex items-center justify-center cursor-pointer aspect-square overflow-hidden",
+                  "relative flex items-center justify-center cursor-pointer aspect-square",
                   !square.isWall && (isDark 
                       ? "bg-green-700 dark:bg-green-800" 
                       : "bg-green-300 dark:bg-green-400"),
                   showFlashing && "animate-pulse bg-red-500",
-                  showSelected && "ring-2 ring-inset ring-blue-500 shadow-inner",
+                  showSelected && "ring-2 ring-inset ring-blue-500",
                   showValidMove && !square.piece && "after:absolute after:w-1/3 after:h-1/3 after:rounded-full after:bg-black/20",
                   showValidMove && square.piece && "ring-2 ring-inset ring-red-500",
                   showArrowTarget && "ring-2 ring-inset ring-orange-500 bg-orange-400/30",
                   showHanging && "ring-2 ring-inset ring-yellow-400",
-                  canClick && "hover:opacity-80",
-                  phase === 'setup' && canClick && !square.isWall && "hover:bg-slate-400",
                 )}
                 style={square.isWall ? {
                   backgroundColor: '#6b7280',
