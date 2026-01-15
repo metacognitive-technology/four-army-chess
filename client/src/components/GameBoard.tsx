@@ -71,7 +71,7 @@ export function GameBoard({
         style={{ 
           gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
           aspectRatio: '1 / 1',
-          width: 'min(95vw, 80vh, 700px)',
+          width: 'min(92vw, calc(100vh - 220px), 600px)',
           maxWidth: '100%',
         }}
         data-testid="game-board"
