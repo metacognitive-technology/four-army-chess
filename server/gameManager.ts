@@ -214,6 +214,9 @@ class GameManager {
     const targetPiece = board[to.row][to.col].piece;
     let diceRoll: { value: number; type: 'd4' | 'd6'; success: boolean } | undefined;
     
+    // Clear previous dice roll for non-attack moves
+    room.state.lastDiceRoll = undefined;
+    
     // Pawn attack requires dice roll
     if (piece.type === 'pawn' && targetPiece) {
       const roll = Math.floor(Math.random() * 6) + 1;

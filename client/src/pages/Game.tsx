@@ -59,10 +59,15 @@ export default function Game() {
     }
   }, [lastError, toast]);
   
-  // Handle dice roll results with flash effect
+  // Handle dice roll results with flash effect - only for actual attacks
   useEffect(() => {
     if (gameState?.lastDiceRoll && gameState.moveHistory.length > 0) {
       const lastMove = gameState.moveHistory[gameState.moveHistory.length - 1];
+      
+      // Only show flash/toast if the last move was actually an attack (has dice roll data)
+      const isAttackMove = lastMove.isArrowAttack || (lastMove.diceRoll !== undefined && lastMove.diceRequired !== undefined);
+      if (!isAttackMove) return;
+      
       const rollKey = `${lastMove.from.row}-${lastMove.from.col}-${lastMove.to.row}-${lastMove.to.col}-${gameState.lastDiceRoll.value}`;
       
       if (lastDiceRollRef.current !== rollKey) {
