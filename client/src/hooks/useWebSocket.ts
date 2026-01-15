@@ -176,9 +176,19 @@ export function useWebSocket(): UseWebSocketReturn {
     if (storedPlayerId) {
       setPlayerId(storedPlayerId);
       playerIdRef.current = storedPlayerId;
-      // Store pending reconnect to handle in onopen before auto-reconnect logic
-      pendingReconnectRef.current = { gameId, playerId: storedPlayerId };
-      connect();
+      
+      // If already connected, send reconnect message directly
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({
+          type: 'reconnect',
+          payload: { gameId },
+          playerId: storedPlayerId,
+        }));
+      } else {
+        // Store pending reconnect to handle in onopen before auto-reconnect logic
+        pendingReconnectRef.current = { gameId, playerId: storedPlayerId };
+        connect();
+      }
     } else {
       // No stored player ID, join as new player
       joinGame(gameId);
