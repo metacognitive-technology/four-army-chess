@@ -154,8 +154,8 @@ export function GameBoard({
                 className={cn(
                   "relative flex items-center justify-center cursor-pointer aspect-square",
                   !square.isWall && (isDark 
-                      ? "bg-green-400 dark:bg-green-500" 
-                      : "bg-green-300 dark:bg-green-400"),
+                      ? "bg-green-500 dark:bg-green-600" 
+                      : "bg-green-400 dark:bg-green-500"),
                   showFlashing && flashColor === 'red' && "animate-pulse bg-red-500",
                   showFlashing && flashColor === 'yellow' && "animate-pulse bg-yellow-400",
                   showSelected && "ring-2 ring-inset ring-blue-500",
