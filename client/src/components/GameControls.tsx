@@ -47,7 +47,7 @@ export function GameControls({
         <CardTitle className="text-sm font-medium">Game Controls</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-6 pt-0">
-        {gameId && phase === 'waiting' && (
+        {gameId && (
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground">Game ID</Label>
             <div className="flex gap-2">
@@ -58,16 +58,18 @@ export function GameControls({
                 <Copy className="w-4 h-4" />
               </Button>
             </div>
-            <Button 
-              variant="secondary" 
-              size="sm" 
-              className="w-full gap-2"
-              onClick={copyGameLink}
-              data-testid="button-share"
-            >
-              <Share2 className="w-4 h-4" />
-              Share Game Link
-            </Button>
+            {phase === 'waiting' && (
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                className="w-full gap-2"
+                onClick={copyGameLink}
+                data-testid="button-share"
+              >
+                <Share2 className="w-4 h-4" />
+                Share Game Link
+              </Button>
+            )}
           </div>
         )}
         
