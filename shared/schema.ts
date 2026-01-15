@@ -69,7 +69,7 @@ export interface GameState {
   capturedPieces: { white: Piece[]; black: Piece[] };
   players: { white: string | null; black: string | null };
   winner: PlayerColor | 'draw' | null;
-  lastDiceRoll?: { value: number; type: 'd4' | 'd6'; success: boolean };
+  lastDiceRoll?: { value: number; type: 'd4' | 'd6' | '2d6'; success: boolean };
   pendingArrowTarget?: Position;
   selectedPiece?: Position;
 }

@@ -78,15 +78,19 @@ export default function Game() {
         
         // Show toast with result
         const isArrow = lastMove.isArrowAttack;
-        const diceType = isArrow ? 'd4' : 'd6';
+        const diceType = gameState.lastDiceRoll.type;
         const rolled = gameState.lastDiceRoll.value;
         const success = gameState.lastDiceRoll.success;
+        const distance = Math.max(
+          Math.abs(lastMove.to.row - lastMove.from.row),
+          Math.abs(lastMove.to.col - lastMove.from.col)
+        );
         
         setTimeout(() => {
           toast({
             title: success ? "Attack Successful!" : "Attack Failed!",
             description: isArrow 
-              ? `Arrow attack: rolled ${rolled} on ${diceType}${success ? ' - target hit!' : ' - out of range!'}`
+              ? `Arrow attack: rolled ${rolled} on ${diceType} (needed ${distance}+)${success ? ' - target hit!' : ' - missed!'}`
               : `Pawn attack: rolled ${rolled} on ${diceType}${success ? ' - captured!' : ' - needed 1 to succeed'}`,
             variant: success ? "default" : "destructive",
           });

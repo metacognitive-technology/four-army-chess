@@ -181,11 +181,15 @@ export function getArrowTargets(board: Board, position: Position): Position[] {
   if (!square.piece || square.piece.type !== 'bishop') return [];
   
   const targets: Position[] = [];
-  const directions = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+  // Arrows can be shot in any direction (8 directions like a queen)
+  const directions = [
+    [-1, 0], [1, 0], [0, -1], [0, 1],  // Cardinal
+    [-1, -1], [-1, 1], [1, -1], [1, 1]  // Diagonal
+  ];
   
-  // Arrow can hit up to 4 squares away (1d4 roll determines exact distance)
+  // Arrow can hit up to 12 squares away (2d6 roll: need to roll >= distance to hit)
   for (const [dr, dc] of directions) {
-    for (let dist = 1; dist <= 4; dist++) {
+    for (let dist = 1; dist <= 12; dist++) {
       const newRow = position.row + dr * dist;
       const newCol = position.col + dc * dist;
       

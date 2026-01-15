@@ -271,7 +271,7 @@ class GameManager {
     return { state: room.state, diceRoll };
   }
 
-  handleArrowAttack(playerId: string, from: Position, to: Position): { state: GameState; diceRoll: { value: number; type: 'd4' | 'd6'; success: boolean } } | null {
+  handleArrowAttack(playerId: string, from: Position, to: Position): { state: GameState; diceRoll: { value: number; type: '2d6'; success: boolean } } | null {
     const gameId = this.playerToGame.get(playerId);
     if (!gameId) return null;
     
@@ -287,17 +287,22 @@ class GameManager {
     const piece = board[from.row][from.col].piece;
     if (!piece || piece.type !== 'bishop' || piece.color !== player.color) return null;
     
-    // Verify diagonal alignment
+    // Verify straight line (any direction: horizontal, vertical, or diagonal)
     const rowDiff = to.row - from.row;
     const colDiff = to.col - from.col;
-    if (Math.abs(rowDiff) !== Math.abs(colDiff)) return null; // Must be diagonal
     
-    const distance = Math.abs(rowDiff);
-    if (distance === 0) return null;
+    // Must be horizontal, vertical, or diagonal
+    const isHorizontal = rowDiff === 0 && colDiff !== 0;
+    const isVertical = colDiff === 0 && rowDiff !== 0;
+    const isDiagonal = Math.abs(rowDiff) === Math.abs(colDiff) && rowDiff !== 0;
+    
+    if (!isHorizontal && !isVertical && !isDiagonal) return null;
+    
+    const distance = Math.max(Math.abs(rowDiff), Math.abs(colDiff));
     
     // Check path is clear (arrows travel through squares)
-    const rowDir = rowDiff > 0 ? 1 : -1;
-    const colDir = colDiff > 0 ? 1 : -1;
+    const rowDir = rowDiff === 0 ? 0 : (rowDiff > 0 ? 1 : -1);
+    const colDir = colDiff === 0 ? 0 : (colDiff > 0 ? 1 : -1);
     
     for (let i = 1; i < distance; i++) {
       const checkRow = from.row + i * rowDir;
@@ -311,11 +316,13 @@ class GameManager {
     if (!targetPiece || targetPiece.color === player.color) return null;
     if (targetPiece.type === 'knight' || targetPiece.type === 'rook') return null;
     
-    // Roll 1d4 for arrow range
-    const roll = Math.floor(Math.random() * 4) + 1;
-    const success = distance <= roll;
+    // Roll 2d6 for arrow - need to roll >= distance to hit
+    const die1 = Math.floor(Math.random() * 6) + 1;
+    const die2 = Math.floor(Math.random() * 6) + 1;
+    const roll = die1 + die2;
+    const success = roll >= distance;
     
-    const diceRoll = { value: roll, type: 'd4' as const, success };
+    const diceRoll = { value: roll, type: '2d6' as const, success };
     room.state.lastDiceRoll = diceRoll;
     
     const move: Move = {
@@ -325,7 +332,7 @@ class GameManager {
       captured: success ? targetPiece : undefined,
       isArrowAttack: true,
       diceRoll: roll,
-      diceRequired: 4,
+      diceRequired: 12,
       success,
       notation: this.getMoveNotation(piece, from, to, success ? targetPiece : undefined, roll, true),
     };
