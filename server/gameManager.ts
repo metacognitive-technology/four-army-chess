@@ -910,6 +910,27 @@ class GameManager {
     
     switch (piece.type) {
       case 'king':
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const newRow = position.row + dr;
+            const newCol = position.col + dc;
+            if (this.isValidPosition(newRow, newCol) && !board[newRow][newCol].isWall) {
+              const targetPiece = board[newRow][newCol].piece;
+              if (!targetPiece || targetPiece.color !== piece.color) {
+                // Check if this move would put the king in check
+                const testBoard: Board = JSON.parse(JSON.stringify(board));
+                testBoard[newRow][newCol].piece = piece;
+                testBoard[position.row][position.col].piece = null;
+                if (!this.wouldBeInCheck(testBoard, piece.color, { row: newRow, col: newCol })) {
+                  moves.push({ row: newRow, col: newCol });
+                }
+              }
+            }
+          }
+        }
+        break;
+        
       case 'pawn':
         for (let dr = -1; dr <= 1; dr++) {
           for (let dc = -1; dc <= 1; dc++) {
@@ -1031,14 +1052,21 @@ class GameManager {
     
     if (!kingPos) return false;
     
+    return this.wouldBeInCheck(board, color, kingPos);
+  }
+
+  // Check if a king at the given position would be in check
+  // This is used to prevent kings from moving into check
+  private wouldBeInCheck(board: Board, color: PlayerColor, kingPos: Position): boolean {
     const opponentColor = color === 'white' ? 'black' : 'white';
     
     for (let row = 0; row < BOARD_SIZE; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
         const piece = board[row][col].piece;
         if (piece && piece.color === opponentColor) {
-          const attacks = this.getValidMoves(board, { row, col });
-          if (attacks.some(pos => pos.row === kingPos!.row && pos.col === kingPos!.col)) {
+          // Get raw attack squares (without recursively checking for check)
+          const attacks = this.getRawAttacks(board, { row, col }, piece);
+          if (attacks.some(pos => pos.row === kingPos.row && pos.col === kingPos.col)) {
             return true;
           }
         }
@@ -1046,6 +1074,74 @@ class GameManager {
     }
     
     return false;
+  }
+
+  // Get attack squares for a piece without check validation (to avoid infinite recursion)
+  private getRawAttacks(board: Board, position: Position, piece: Piece): Position[] {
+    const attacks: Position[] = [];
+    
+    switch (piece.type) {
+      case 'king':
+      case 'pawn':
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const newRow = position.row + dr;
+            const newCol = position.col + dc;
+            if (this.isValidPosition(newRow, newCol) && !board[newRow][newCol].isWall) {
+              const targetPiece = board[newRow][newCol].piece;
+              if (!targetPiece || targetPiece.color !== piece.color) {
+                attacks.push({ row: newRow, col: newCol });
+              }
+            }
+          }
+        }
+        break;
+        
+      case 'queen':
+        attacks.push(...this.getSlidingMoves(board, position, piece.color, [
+          [-1, 0], [1, 0], [0, -1], [0, 1],
+          [-1, -1], [-1, 1], [1, -1], [1, 1],
+        ], MAX_MOVE_DISTANCE));
+        break;
+        
+      case 'rook':
+        attacks.push(...this.getSlidingMoves(board, position, piece.color, [
+          [-1, 0], [1, 0], [0, -1], [0, 1],
+        ], MAX_MOVE_DISTANCE));
+        break;
+        
+      case 'bishop':
+        attacks.push(...this.getSlidingMoves(board, position, piece.color, [
+          [-1, -1], [-1, 1], [1, -1], [1, 1],
+        ], MAX_MOVE_DISTANCE));
+        break;
+        
+      case 'knight':
+        const knightMoves = [
+          [-2, -1], [-2, 1], [-1, -2], [-1, 2],
+          [1, -2], [1, 2], [2, -1], [2, 1],
+        ];
+        for (const [dr, dc] of knightMoves) {
+          const newRow = position.row + dr;
+          const newCol = position.col + dc;
+          if (this.isValidPosition(newRow, newCol) && !board[newRow][newCol].isWall) {
+            const rowSign = dr > 0 ? 1 : -1;
+            const colSign = dc > 0 ? 1 : -1;
+            const sq1 = board[position.row + rowSign][position.col];
+            const sq2 = board[position.row][position.col + colSign];
+            if (sq1.isWall && sq2.isWall) continue;
+            
+            const targetPiece = board[newRow][newCol].piece;
+            if (!targetPiece || targetPiece.color !== piece.color) {
+              attacks.push({ row: newRow, col: newCol });
+            }
+          }
+        }
+        break;
+    }
+    
+    return attacks;
   }
 
   private isCheckmate(board: Board, color: PlayerColor): boolean {

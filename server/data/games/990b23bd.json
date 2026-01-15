@@ -534,7 +534,7 @@
         "row": 6,
         "col": 6,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 6,
@@ -590,7 +590,7 @@
         "row": 7,
         "col": 3,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
@@ -602,19 +602,19 @@
         "row": 7,
         "col": 5,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
         "col": 6,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
         "col": 7,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
@@ -664,19 +664,19 @@
         "row": 8,
         "col": 3,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 8,
         "col": 4,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 8,
         "col": 5,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 8,
@@ -991,7 +991,7 @@
   "gameMode": "pvc",
   "aiColor": "black",
   "setupWallsRemaining": {
-    "white": 8,
+    "white": 0,
     "black": 0
   },
   "maxWallsPerPlayer": 8,
