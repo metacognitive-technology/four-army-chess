@@ -18,6 +18,7 @@ interface GameBoardProps {
   onSquareClick: (position: Position) => void;
   onArrowModeToggle: (position: Position) => void;
   setupWallsRemaining: number;
+  flashingSquare: Position | null;
 }
 
 export function GameBoard({
@@ -33,6 +34,7 @@ export function GameBoard({
   onSquareClick,
   onArrowModeToggle,
   setupWallsRemaining,
+  flashingSquare,
 }: GameBoardProps) {
   const isMyTurn = playerColor === currentTurn;
   
@@ -51,6 +53,10 @@ export function GameBoard({
   const isSelected = useCallback((row: number, col: number) => {
     return selectedPosition?.row === row && selectedPosition?.col === col;
   }, [selectedPosition]);
+  
+  const isFlashing = useCallback((row: number, col: number) => {
+    return flashingSquare?.row === row && flashingSquare?.col === col;
+  }, [flashingSquare]);
 
   const canInteract = (row: number, col: number) => {
     if (phase === 'setup') {
@@ -85,6 +91,7 @@ export function GameBoard({
             const showArrowTarget = isArrowTarget(rowIndex, colIndex);
             const showHanging = isHanging(rowIndex, colIndex) && piece?.color === playerColor;
             const showSelected = isSelected(rowIndex, colIndex);
+            const showFlashing = isFlashing(rowIndex, colIndex);
             const isBishop = piece?.type === 'bishop' && piece?.color === playerColor && phase === 'playing' && isMyTurn;
             
             return (
@@ -97,6 +104,7 @@ export function GameBoard({
                     : isDark 
                       ? "bg-emerald-700 dark:bg-emerald-800" 
                       : "bg-amber-100 dark:bg-amber-200",
+                  showFlashing && "animate-pulse bg-red-500",
                   showSelected && "ring-2 ring-inset ring-blue-500 shadow-inner",
                   showValidMove && !square.piece && "after:absolute after:w-1/3 after:h-1/3 after:rounded-full after:bg-black/20",
                   showValidMove && square.piece && "ring-2 ring-inset ring-red-500",

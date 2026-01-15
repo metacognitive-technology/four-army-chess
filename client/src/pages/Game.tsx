@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useLocation, useSearch } from "wouter";
 import { GameBoard } from "@/components/GameBoard";
 import { PlayerPanel } from "@/components/PlayerPanel";
 import { MoveHistory } from "@/components/MoveHistory";
-import { DiceRoll } from "@/components/DiceRoll";
 import { GameControls } from "@/components/GameControls";
 import { GameStatus } from "@/components/GameStatus";
 import { GameRules } from "@/components/GameRules";
@@ -39,7 +38,8 @@ export default function Game() {
   const [isReady, setIsReady] = useState(false);
   const [maxWalls, setMaxWalls] = useState(8);
   const [joinGameId, setJoinGameId] = useState(gameIdFromUrl || '');
-  const [showDice, setShowDice] = useState(false);
+  const [flashingSquare, setFlashingSquare] = useState<Position | null>(null);
+  const lastDiceRollRef = useRef<string | null>(null);
   
   // Auto-join game from URL
   useEffect(() => {
@@ -59,12 +59,41 @@ export default function Game() {
     }
   }, [lastError, toast]);
   
-  // Show dice roll animation
+  // Handle dice roll results with flash effect
   useEffect(() => {
-    if (gameState?.lastDiceRoll) {
-      setShowDice(true);
+    if (gameState?.lastDiceRoll && gameState.moveHistory.length > 0) {
+      const lastMove = gameState.moveHistory[gameState.moveHistory.length - 1];
+      const rollKey = `${lastMove.from.row}-${lastMove.from.col}-${lastMove.to.row}-${lastMove.to.col}-${gameState.lastDiceRoll.value}`;
+      
+      if (lastDiceRollRef.current !== rollKey) {
+        lastDiceRollRef.current = rollKey;
+        
+        // Flash the target square
+        setFlashingSquare(lastMove.to);
+        
+        // Show toast with result
+        const isArrow = lastMove.isArrowAttack;
+        const diceType = isArrow ? 'd4' : 'd6';
+        const rolled = gameState.lastDiceRoll.value;
+        const success = gameState.lastDiceRoll.success;
+        
+        setTimeout(() => {
+          toast({
+            title: success ? "Attack Successful!" : "Attack Failed!",
+            description: isArrow 
+              ? `Arrow attack: rolled ${rolled} on ${diceType}${success ? ' - target hit!' : ' - out of range!'}`
+              : `Pawn attack: rolled ${rolled} on ${diceType}${success ? ' - captured!' : ' - needed 1 to succeed'}`,
+            variant: success ? "default" : "destructive",
+          });
+        }, 300);
+        
+        // Clear flash after animation
+        setTimeout(() => {
+          setFlashingSquare(null);
+        }, 600);
+      }
     }
-  }, [gameState?.lastDiceRoll]);
+  }, [gameState?.lastDiceRoll, gameState?.moveHistory, toast]);
   
   const board = gameState?.board || createInitialBoard();
   const phase = gameState?.phase || 'waiting';
@@ -177,9 +206,6 @@ export default function Game() {
     sendMessage({ type: 'move', payload: { resign: true } });
   }, [sendMessage]);
   
-  const handleDiceAnimationEnd = useCallback(() => {
-    setShowDice(false);
-  }, []);
   
   // Lobby view - no game yet
   if (!gameState) {
@@ -339,6 +365,7 @@ export default function Game() {
               onSquareClick={handleSquareClick}
               onArrowModeToggle={handleArrowModeToggle}
               setupWallsRemaining={playerColor ? gameState.setupWallsRemaining[playerColor] : 0}
+              flashingSquare={flashingSquare}
             />
             
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -384,16 +411,6 @@ export default function Game() {
         </div>
       </div>
       
-      {/* Dice roll overlay */}
-      {showDice && gameState.lastDiceRoll && (
-        <DiceRoll
-          value={gameState.lastDiceRoll.value}
-          type={gameState.lastDiceRoll.type}
-          success={gameState.lastDiceRoll.success}
-          isVisible={showDice}
-          onAnimationEnd={handleDiceAnimationEnd}
-        />
-      )}
     </div>
   );
 }
