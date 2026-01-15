@@ -178,14 +178,11 @@ export function GameBoard({
                   <span 
                     className={cn(
                       "select-none transition-transform duration-200 leading-none",
-                      piece.color === 'white' ? "text-white" : "text-gray-900",
+                      piece.color === 'white' ? "text-white" : "text-black",
                       showSelected && "scale-105",
                     )}
                     style={{
                       fontSize: 'min(calc(560px / 12 * 0.85), calc((min(90vw, calc(100vh - 280px)) / 12) * 0.85))',
-                      ...(piece.color === 'black' && {
-                        textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-                      })
                     }}
                   >
                     {PIECE_SYMBOLS[piece.type][piece.color]}
