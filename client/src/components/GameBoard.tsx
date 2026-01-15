@@ -19,6 +19,7 @@ interface GameBoardProps {
   onArrowModeToggle: (position: Position) => void;
   setupWallsRemaining: number;
   flashingSquare: Position | null;
+  flashColor?: 'red' | 'yellow';
 }
 
 export function GameBoard({
@@ -35,6 +36,7 @@ export function GameBoard({
   onArrowModeToggle,
   setupWallsRemaining,
   flashingSquare,
+  flashColor = 'red',
 }: GameBoardProps) {
   const isMyTurn = playerColor === currentTurn;
   const [zoom, setZoom] = useState(1);
@@ -154,7 +156,8 @@ export function GameBoard({
                   !square.isWall && (isDark 
                       ? "bg-green-400 dark:bg-green-500" 
                       : "bg-green-300 dark:bg-green-400"),
-                  showFlashing && "animate-pulse bg-red-500",
+                  showFlashing && flashColor === 'red' && "animate-pulse bg-red-500",
+                  showFlashing && flashColor === 'yellow' && "animate-pulse bg-yellow-400",
                   showSelected && "ring-2 ring-inset ring-blue-500",
                   showValidMove && !square.piece && "after:absolute after:w-1/3 after:h-1/3 after:rounded-full after:bg-black/20",
                   showValidMove && square.piece && "ring-2 ring-inset ring-red-500",

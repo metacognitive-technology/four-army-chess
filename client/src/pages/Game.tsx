@@ -58,6 +58,7 @@ export default function Game() {
   const [maxWalls, setMaxWalls] = useState(8);
   const [joinGameId, setJoinGameId] = useState(gameIdFromUrl || '');
   const [flashingSquare, setFlashingSquare] = useState<Position | null>(null);
+  const [flashColor, setFlashColor] = useState<'red' | 'yellow'>('red');
   const lastDiceRollRef = useRef<string | null>(null);
   
   // Fetch saved games
@@ -124,10 +125,6 @@ export default function Game() {
       if (lastDiceRollRef.current !== rollKey) {
         lastDiceRollRef.current = rollKey;
         
-        // Flash the target square
-        setFlashingSquare(lastMove.to);
-        
-        // Show toast with result
         const isArrow = lastMove.isArrowAttack;
         const diceType = gameState.lastDiceRoll.type;
         const rolled = gameState.lastDiceRoll.value;
@@ -136,6 +133,15 @@ export default function Game() {
           Math.abs(lastMove.to.row - lastMove.from.row),
           Math.abs(lastMove.to.col - lastMove.from.col)
         );
+        
+        // Flash the target square on success (red), or the attacker on failure (yellow)
+        if (success) {
+          setFlashColor('red');
+          setFlashingSquare(lastMove.to);
+        } else {
+          setFlashColor('yellow');
+          setFlashingSquare(lastMove.from);
+        }
         
         setTimeout(() => {
           toast({
@@ -500,6 +506,7 @@ export default function Game() {
               onArrowModeToggle={handleArrowModeToggle}
               setupWallsRemaining={playerColor ? gameState.setupWallsRemaining[playerColor] : 0}
               flashingSquare={flashingSquare}
+              flashColor={flashColor}
             />
             
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
