@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import type { Board, Position, PlayerColor, PieceType } from "@shared/schema";
 import { PIECE_SYMBOLS, BOARD_SIZE, getValidMoves, getArrowTargets, findHangingPieces } from "@/lib/gameUtils";
 import { cn } from "@/lib/utils";
-import { Target } from "lucide-react";
+import { Target, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface GameBoardProps {
@@ -37,6 +37,11 @@ export function GameBoard({
   flashingSquare,
 }: GameBoardProps) {
   const isMyTurn = playerColor === currentTurn;
+  const [zoom, setZoom] = useState(1);
+  
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.2, 2));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.2, 0.6));
+  const handleZoomReset = () => setZoom(1);
   
   const isValidMove = useCallback((row: number, col: number) => {
     return validMoves.some(m => m.row === row && m.col === col);
@@ -71,17 +76,64 @@ export function GameBoard({
   };
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-col items-center gap-2">
+      {/* Zoom controls */}
+      <div className="flex items-center gap-1">
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={handleZoomOut}
+          disabled={zoom <= 0.6}
+          data-testid="button-zoom-out"
+          className="h-8 w-8"
+        >
+          <ZoomOut className="w-4 h-4" />
+        </Button>
+        <span className="text-xs text-muted-foreground w-12 text-center">
+          {Math.round(zoom * 100)}%
+        </span>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={handleZoomIn}
+          disabled={zoom >= 2}
+          data-testid="button-zoom-in"
+          className="h-8 w-8"
+        >
+          <ZoomIn className="w-4 h-4" />
+        </Button>
+        {zoom !== 1 && (
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={handleZoomReset}
+            data-testid="button-zoom-reset"
+            className="h-8 w-8"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+      
+      {/* Board container with scroll when zoomed */}
       <div 
-        className="grid gap-0 border-2 border-foreground/20 rounded-md overflow-hidden shadow-lg"
+        className="overflow-auto max-h-[calc(100vh-300px)]"
         style={{ 
-          gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
-          aspectRatio: '1 / 1',
-          width: 'min(90vw, calc(100vh - 280px), 560px)',
-          maxWidth: '100%',
+          maxWidth: 'min(90vw, 560px)',
         }}
-        data-testid="game-board"
       >
+        <div 
+          className="grid gap-0 border-2 border-foreground/20 rounded-md overflow-hidden shadow-lg origin-top-left transition-transform duration-200"
+          style={{ 
+            gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
+            aspectRatio: '1 / 1',
+            width: 'min(90vw, calc(100vh - 280px), 560px)',
+            maxWidth: '100%',
+            transform: `scale(${zoom})`,
+            transformOrigin: 'top left',
+          }}
+          data-testid="game-board"
+        >
         {board.map((row, rowIndex) =>
           row.map((square, colIndex) => {
             const isDark = (rowIndex + colIndex) % 2 === 1;
@@ -167,10 +219,11 @@ export function GameBoard({
             );
           })
         )}
+        </div>
       </div>
       
       {phase === 'setup' && (
-        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-card px-3 py-1 rounded-md text-sm font-medium">
+        <div className="mt-2 bg-card px-3 py-1 rounded-md text-sm font-medium">
           Walls remaining: {setupWallsRemaining}
         </div>
       )}
