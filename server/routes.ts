@@ -52,6 +52,16 @@ export async function registerRoutes(
     }
   });
 
+  app.delete('/api/games', (_req, res) => {
+    try {
+      const deleted = gameManager.deleteAllGames();
+      res.json({ success: true, deleted });
+    } catch (error) {
+      console.error('Failed to delete all games:', error);
+      res.status(500).json({ error: 'Failed to delete all games' });
+    }
+  });
+
   // Create WebSocket server
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 

@@ -92,6 +92,27 @@ export default function Game() {
   const handleReconnectToGame = useCallback((game: SavedGameInfo, storedPlayerId: string | null) => {
     reconnectGame(game.id, storedPlayerId);
   }, [reconnectGame]);
+
+  const handleClearAllGames = useCallback(async () => {
+    try {
+      await apiRequest('DELETE', '/api/games');
+      // Clear all stored player IDs from localStorage
+      savedGames.forEach(game => {
+        localStorage.removeItem(`playerId_${game.id}`);
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/games'] });
+      toast({
+        title: "All games cleared",
+        description: "All saved games have been removed.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to clear games.",
+        variant: "destructive",
+      });
+    }
+  }, [savedGames, toast]);
   
   // Auto-join game from URL
   useEffect(() => {
@@ -388,6 +409,19 @@ export default function Game() {
                   <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-card px-2 text-muted-foreground">Saved Games</span>
                   </div>
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-muted-foreground"
+                    onClick={handleClearAllGames}
+                    data-testid="button-clear-all-games"
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Clear All
+                  </Button>
                 </div>
                 
                 <ScrollArea className="h-48">

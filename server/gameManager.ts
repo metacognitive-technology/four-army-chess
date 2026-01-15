@@ -140,6 +140,37 @@ class GameManager {
     }
   }
 
+  deleteAllGames(): number {
+    try {
+      if (!existsSync(GAMES_DIR)) {
+        return 0;
+      }
+      
+      const files = readdirSync(GAMES_DIR);
+      let deleted = 0;
+      
+      for (const file of files) {
+        if (file.endsWith('.json')) {
+          const gameId = file.replace('.json', '');
+          try {
+            // Remove from memory if present
+            this.games.delete(gameId);
+            // Delete file
+            unlinkSync(this.getGameFilePath(gameId));
+            deleted++;
+          } catch (e) {
+            // Continue with other files
+          }
+        }
+      }
+      
+      return deleted;
+    } catch (error) {
+      console.error('Failed to delete all games:', error);
+      return 0;
+    }
+  }
+
   // Load a saved game into memory for play
   loadGameIntoMemory(gameId: string): GameState | null {
     // First check if already in memory
