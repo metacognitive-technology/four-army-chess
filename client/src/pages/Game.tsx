@@ -123,9 +123,11 @@ export default function Game() {
   
   const checkStatus = useMemo(() => {
     if (!gameState || phase !== 'playing') return { isCheck: false, isCheckmate: false };
+    const inCheck = isInCheck(board, currentTurn);
+    const inCheckmate = inCheck && isCheckmate(board, currentTurn);
     return {
-      isCheck: isInCheck(board, currentTurn),
-      isCheckmate: isCheckmate(board, currentTurn),
+      isCheck: inCheck,
+      isCheckmate: inCheckmate,
     };
   }, [gameState, phase, board, currentTurn]);
   
