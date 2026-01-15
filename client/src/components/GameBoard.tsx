@@ -71,7 +71,7 @@ export function GameBoard({
         style={{ 
           gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
           aspectRatio: '1 / 1',
-          width: 'min(92vw, calc(100vh - 220px), 600px)',
+          width: 'min(90vw, calc(100vh - 280px), 560px)',
           maxWidth: '100%',
         }}
         data-testid="game-board"
@@ -91,7 +91,7 @@ export function GameBoard({
               <div
                 key={`${rowIndex}-${colIndex}`}
                 className={cn(
-                  "relative flex items-center justify-center cursor-pointer transition-all duration-150 aspect-square",
+                  "relative flex items-center justify-center cursor-pointer transition-all duration-150 aspect-square overflow-hidden",
                   square.isWall 
                     ? "bg-slate-500 dark:bg-slate-600" 
                     : isDark 
@@ -111,15 +111,18 @@ export function GameBoard({
                 {piece && (
                   <span 
                     className={cn(
-                      "text-[clamp(1.5rem,4.5vw,3.6rem)] select-none transition-transform duration-200",
+                      "select-none transition-transform duration-200 leading-none",
                       piece.color === 'white' ? "text-white" : "text-gray-900",
-                      showSelected && "scale-110",
+                      showSelected && "scale-105",
                     )}
-                    style={piece.color === 'white' ? {
-                      WebkitTextStroke: '1.5px #000',
-                      textShadow: '2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000, 0 0 4px rgba(0,0,0,0.8)'
-                    } : {
-                      textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                    style={{
+                      fontSize: 'min(calc(560px / 12 * 0.85), calc((min(90vw, calc(100vh - 280px)) / 12) * 0.85))',
+                      ...(piece.color === 'white' ? {
+                        WebkitTextStroke: '1px #000',
+                        textShadow: '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000'
+                      } : {
+                        textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                      })
                     }}
                   >
                     {PIECE_SYMBOLS[piece.type][piece.color]}
