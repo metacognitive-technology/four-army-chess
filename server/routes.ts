@@ -8,6 +8,50 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // REST endpoints for saved games
+  app.get('/api/games', (_req, res) => {
+    try {
+      const games = gameManager.listSavedGames();
+      res.json(games);
+    } catch (error) {
+      console.error('Failed to list games:', error);
+      res.status(500).json({ error: 'Failed to list games' });
+    }
+  });
+
+  app.get('/api/games/:gameId', (req, res) => {
+    try {
+      const state = gameManager.loadGameIntoMemory(req.params.gameId);
+      if (state) {
+        res.json(state);
+      } else {
+        res.status(404).json({ error: 'Game not found' });
+      }
+    } catch (error) {
+      console.error('Failed to load game:', error);
+      res.status(500).json({ error: 'Failed to load game' });
+    }
+  });
+
+  app.delete('/api/games/:gameId', (req, res) => {
+    try {
+      const playerId = req.query.playerId as string | undefined;
+      if (!playerId) {
+        res.status(401).json({ error: 'Player ID required for authorization' });
+        return;
+      }
+      const success = gameManager.deleteGame(req.params.gameId, playerId);
+      if (success) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ error: 'Game not found or not authorized' });
+      }
+    } catch (error) {
+      console.error('Failed to delete game:', error);
+      res.status(500).json({ error: 'Failed to delete game' });
+    }
+  });
+
   // Create WebSocket server
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 

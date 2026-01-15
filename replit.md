@@ -33,7 +33,20 @@ Preferred communication style: Simple, everyday language.
 - **ORM**: Drizzle ORM with PostgreSQL dialect
 - **Schema Location**: `shared/schema.ts` - shared between client and server
 - **Validation**: Zod schemas generated from Drizzle for type-safe validation
-- **Current Storage**: In-memory storage for game state (MemStorage class), database configured for user data
+- **Game Persistence**: JSON files in `server/data/games/` directory for game state persistence
+- **Current Storage**: In-memory storage (MemStorage class), with file-based persistence for games
+
+### Game Persistence System
+- **File Storage**: Games are saved as JSON files in `server/data/games/{gameId}.json`
+- **Auto-Save**: Game state is saved after every mutation (create, join, move, wall, ready, resign)
+- **REST API Endpoints**:
+  - `GET /api/games` - List all saved games with metadata
+  - `GET /api/games/:id` - Load a specific game
+  - `DELETE /api/games/:id?playerId=...` - Delete game (requires ownership)
+- **Reconnection Flow**:
+  - Player IDs stored in localStorage (`playerId_{gameId}`)
+  - WebSocket reconnect loads game from file if not in memory
+  - `reconnectGame()` function handles explicit reconnection with stored player ID
 
 ### Project Structure
 ```

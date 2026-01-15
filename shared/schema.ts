@@ -85,3 +85,15 @@ export const gameConfigSchema = z.object({
 });
 
 export type GameConfig = z.infer<typeof gameConfigSchema>;
+
+export interface SavedGameInfo {
+  id: string;
+  phase: GamePhase;
+  currentTurn: PlayerColor;
+  moveCount: number;
+  whitePlayer: string | null;
+  blackPlayer: string | null;
+  winner: PlayerColor | 'draw' | null;
+  updatedAt: string;
+  gameMode?: GameMode;
+}

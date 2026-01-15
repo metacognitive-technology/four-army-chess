@@ -11,6 +11,7 @@ interface UseWebSocketReturn {
   sendMessage: (message: GameMessage) => void;
   createGame: (maxWalls: number, gameMode?: GameMode) => void;
   joinGame: (gameId: string) => void;
+  reconnectGame: (gameId: string, storedPlayerId: string | null) => void;
   lastError: string | null;
 }
 
@@ -24,6 +25,8 @@ export function useWebSocket(): UseWebSocketReturn {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const gameIdRef = useRef<string | null>(null);
+  const playerIdRef = useRef<string | null>(null);
+  const pendingReconnectRef = useRef<{ gameId: string; playerId: string } | null>(null);
   
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
@@ -37,12 +40,24 @@ export function useWebSocket(): UseWebSocketReturn {
       setConnectionStatus('connected');
       setLastError(null);
       
-      // Reconnect to game if we have a game ID
-      if (gameIdRef.current && playerId) {
+      // Handle pending explicit reconnect first (from reconnectGame)
+      if (pendingReconnectRef.current) {
+        const { gameId, playerId: storedPlayerId } = pendingReconnectRef.current;
+        pendingReconnectRef.current = null;
+        ws.send(JSON.stringify({
+          type: 'reconnect',
+          payload: { gameId },
+          playerId: storedPlayerId,
+        }));
+        return;
+      }
+      
+      // Auto-reconnect to game if we have a game ID and player ID (for connection drops)
+      if (gameIdRef.current && playerIdRef.current) {
         ws.send(JSON.stringify({
           type: 'reconnect',
           payload: { gameId: gameIdRef.current },
-          playerId,
+          playerId: playerIdRef.current,
         }));
       }
     };
@@ -56,6 +71,11 @@ export function useWebSocket(): UseWebSocketReturn {
             setGameState(message.payload.state);
             if (message.payload.playerId && !playerId) {
               setPlayerId(message.payload.playerId);
+              playerIdRef.current = message.payload.playerId;
+              // Store playerId in localStorage for reconnection
+              if (message.payload.state?.id) {
+                localStorage.setItem(`playerId_${message.payload.state.id}`, message.payload.playerId);
+              }
             }
             if (message.payload.color) {
               setPlayerColor(message.payload.color);
@@ -150,6 +170,21 @@ export function useWebSocket(): UseWebSocketReturn {
     checkAndSend();
   }, [connect]);
   
+  const reconnectGame = useCallback((gameId: string, storedPlayerId: string | null) => {
+    gameIdRef.current = gameId;
+    
+    if (storedPlayerId) {
+      setPlayerId(storedPlayerId);
+      playerIdRef.current = storedPlayerId;
+      // Store pending reconnect to handle in onopen before auto-reconnect logic
+      pendingReconnectRef.current = { gameId, playerId: storedPlayerId };
+      connect();
+    } else {
+      // No stored player ID, join as new player
+      joinGame(gameId);
+    }
+  }, [connect, joinGame]);
+  
   return {
     gameState,
     playerId,
@@ -158,6 +193,7 @@ export function useWebSocket(): UseWebSocketReturn {
     sendMessage,
     createGame,
     joinGame,
+    reconnectGame,
     lastError,
   };
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useLocation, useSearch } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { GameBoard } from "@/components/GameBoard";
 import { PlayerPanel } from "@/components/PlayerPanel";
 import { MoveHistory } from "@/components/MoveHistory";
@@ -9,13 +10,30 @@ import { GameRules } from "@/components/GameRules";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useToast } from "@/hooks/use-toast";
 import { getValidMoves, getArrowTargets, findHangingPieces, isInCheck, isCheckmate, createInitialBoard } from "@/lib/gameUtils";
-import type { Position, GameState } from "@shared/schema";
+import type { Position, GameState, SavedGameInfo } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Wifi, WifiOff, Plus, Link2, Bot, Users } from "lucide-react";
+import { Loader2, Wifi, WifiOff, Plus, Link2, Bot, Users, History, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
 
 export default function Game() {
   const searchParams = new URLSearchParams(useSearch());
@@ -30,6 +48,7 @@ export default function Game() {
     sendMessage,
     createGame,
     joinGame,
+    reconnectGame,
     lastError,
   } = useWebSocket();
   
@@ -40,6 +59,38 @@ export default function Game() {
   const [joinGameId, setJoinGameId] = useState(gameIdFromUrl || '');
   const [flashingSquare, setFlashingSquare] = useState<Position | null>(null);
   const lastDiceRollRef = useRef<string | null>(null);
+  
+  // Fetch saved games
+  const { data: savedGames = [], isLoading: loadingSavedGames } = useQuery<SavedGameInfo[]>({
+    queryKey: ['/api/games'],
+    refetchOnWindowFocus: true,
+  });
+  
+  const handleDeleteGame = useCallback(async (gameId: string) => {
+    try {
+      const storedPlayerId = localStorage.getItem(`playerId_${gameId}`);
+      const url = storedPlayerId 
+        ? `/api/games/${gameId}?playerId=${storedPlayerId}`
+        : `/api/games/${gameId}`;
+      await apiRequest('DELETE', url);
+      queryClient.invalidateQueries({ queryKey: ['/api/games'] });
+      localStorage.removeItem(`playerId_${gameId}`);
+      toast({
+        title: "Game deleted",
+        description: "The saved game has been removed.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete game. You may not have permission.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
+  
+  const handleReconnectToGame = useCallback((game: SavedGameInfo, storedPlayerId: string | null) => {
+    reconnectGame(game.id, storedPlayerId);
+  }, [reconnectGame]);
   
   // Auto-join game from URL
   useEffect(() => {
@@ -320,6 +371,78 @@ export default function Game() {
                 </Button>
               </div>
             </div>
+            
+            {/* Saved Games Section */}
+            {savedGames.length > 0 && (
+              <div className="space-y-2">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">Saved Games</span>
+                  </div>
+                </div>
+                
+                <ScrollArea className="h-48">
+                  <div className="space-y-2">
+                    {loadingSavedGames ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      </div>
+                    ) : (
+                      savedGames.map((game) => {
+                        const storedPlayerId = localStorage.getItem(`playerId_${game.id}`);
+                        const isYourGame = storedPlayerId && (game.whitePlayer === storedPlayerId || game.blackPlayer === storedPlayerId);
+                        const timeAgo = formatTimeAgo(game.updatedAt);
+                        const statusText = game.phase === 'finished' 
+                          ? (game.winner ? `${game.winner} won` : 'Draw') 
+                          : `${game.currentTurn}'s turn`;
+                        
+                        return (
+                          <div 
+                            key={game.id}
+                            className="flex items-center gap-2 p-2 rounded-md border bg-muted/50"
+                            data-testid={`saved-game-${game.id}`}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <History className="w-4 h-4 text-muted-foreground shrink-0" />
+                                <span className="font-mono text-sm truncate">{game.id}</span>
+                                {game.gameMode === 'pvc' && (
+                                  <span className="text-xs bg-primary/10 text-primary px-1 rounded">vs AI</span>
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {statusText} - {game.moveCount} moves - {timeAgo}
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleReconnectToGame(game, storedPlayerId)}
+                              data-testid={`button-resume-${game.id}`}
+                            >
+                              {isYourGame ? 'Resume' : 'Join'}
+                            </Button>
+                            {isYourGame && (
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleDeleteGame(game.id)}
+                                data-testid={`button-delete-${game.id}`}
+                              >
+                                <Trash2 className="w-4 h-4 text-muted-foreground" />
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
             
             <GameRules />
           </CardContent>

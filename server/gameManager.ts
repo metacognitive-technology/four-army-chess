@@ -1,10 +1,35 @@
 import { randomUUID } from "crypto";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, unlinkSync, statSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import type { GameState, Board, Square, Piece, Position, PlayerColor, Move, PieceType, GameMessage, GameMode } from "@shared/schema";
 import type { WebSocket } from "ws";
 
 const BOARD_SIZE = 12;
 const MAX_MOVE_DISTANCE = 8;
 const AI_PLAYER_ID = 'ai-player';
+
+// Get the directory for saving game files
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const GAMES_DIR = join(__dirname, 'data', 'games');
+
+// Ensure games directory exists
+if (!existsSync(GAMES_DIR)) {
+  mkdirSync(GAMES_DIR, { recursive: true });
+}
+
+export interface SavedGameInfo {
+  id: string;
+  phase: GameState['phase'];
+  currentTurn: PlayerColor;
+  moveCount: number;
+  whitePlayer: string | null;
+  blackPlayer: string | null;
+  winner: PlayerColor | 'draw' | null;
+  updatedAt: string;
+  gameMode?: GameMode;
+}
 
 interface Player {
   ws: WebSocket;
@@ -21,6 +46,122 @@ interface GameRoom {
 class GameManager {
   private games: Map<string, GameRoom> = new Map();
   private playerToGame: Map<string, string> = new Map();
+
+  // File persistence methods
+  private getGameFilePath(gameId: string): string {
+    return join(GAMES_DIR, `${gameId}.json`);
+  }
+
+  saveGame(state: GameState): void {
+    try {
+      const filePath = this.getGameFilePath(state.id);
+      const data = JSON.stringify(state, null, 2);
+      writeFileSync(filePath, data, 'utf-8');
+    } catch (error) {
+      console.error(`Failed to save game ${state.id}:`, error);
+    }
+  }
+
+  loadGame(gameId: string): GameState | null {
+    try {
+      const filePath = this.getGameFilePath(gameId);
+      if (!existsSync(filePath)) return null;
+      const data = readFileSync(filePath, 'utf-8');
+      return JSON.parse(data) as GameState;
+    } catch (error) {
+      console.error(`Failed to load game ${gameId}:`, error);
+      return null;
+    }
+  }
+
+  listSavedGames(): SavedGameInfo[] {
+    try {
+      const files = readdirSync(GAMES_DIR).filter(f => f.endsWith('.json'));
+      const games: SavedGameInfo[] = [];
+
+      for (const file of files) {
+        try {
+          const filePath = join(GAMES_DIR, file);
+          const stat = statSync(filePath);
+          const data = readFileSync(filePath, 'utf-8');
+          const state = JSON.parse(data) as GameState;
+          
+          games.push({
+            id: state.id,
+            phase: state.phase,
+            currentTurn: state.currentTurn,
+            moveCount: state.moveHistory.length,
+            whitePlayer: state.players.white,
+            blackPlayer: state.players.black,
+            winner: state.winner,
+            updatedAt: stat.mtime.toISOString(),
+            gameMode: state.gameMode,
+          });
+        } catch (e) {
+          // Skip invalid files
+        }
+      }
+
+      // Sort by most recently updated
+      return games.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    } catch (error) {
+      console.error('Failed to list saved games:', error);
+      return [];
+    }
+  }
+
+  deleteGame(gameId: string, requestingPlayerId?: string): boolean {
+    try {
+      const filePath = this.getGameFilePath(gameId);
+      if (!existsSync(filePath)) {
+        return false;
+      }
+      
+      // Load game to check ownership if playerId provided
+      if (requestingPlayerId) {
+        const state = this.loadGame(gameId);
+        if (state) {
+          const isOwner = state.players.white === requestingPlayerId || 
+                          state.players.black === requestingPlayerId;
+          if (!isOwner) {
+            return false;
+          }
+        }
+      }
+      
+      // Remove from memory if present
+      this.games.delete(gameId);
+      
+      unlinkSync(filePath);
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete game ${gameId}:`, error);
+      return false;
+    }
+  }
+
+  // Load a saved game into memory for play
+  loadGameIntoMemory(gameId: string): GameState | null {
+    // First check if already in memory
+    const existingRoom = this.games.get(gameId);
+    if (existingRoom) {
+      return existingRoom.state;
+    }
+
+    // Load from file
+    const state = this.loadGame(gameId);
+    if (!state) return null;
+
+    // Create a room for it (players will connect via WebSocket)
+    const room: GameRoom = {
+      state,
+      players: new Map(),
+      readyPlayers: new Set(),
+    };
+
+    this.games.set(gameId, room);
+    return state;
+  }
 
   createGame(ws: WebSocket, maxWalls: number, gameMode: GameMode = 'pvp'): { gameId: string; playerId: string; color: PlayerColor } {
     const gameId = randomUUID().slice(0, 8);
@@ -57,6 +198,9 @@ class GameManager {
     
     this.games.set(gameId, room);
     this.playerToGame.set(playerId, gameId);
+    
+    // Save game to file
+    this.saveGame(state);
     
     return { gameId, playerId, color: 'white' };
   }
@@ -97,8 +241,21 @@ class GameManager {
   }
 
   joinGame(ws: WebSocket, gameId: string): { playerId: string; color: PlayerColor } | null {
-    const room = this.games.get(gameId);
-    if (!room) return null;
+    // Try to load from file if not in memory
+    let room = this.games.get(gameId);
+    if (!room) {
+      const state = this.loadGame(gameId);
+      if (state) {
+        room = {
+          state,
+          players: new Map(),
+          readyPlayers: new Set(),
+        };
+        this.games.set(gameId, room);
+      } else {
+        return null;
+      }
+    }
     
     // Check if game is full
     if (room.state.players.black) {
@@ -117,20 +274,43 @@ class GameManager {
       room.state.phase = 'playing';
     }
     
+    // Save game to file
+    this.saveGame(room.state);
+    
     return { playerId, color: 'black' };
   }
 
   reconnectPlayer(ws: WebSocket, playerId: string, gameId: string): boolean {
-    const room = this.games.get(gameId);
-    if (!room) return false;
-    
-    const existingPlayer = room.players.get(playerId);
-    if (existingPlayer) {
-      existingPlayer.ws = ws;
-      return true;
+    // Try to load from file if not in memory
+    let room = this.games.get(gameId);
+    if (!room) {
+      const state = this.loadGame(gameId);
+      if (state) {
+        room = {
+          state,
+          players: new Map(),
+          readyPlayers: new Set(),
+        };
+        this.games.set(gameId, room);
+      } else {
+        return false;
+      }
     }
     
-    return false;
+    // Check if this player belongs to this game
+    const isWhitePlayer = room.state.players.white === playerId;
+    const isBlackPlayer = room.state.players.black === playerId;
+    
+    if (!isWhitePlayer && !isBlackPlayer) {
+      return false;
+    }
+    
+    // Add or update player WebSocket
+    const color: PlayerColor = isWhitePlayer ? 'white' : 'black';
+    room.players.set(playerId, { ws, id: playerId, color });
+    this.playerToGame.set(playerId, gameId);
+    
+    return true;
   }
 
   handleSetupWall(playerId: string, position: Position): GameState | null {
@@ -163,6 +343,9 @@ class GameManager {
       room.state.setupWallsRemaining[color]--;
     }
     
+    // Save game to file
+    this.saveGame(room.state);
+    
     return room.state;
   }
 
@@ -179,6 +362,9 @@ class GameManager {
     if (room.readyPlayers.size >= 2) {
       room.state.phase = 'playing';
     }
+    
+    // Save game to file
+    this.saveGame(room.state);
     
     return room.state;
   }
@@ -197,6 +383,7 @@ class GameManager {
     if (resign) {
       room.state.winner = player.color === 'white' ? 'black' : 'white';
       room.state.phase = 'finished';
+      this.saveGame(room.state);
       return { state: room.state };
     }
     
@@ -228,6 +415,7 @@ class GameManager {
         // Failed attack - pawn stays in place, turn passes
         // No move history entry for failed attacks, just swap turns
         room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
+        this.saveGame(room.state);
         return { state: room.state, diceRoll };
       }
     }
@@ -267,6 +455,9 @@ class GameManager {
       room.state.winner = player.color;
       room.state.phase = 'finished';
     }
+    
+    // Save game to file
+    this.saveGame(room.state);
     
     return { state: room.state, diceRoll };
   }
@@ -350,6 +541,9 @@ class GameManager {
     
     // Swap turns
     room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
+    
+    // Save game to file
+    this.saveGame(room.state);
     
     return { state: room.state, diceRoll };
   }
@@ -522,6 +716,7 @@ class GameManager {
 
       if (!success) {
         state.currentTurn = aiColor === 'white' ? 'black' : 'white';
+        this.saveGame(state);
         return { state, diceRoll };
       }
     }
@@ -558,6 +753,7 @@ class GameManager {
       state.phase = 'finished';
     }
 
+    this.saveGame(state);
     return { state, diceRoll };
   }
 
@@ -606,6 +802,7 @@ class GameManager {
 
     state.currentTurn = aiColor === 'white' ? 'black' : 'white';
 
+    this.saveGame(state);
     return { state, diceRoll };
   }
 
