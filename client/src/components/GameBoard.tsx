@@ -160,7 +160,7 @@ export function GameBoard({
                   showValidMove && square.piece && "ring-2 ring-inset ring-red-500",
                   showArrowTarget && "ring-2 ring-inset ring-orange-500 bg-orange-400/30",
                   showHanging && "ring-2 ring-inset ring-yellow-400",
-                  canClick && "hover:brightness-110",
+                  canClick && "hover:opacity-80",
                   phase === 'setup' && canClick && !square.isWall && "hover:bg-slate-400",
                 )}
                 style={square.isWall ? {
