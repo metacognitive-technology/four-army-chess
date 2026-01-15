@@ -151,11 +151,9 @@ export function GameBoard({
                 key={`${rowIndex}-${colIndex}`}
                 className={cn(
                   "relative flex items-center justify-center cursor-pointer transition-all duration-150 aspect-square overflow-hidden",
-                  square.isWall 
-                    ? "bg-slate-500 dark:bg-slate-600" 
-                    : isDark 
+                  !square.isWall && (isDark 
                       ? "bg-emerald-700 dark:bg-emerald-800" 
-                      : "bg-amber-100 dark:bg-amber-200",
+                      : "bg-amber-100 dark:bg-amber-200"),
                   showFlashing && "animate-pulse bg-red-500",
                   showSelected && "ring-2 ring-inset ring-blue-500 shadow-inner",
                   showValidMove && !square.piece && "after:absolute after:w-1/3 after:h-1/3 after:rounded-full after:bg-black/20",
@@ -165,6 +163,16 @@ export function GameBoard({
                   canClick && "hover:brightness-110",
                   phase === 'setup' && canClick && !square.isWall && "hover:bg-slate-400",
                 )}
+                style={square.isWall ? {
+                  backgroundColor: '#6b7280',
+                  backgroundImage: `
+                    linear-gradient(to right, #4b5563 1px, transparent 1px),
+                    linear-gradient(to bottom, #4b5563 1px, transparent 1px),
+                    linear-gradient(to right, #4b5563 1px, transparent 1px)
+                  `,
+                  backgroundSize: '50% 33%, 50% 33%, 50% 33%',
+                  backgroundPosition: '0 0, 0 33%, 25% 66%',
+                } : undefined}
                 onClick={() => onSquareClick({ row: rowIndex, col: colIndex })}
                 data-testid={`square-${rowIndex}-${colIndex}`}
               >
