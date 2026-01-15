@@ -150,7 +150,7 @@ export function GameBoard({
               <div
                 key={`${rowIndex}-${colIndex}`}
                 className={cn(
-                  "relative flex items-center justify-center cursor-pointer transition-all duration-150 aspect-square overflow-hidden",
+                  "relative flex items-center justify-center cursor-pointer aspect-square overflow-hidden",
                   !square.isWall && (isDark 
                       ? "bg-green-700 dark:bg-green-800" 
                       : "bg-green-300 dark:bg-green-400"),
