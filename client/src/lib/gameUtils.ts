@@ -3,13 +3,14 @@ import type { Board, Square, Piece, Position, PlayerColor, PieceType, Move, Game
 export const BOARD_SIZE = 12;
 export const MAX_MOVE_DISTANCE = 8;
 
+// Use filled symbols for both colors - white pieces styled via CSS
 export const PIECE_SYMBOLS: Record<PieceType, { white: string; black: string }> = {
-  king: { white: '♔', black: '♚' },
-  queen: { white: '♕', black: '♛' },
-  rook: { white: '♖', black: '♜' },
-  bishop: { white: '♗', black: '♝' },
-  knight: { white: '♘', black: '♞' },
-  pawn: { white: '♙', black: '♟' },
+  king: { white: '♚', black: '♚' },
+  queen: { white: '♛', black: '♛' },
+  rook: { white: '♜', black: '♜' },
+  bishop: { white: '♝', black: '♝' },
+  knight: { white: '♞', black: '♞' },
+  pawn: { white: '♟', black: '♟' },
 };
 
 export function createInitialBoard(): Board {

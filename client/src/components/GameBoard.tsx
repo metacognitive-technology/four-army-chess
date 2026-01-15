@@ -111,14 +111,15 @@ export function GameBoard({
                 {piece && (
                   <span 
                     className={cn(
-                      "text-[clamp(0.875rem,2.5vw,2rem)] select-none transition-transform duration-200",
+                      "text-[clamp(1.5rem,4.5vw,3.6rem)] select-none transition-transform duration-200",
                       piece.color === 'white' ? "text-white" : "text-gray-900",
                       showSelected && "scale-110",
                     )}
                     style={piece.color === 'white' ? {
-                      textShadow: '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000, 0 2px 3px rgba(0,0,0,0.5)'
+                      WebkitTextStroke: '1.5px #000',
+                      textShadow: '2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000, 0 0 4px rgba(0,0,0,0.8)'
                     } : {
-                      textShadow: '0 1px 1px rgba(255,255,255,0.3)'
+                      textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                     }}
                   >
                     {PIECE_SYMBOLS[piece.type][piece.color]}
