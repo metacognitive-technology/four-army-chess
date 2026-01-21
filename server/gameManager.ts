@@ -9,10 +9,28 @@ const BOARD_SIZE = 12;
 const MAX_MOVE_DISTANCE = 8;
 const AI_PLAYER_ID = 'ai-player';
 
-// Get the directory for saving game files
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const GAMES_DIR = join(__dirname, 'data', 'games');
+// Get the directory for saving game files - handle both ESM and CJS
+// Use a function to safely get __dirname in both environments
+function getCurrentDir(): string {
+  try {
+    // In CJS environment (production bundle), __dirname is available
+    if (typeof __dirname !== 'undefined') {
+      return __dirname;
+    }
+  } catch {
+    // __dirname not defined in ESM
+  }
+  
+  // ESM environment - compute from import.meta.url
+  try {
+    return dirname(fileURLToPath(import.meta.url));
+  } catch {
+    // Fallback to process.cwd() if all else fails
+    return process.cwd();
+  }
+}
+
+const GAMES_DIR = join(getCurrentDir(), 'data', 'games');
 
 // Ensure games directory exists
 if (!existsSync(GAMES_DIR)) {

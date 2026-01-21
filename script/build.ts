@@ -54,6 +54,13 @@ async function buildAll() {
     outfile: "dist/index.cjs",
     define: {
       "process.env.NODE_ENV": '"production"',
+      "import.meta.url": "undefined",
+    },
+    banner: {
+      js: `
+        const { fileURLToPath: __esbuild_fileURLToPath } = require("url");
+        const { dirname: __esbuild_dirname } = require("path");
+      `,
     },
     minify: true,
     external: externals,
