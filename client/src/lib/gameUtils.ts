@@ -354,3 +354,22 @@ export function isCheckmate(board: Board, color: PlayerColor): boolean {
   
   return true;
 }
+
+// Get valid moves that escape or block check
+// When in check, only returns moves that result in no longer being in check
+export function getCheckSafeMoves(board: Board, position: Position): Position[] {
+  const piece = board[position.row][position.col].piece;
+  if (!piece) return [];
+  
+  const allMoves = getValidMoves(board, position, true);
+  const inCheck = isInCheck(board, piece.color);
+  
+  // If not in check, return all moves (but still filter moves that would put king in check)
+  // For now, just filter moves that would leave/put king in check
+  return allMoves.filter(move => {
+    const newBoard: Board = JSON.parse(JSON.stringify(board));
+    newBoard[move.row][move.col].piece = piece;
+    newBoard[position.row][position.col].piece = null;
+    return !isInCheck(newBoard, piece.color);
+  });
+}

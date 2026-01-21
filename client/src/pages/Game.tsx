@@ -9,7 +9,7 @@ import { GameStatus } from "@/components/GameStatus";
 import { GameRules } from "@/components/GameRules";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useToast } from "@/hooks/use-toast";
-import { getValidMoves, getArrowTargets, findHangingPieces, isInCheck, isCheckmate, createInitialBoard } from "@/lib/gameUtils";
+import { getValidMoves, getCheckSafeMoves, getArrowTargets, findHangingPieces, isInCheck, isCheckmate, createInitialBoard } from "@/lib/gameUtils";
 import type { Position, GameState, SavedGameInfo } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -190,7 +190,8 @@ export default function Game() {
     if (!selectedPosition || !gameState || phase !== 'playing' || isArrowMode) return [];
     const piece = board[selectedPosition.row][selectedPosition.col].piece;
     if (!piece || piece.color !== playerColor || playerColor !== currentTurn) return [];
-    return getValidMoves(board, selectedPosition);
+    // Use getCheckSafeMoves to filter out moves that would leave king in check
+    return getCheckSafeMoves(board, selectedPosition);
   }, [selectedPosition, gameState, phase, isArrowMode, board, playerColor, currentTurn]);
   
   const arrowTargets = useMemo(() => {
