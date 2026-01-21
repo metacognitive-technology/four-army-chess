@@ -148,12 +148,18 @@ export function GameBoard({
             const showFlashing = isFlashing(rowIndex, colIndex);
             const isBishop = piece?.type === 'bishop' && piece?.color === playerColor && phase === 'playing' && isMyTurn;
             
+            // During setup, only show walls on player's own half
+            const isOwnHalf = playerColor === 'white' 
+              ? rowIndex >= BOARD_SIZE / 2 
+              : rowIndex < BOARD_SIZE / 2;
+            const showWall = square.isWall && (phase !== 'setup' || isOwnHalf);
+            
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
                 className={cn(
                   "relative flex items-center justify-center cursor-pointer aspect-square",
-                  !square.isWall && (isDark 
+                  !showWall && (isDark 
                       ? "bg-green-500 dark:bg-green-600" 
                       : "bg-green-400 dark:bg-green-500"),
                   showFlashing && flashColor === 'red' && "animate-pulse bg-red-500",
@@ -164,7 +170,7 @@ export function GameBoard({
                   showArrowTarget && "ring-2 ring-inset ring-orange-500 bg-orange-400/30",
                   showHanging && "ring-2 ring-inset ring-yellow-400",
                 )}
-                style={square.isWall ? {
+                style={showWall ? {
                   backgroundColor: '#6b7280',
                   backgroundImage: `
                     linear-gradient(to right, #4b5563 1px, transparent 1px),
