@@ -7,6 +7,7 @@ Battle Chess is a real-time multiplayer chess variant game featuring a 16x16 boa
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Always update `GAME_VERSION` in `client/src/pages/Game.tsx` whenever code is modified.
 
 ## System Architecture
 
