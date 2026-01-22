@@ -9,7 +9,7 @@ import { GameStatus } from "@/components/GameStatus";
 import { GameRules } from "@/components/GameRules";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useToast } from "@/hooks/use-toast";
-import { getValidMoves, getCheckSafeMoves, getArrowTargets, findHangingPieces, isInCheck, isCheckmate, createInitialBoard, PIECE_SYMBOLS } from "@/lib/gameUtils";
+import { getValidMoves, getCheckSafeMoves, getArrowTargets, getAxeTargets, findHangingPieces, isInCheck, isCheckmate, createInitialBoard, PIECE_SYMBOLS } from "@/lib/gameUtils";
 import type { Position, GameState, SavedGameInfo, PromotionPieceType } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,6 +56,7 @@ export default function Game() {
   
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [isArrowMode, setIsArrowMode] = useState(false);
+  const [isAxeMode, setIsAxeMode] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [maxWalls, setMaxWalls] = useState(8);
   const [joinGameId, setJoinGameId] = useState(gameIdFromUrl || '');
@@ -189,17 +190,22 @@ export default function Game() {
   const currentTurn = gameState?.currentTurn || 'white';
   
   const validMoves = useMemo(() => {
-    if (!selectedPosition || !gameState || phase !== 'playing' || isArrowMode) return [];
+    if (!selectedPosition || !gameState || phase !== 'playing' || isArrowMode || isAxeMode) return [];
     const piece = board[selectedPosition.row][selectedPosition.col].piece;
     if (!piece || piece.color !== playerColor || playerColor !== currentTurn) return [];
     // Use getCheckSafeMoves to filter out moves that would leave king in check
     return getCheckSafeMoves(board, selectedPosition);
-  }, [selectedPosition, gameState, phase, isArrowMode, board, playerColor, currentTurn]);
+  }, [selectedPosition, gameState, phase, isArrowMode, isAxeMode, board, playerColor, currentTurn]);
   
   const arrowTargets = useMemo(() => {
     if (!selectedPosition || !isArrowMode || !gameState || phase !== 'playing') return [];
     return getArrowTargets(board, selectedPosition);
   }, [selectedPosition, isArrowMode, gameState, phase, board]);
+  
+  const axeTargets = useMemo(() => {
+    if (!selectedPosition || !isAxeMode || !gameState || phase !== 'playing') return [];
+    return getAxeTargets(board, selectedPosition);
+  }, [selectedPosition, isAxeMode, gameState, phase, board]);
   
   const hangingPieces = useMemo(() => {
     if (!gameState || phase !== 'playing' || !playerColor) return [];
@@ -256,12 +262,29 @@ export default function Game() {
       return;
     }
     
+    // Axe mode - select target
+    if (isAxeMode && selectedPosition) {
+      const isTarget = axeTargets.some(t => t.row === position.row && t.col === position.col);
+      if (isTarget) {
+        sendMessage({
+          type: 'axe_attack',
+          payload: { from: selectedPosition, to: position },
+        });
+        setIsAxeMode(false);
+        setSelectedPosition(null);
+      } else {
+        setIsAxeMode(false);
+      }
+      return;
+    }
+    
     const clickedPiece = board[position.row][position.col].piece;
     
     // If clicking on own piece, select it
     if (clickedPiece && clickedPiece.color === playerColor) {
       setSelectedPosition(position);
       setIsArrowMode(false);
+      setIsAxeMode(false);
       return;
     }
     
@@ -278,10 +301,17 @@ export default function Game() {
         setSelectedPosition(null);
       }
     }
-  }, [gameState, phase, playerColor, currentTurn, isArrowMode, selectedPosition, arrowTargets, validMoves, board, sendMessage]);
+  }, [gameState, phase, playerColor, currentTurn, isArrowMode, isAxeMode, selectedPosition, arrowTargets, axeTargets, validMoves, board, sendMessage]);
   
   const handleArrowModeToggle = useCallback((position: Position) => {
     setIsArrowMode(true);
+    setIsAxeMode(false);
+    setSelectedPosition(position);
+  }, []);
+  
+  const handleAxeModeToggle = useCallback((position: Position) => {
+    setIsAxeMode(true);
+    setIsArrowMode(false);
     setSelectedPosition(position);
   }, []);
   
@@ -551,10 +581,13 @@ export default function Game() {
               selectedPosition={selectedPosition}
               validMoves={validMoves}
               arrowTargets={arrowTargets}
+              axeTargets={axeTargets}
               hangingPieces={hangingPieces}
               isArrowMode={isArrowMode}
+              isAxeMode={isAxeMode}
               onSquareClick={handleSquareClick}
               onArrowModeToggle={handleArrowModeToggle}
+              onAxeModeToggle={handleAxeModeToggle}
               setupWallsRemaining={playerColor ? gameState.setupWallsRemaining[playerColor] : 0}
               flashingSquare={flashingSquare}
               flashColor={flashColor}

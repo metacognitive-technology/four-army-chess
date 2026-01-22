@@ -231,6 +231,29 @@ function getSlidingMoves(
   return moves;
 }
 
+export function getAxeTargets(board: Board, position: Position): Position[] {
+  const square = board[position.row][position.col];
+  if (!square.piece || square.piece.type !== 'knight') return [];
+  
+  const targets: Position[] = [];
+  // Knight axe attack can hit 1 square in any direction (like a king)
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const newRow = position.row + dr;
+      const newCol = position.col + dc;
+      if (isValidPosition(newRow, newCol) && !board[newRow][newCol].isWall) {
+        const targetPiece = board[newRow][newCol].piece;
+        if (targetPiece && targetPiece.color !== square.piece.color) {
+          targets.push({ row: newRow, col: newCol });
+        }
+      }
+    }
+  }
+  
+  return targets;
+}
+
 export function getArrowTargets(board: Board, position: Position): Position[] {
   const square = board[position.row][position.col];
   if (!square.piece || square.piece.type !== 'bishop') return [];

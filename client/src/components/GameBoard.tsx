@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import type { Board, Position, PlayerColor, PieceType } from "@shared/schema";
 import { PIECE_SYMBOLS, BOARD_SIZE, getValidMoves, getArrowTargets, findHangingPieces } from "@/lib/gameUtils";
 import { cn } from "@/lib/utils";
-import { Target, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { Target, ZoomIn, ZoomOut, RotateCcw, Axe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface GameBoardProps {
@@ -13,10 +13,13 @@ interface GameBoardProps {
   selectedPosition: Position | null;
   validMoves: Position[];
   arrowTargets: Position[];
+  axeTargets: Position[];
   hangingPieces: Position[];
   isArrowMode: boolean;
+  isAxeMode: boolean;
   onSquareClick: (position: Position) => void;
   onArrowModeToggle: (position: Position) => void;
+  onAxeModeToggle: (position: Position) => void;
   setupWallsRemaining: number;
   flashingSquare: Position | null;
   flashColor?: 'red' | 'yellow';
@@ -30,10 +33,13 @@ export function GameBoard({
   selectedPosition,
   validMoves,
   arrowTargets,
+  axeTargets,
   hangingPieces,
   isArrowMode,
+  isAxeMode,
   onSquareClick,
   onArrowModeToggle,
+  onAxeModeToggle,
   setupWallsRemaining,
   flashingSquare,
   flashColor = 'red',
@@ -52,6 +58,10 @@ export function GameBoard({
   const isArrowTarget = useCallback((row: number, col: number) => {
     return arrowTargets.some(t => t.row === row && t.col === col);
   }, [arrowTargets]);
+  
+  const isAxeTarget = useCallback((row: number, col: number) => {
+    return axeTargets.some(t => t.row === row && t.col === col);
+  }, [axeTargets]);
   
   const isHanging = useCallback((row: number, col: number) => {
     return hangingPieces.some(h => h.row === row && h.col === col);
@@ -147,6 +157,8 @@ export function GameBoard({
             const showSelected = isSelected(rowIndex, colIndex);
             const showFlashing = isFlashing(rowIndex, colIndex);
             const isBishop = piece?.type === 'bishop' && piece?.color === playerColor && phase === 'playing' && isMyTurn;
+            const isKnight = piece?.type === 'knight' && piece?.color === playerColor && phase === 'playing' && isMyTurn;
+            const showAxeTarget = isAxeTarget(rowIndex, colIndex);
             
             // During setup, only show walls on player's own half
             const isOwnHalf = playerColor === 'white' 
@@ -168,6 +180,7 @@ export function GameBoard({
                   showValidMove && !square.piece && "after:absolute after:w-1/3 after:h-1/3 after:rounded-full after:bg-black/20",
                   showValidMove && square.piece && "ring-2 ring-inset ring-red-500",
                   showArrowTarget && "ring-2 ring-inset ring-orange-500 bg-orange-400/30",
+                  showAxeTarget && "ring-2 ring-inset ring-purple-500 bg-purple-400/30",
                   showHanging && "ring-2 ring-inset ring-yellow-400",
                 )}
                 style={showWall ? {
@@ -198,7 +211,7 @@ export function GameBoard({
                   </span>
                 )}
                 
-                {isBishop && showSelected && !isArrowMode && (
+                {isBishop && showSelected && !isArrowMode && !isAxeMode && (
                   <Button
                     size="icon"
                     variant="secondary"
@@ -210,6 +223,21 @@ export function GameBoard({
                     data-testid={`arrow-button-${rowIndex}-${colIndex}`}
                   >
                     <Target className="w-3 h-3" />
+                  </Button>
+                )}
+                
+                {isKnight && showSelected && !isArrowMode && !isAxeMode && (
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="absolute -top-1 -right-1 w-5 h-5 z-10 p-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAxeModeToggle({ row: rowIndex, col: colIndex });
+                    }}
+                    data-testid={`axe-button-${rowIndex}-${colIndex}`}
+                  >
+                    <Axe className="w-3 h-3" />
                   </Button>
                 )}
                 

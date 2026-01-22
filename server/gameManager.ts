@@ -633,6 +633,69 @@ class GameManager {
     return { state: room.state, diceRoll };
   }
 
+  handleAxeAttack(playerId: string, from: Position, to: Position): { state: GameState; diceRoll: { value: number; type: 'd6'; success: boolean } } | null {
+    const gameId = this.playerToGame.get(playerId);
+    if (!gameId) return null;
+    
+    const room = this.games.get(gameId);
+    if (!room || room.state.phase !== 'playing') return null;
+    
+    const player = room.players.get(playerId);
+    if (!player) return null;
+    
+    if (room.state.currentTurn !== player.color) return null;
+    
+    const board = room.state.board;
+    const piece = board[from.row][from.col].piece;
+    if (!piece || piece.type !== 'knight' || piece.color !== player.color) return null;
+    
+    // Validate target is 1 square away (adjacent)
+    const rowDiff = Math.abs(to.row - from.row);
+    const colDiff = Math.abs(to.col - from.col);
+    if (rowDiff > 1 || colDiff > 1 || (rowDiff === 0 && colDiff === 0)) return null;
+    
+    const targetPiece = board[to.row][to.col].piece;
+    if (!targetPiece || targetPiece.color === player.color) return null;
+    
+    // Roll 1d6 for axe - 50/50 chance (need to roll 4, 5, or 6 to hit)
+    const roll = Math.floor(Math.random() * 6) + 1;
+    const success = roll >= 4;
+    
+    const diceRoll = { value: roll, type: 'd6' as const, success };
+    room.state.lastDiceRoll = diceRoll;
+    
+    const move: Move = {
+      from,
+      to,
+      piece,
+      captured: success ? targetPiece : undefined,
+      isArrowAttack: false,
+      diceRoll: roll,
+      diceRequired: 4,
+      success,
+      notation: `N${String.fromCharCode(97 + from.col)}${12 - from.row}⚔${String.fromCharCode(97 + to.col)}${12 - to.row}[d6:${roll}]`,
+    };
+    room.state.moveHistory.push(move);
+    
+    if (success) {
+      room.state.capturedPieces[player.color].push(targetPiece);
+      board[to.row][to.col].piece = null;
+      
+      if (targetPiece.type === 'king') {
+        room.state.winner = player.color;
+        room.state.phase = 'finished';
+      }
+    }
+    
+    // Swap turns
+    room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
+    
+    // Save game to file
+    this.saveGame(room.state);
+    
+    return { state: room.state, diceRoll };
+  }
+
   getRoom(gameId: string): GameRoom | undefined {
     return this.games.get(gameId);
   }
