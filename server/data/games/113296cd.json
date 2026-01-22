@@ -39,7 +39,11 @@
       {
         "row": 0,
         "col": 5,
-        "piece": null,
+        "piece": {
+          "type": "bishop",
+          "color": "white",
+          "hasMoved": true
+        },
         "isWall": false
       },
       {
@@ -125,17 +129,17 @@
       {
         "row": 1,
         "col": 7,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 1,
-        "col": 8,
         "piece": {
           "type": "king",
           "color": "black",
           "hasMoved": true
         },
+        "isWall": false
+      },
+      {
+        "row": 1,
+        "col": 8,
+        "piece": null,
         "isWall": false
       },
       {
@@ -191,11 +195,7 @@
       {
         "row": 2,
         "col": 5,
-        "piece": {
-          "type": "pawn",
-          "color": "white",
-          "hasMoved": true
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -703,7 +703,11 @@
       {
         "row": 9,
         "col": 2,
-        "piece": null,
+        "piece": {
+          "type": "pawn",
+          "color": "white",
+          "hasMoved": true
+        },
         "isWall": false
       },
       {
@@ -777,10 +781,7 @@
       {
         "row": 10,
         "col": 2,
-        "piece": {
-          "type": "pawn",
-          "color": "white"
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -4156,6 +4157,95 @@
         "type": "pawn",
         "color": "white",
         "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 8
+      },
+      "to": {
+        "row": 0,
+        "col": 9
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 5
+      },
+      "to": {
+        "row": 1,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 9
+      },
+      "to": {
+        "row": 0,
+        "col": 8
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 4
+      },
+      "to": {
+        "row": 0,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 8
+      },
+      "to": {
+        "row": 1,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 2
+      },
+      "to": {
+        "row": 9,
+        "col": 2
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white"
       }
     }
   ],
