@@ -450,7 +450,10 @@ class GameManager {
                 pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
               };
               score += values[targetPiece.type] * 10;
-              if (piece.type === 'pawn') score *= 0.17;
+              // Pawns should always attack adjacent enemies - give high priority
+              if (piece.type === 'pawn') {
+                score += 500; // High priority for pawn attacks
+              }
             }
             
             if (piece.type === 'pawn') {
@@ -1201,9 +1204,9 @@ class GameManager {
               };
               score += values[targetPiece.type] * 10;
               
-              // Pawns have low capture success (1/6), so reduce their score
+              // Pawns should always attack adjacent enemies - give high priority
               if (piece.type === 'pawn') {
-                score *= 0.17; // 1/6 chance
+                score += 500; // High priority for pawn attacks
               }
             }
             
