@@ -212,33 +212,29 @@ export function GameBoard({
                 )}
                 
                 {isBishop && showSelected && !isArrowMode && !isAxeMode && (
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 z-10 p-0"
+                  <div
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-7 h-7 rounded-full bg-orange-500 border-2 border-white shadow-lg cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       onArrowModeToggle({ row: rowIndex, col: colIndex });
                     }}
                     data-testid={`arrow-button-${rowIndex}-${colIndex}`}
                   >
-                    <Target className="w-4 h-4" />
-                  </Button>
+                    <Target className="w-5 h-5 text-white" />
+                  </div>
                 )}
                 
                 {isKnight && showSelected && !isArrowMode && !isAxeMode && (
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 z-10 p-0"
+                  <div
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-7 h-7 rounded-full bg-purple-500 border-2 border-white shadow-lg cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       onAxeModeToggle({ row: rowIndex, col: colIndex });
                     }}
                     data-testid={`axe-button-${rowIndex}-${colIndex}`}
                   >
-                    <Axe className="w-4 h-4" />
-                  </Button>
+                    <Axe className="w-5 h-5 text-white" />
+                  </div>
                 )}
                 
                 {/* Row/Column labels */}

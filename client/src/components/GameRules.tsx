@@ -52,9 +52,9 @@ export function GameRules() {
             </AccordionTrigger>
             <AccordionContent className="text-xs text-muted-foreground space-y-1">
               <p><strong>Pawn Attack:</strong> Roll 1d6. Need 1 to succeed.</p>
-              <p><strong>Bishop Arrow:</strong> Click the target icon on a selected bishop.</p>
-              <p>Arrow range: Roll 1d4 to determine max distance.</p>
+              <p><strong>Bishop Arrow:</strong> Click the orange target icon on a selected bishop. Roll 2d6 and need to roll equal to or higher than the distance to hit.</p>
               <p>Knights and Rooks are immune to arrows.</p>
+              <p><strong>Knight Axe:</strong> Click the purple axe icon on a selected knight. Roll 1d6 and need 4 or higher to hit an adjacent enemy.</p>
             </AccordionContent>
           </AccordionItem>
           
