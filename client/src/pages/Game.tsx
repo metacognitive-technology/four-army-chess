@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-const GAME_VERSION = "1.4.0";
+const GAME_VERSION = "1.5.0";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);

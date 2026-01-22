@@ -461,6 +461,20 @@ class GameManager {
               score += advancement * 0.1;
             }
             
+            // Early bishop development - move out to establish arrow firing lanes
+            if (piece.type === 'bishop' && state.moveHistory.length < 20) {
+              const startRow = color === 'white' ? BOARD_SIZE - 1 : 0;
+              const isOnStartRow = from.row === startRow;
+              if (isOnStartRow) {
+                // Big bonus for developing bishops early
+                score += 50;
+                // Extra bonus for moving toward center diagonals
+                const centerCol = BOARD_SIZE / 2;
+                const towardCenter = Math.abs(to.col - centerCol) < Math.abs(from.col - centerCol);
+                if (towardCenter) score += 20;
+              }
+            }
+            
             const centerDist = Math.abs(to.row - BOARD_SIZE / 2) + Math.abs(to.col - BOARD_SIZE / 2);
             score += (BOARD_SIZE - centerDist) * 0.05;
             
@@ -1213,6 +1227,20 @@ class GameManager {
             if (piece.type === 'pawn') {
               const advancement = aiColor === 'white' ? (BOARD_SIZE - 1 - to.row) : to.row;
               score += advancement * 0.1;
+            }
+            
+            // Early bishop development - move out to establish arrow firing lanes
+            if (piece.type === 'bishop' && state.moveHistory.length < 20) {
+              const startRow = aiColor === 'white' ? BOARD_SIZE - 1 : 0;
+              const isOnStartRow = from.row === startRow;
+              if (isOnStartRow) {
+                // Big bonus for developing bishops early
+                score += 50;
+                // Extra bonus for moving toward center diagonals
+                const centerCol = BOARD_SIZE / 2;
+                const towardCenter = Math.abs(to.col - centerCol) < Math.abs(from.col - centerCol);
+                if (towardCenter) score += 20;
+              }
             }
             
             // Bonus for central control
