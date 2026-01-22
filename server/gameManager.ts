@@ -254,6 +254,362 @@ class GameManager {
     return { gameId, playerId, color: 'white' };
   }
   
+  // Create a computer vs computer game that runs to completion
+  createCvCGame(maxWalls: number): { gameId: string; state: GameState } {
+    const gameId = randomUUID().slice(0, 8);
+    
+    const state: GameState = {
+      id: gameId,
+      board: this.createInitialBoard(),
+      currentTurn: 'white',
+      phase: 'playing',
+      gameMode: 'cvc',
+      aiColor: undefined, // Both are AI, no single "AI" color
+      setupWallsRemaining: { white: 0, black: 0 },
+      maxWallsPerPlayer: maxWalls,
+      moveHistory: [],
+      capturedPieces: { white: [], black: [] },
+      players: { white: AI_PLAYER_ID, black: AI_PLAYER_ID },
+      winner: null,
+    };
+    
+    // Place walls for both sides
+    this.placeCvCWalls(state, maxWalls, 'white');
+    this.placeCvCWalls(state, maxWalls, 'black');
+    
+    // Run the game to completion at full speed
+    const MAX_MOVES = 500; // Prevent infinite games
+    let moveCount = 0;
+    
+    while (state.phase === 'playing' && moveCount < MAX_MOVES) {
+      const currentColor = state.currentTurn;
+      const moveResult = this.makeCvCMove(state, currentColor);
+      
+      if (!moveResult) {
+        // No valid moves - check for checkmate or stalemate
+        const inCheck = this.isInCheck(state.board, currentColor);
+        if (inCheck) {
+          // Checkmate
+          state.winner = currentColor === 'white' ? 'black' : 'white';
+        } else {
+          // Stalemate
+          state.winner = 'draw';
+        }
+        state.phase = 'finished';
+        break;
+      }
+      
+      moveCount++;
+    }
+    
+    // If max moves reached, it's a draw
+    if (moveCount >= MAX_MOVES && state.phase === 'playing') {
+      state.winner = 'draw';
+      state.phase = 'finished';
+    }
+    
+    // Save the completed game
+    this.saveGame(state);
+    
+    return { gameId, state };
+  }
+  
+  private placeCvCWalls(state: GameState, count: number, color: PlayerColor): void {
+    const isWhite = color === 'white';
+    const startRow = isWhite ? BOARD_SIZE / 2 : 0;
+    const endRow = isWhite ? BOARD_SIZE : BOARD_SIZE / 2;
+    
+    let placed = 0;
+    const attempts: Position[] = [];
+    
+    for (let row = startRow; row < endRow; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        if (!state.board[row][col].piece && !state.board[row][col].isWall) {
+          attempts.push({ row, col });
+        }
+      }
+    }
+    
+    // Shuffle
+    for (let i = attempts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [attempts[i], attempts[j]] = [attempts[j], attempts[i]];
+    }
+    
+    for (const pos of attempts) {
+      if (placed >= count) break;
+      state.board[pos.row][pos.col].isWall = true;
+      placed++;
+    }
+  }
+  
+  private makeCvCMove(state: GameState, color: PlayerColor): boolean {
+    const board = state.board;
+    const inCheck = this.isInCheck(board, color);
+    
+    interface AIMove { from: Position; to: Position; score: number; isArrow?: boolean; isAxe?: boolean; escapesCheck?: boolean }
+    const possibleMoves: AIMove[] = [];
+    
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        const piece = board[row][col].piece;
+        if (piece && piece.color === color) {
+          const from = { row, col };
+          const moves = this.getValidMoves(board, from);
+          
+          for (const to of moves) {
+            const targetPiece = board[to.row][to.col].piece;
+            let score = Math.random() * 0.5;
+            
+            const newBoard: Board = JSON.parse(JSON.stringify(board));
+            newBoard[to.row][to.col].piece = piece;
+            newBoard[from.row][from.col].piece = null;
+            const escapesCheck = !this.isInCheck(newBoard, color);
+            
+            if (inCheck) {
+              if (escapesCheck) {
+                score += 1000;
+              } else {
+                score -= 2000;
+              }
+            }
+            
+            if (targetPiece) {
+              const values: Record<PieceType, number> = {
+                pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
+              };
+              score += values[targetPiece.type] * 10;
+              if (piece.type === 'pawn') score *= 0.17;
+            }
+            
+            if (piece.type === 'pawn') {
+              const advancement = color === 'white' ? (BOARD_SIZE - 1 - to.row) : to.row;
+              score += advancement * 0.1;
+            }
+            
+            const centerDist = Math.abs(to.row - BOARD_SIZE / 2) + Math.abs(to.col - BOARD_SIZE / 2);
+            score += (BOARD_SIZE - centerDist) * 0.05;
+            
+            possibleMoves.push({ from, to, score, escapesCheck });
+          }
+          
+          // Arrow attacks for bishops
+          if (piece.type === 'bishop' && !inCheck) {
+            const arrowTargets = this.getArrowTargets(board, from, color);
+            for (const to of arrowTargets) {
+              const targetPiece = board[to.row][to.col].piece;
+              if (targetPiece) {
+                const values: Record<PieceType, number> = {
+                  pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
+                };
+                const distance = Math.abs(to.row - from.row);
+                const successChance = (5 - distance) / 4;
+                const score = values[targetPiece.type] * 10 * successChance + Math.random() * 0.5;
+                possibleMoves.push({ from, to, score, isArrow: true });
+              }
+            }
+          }
+          
+          // Axe attacks for knights
+          if (piece.type === 'knight' && !inCheck) {
+            const axeTargets = this.getAxeTargets(board, from, color);
+            for (const to of axeTargets) {
+              const targetPiece = board[to.row][to.col].piece;
+              if (targetPiece) {
+                const values: Record<PieceType, number> = {
+                  pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
+                };
+                const score = values[targetPiece.type] * 10 * 0.5 + Math.random() * 0.5;
+                possibleMoves.push({ from, to, score, isAxe: true });
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    if (possibleMoves.length === 0) return false;
+    
+    possibleMoves.sort((a, b) => b.score - a.score);
+    
+    let validMoves = possibleMoves;
+    if (inCheck) {
+      const checkEscaping = possibleMoves.filter(m => m.escapesCheck);
+      if (checkEscaping.length > 0) validMoves = checkEscaping;
+      else return false; // No way to escape check = checkmate
+    }
+    
+    const topMoves = validMoves.slice(0, Math.min(3, validMoves.length));
+    const selected = topMoves[Math.floor(Math.random() * topMoves.length)];
+    
+    // Execute the move directly on state
+    if (selected.isArrow) {
+      this.executeCvCArrowAttack(state, selected.from, selected.to);
+    } else if (selected.isAxe) {
+      this.executeCvCAxeAttack(state, selected.from, selected.to);
+    } else {
+      this.executeCvCMove(state, selected.from, selected.to);
+    }
+    
+    return true;
+  }
+  
+  private executeCvCMove(state: GameState, from: Position, to: Position): void {
+    const board = state.board;
+    const piece = board[from.row][from.col].piece!;
+    const targetPiece = board[to.row][to.col].piece;
+    const color = piece.color;
+    
+    if (targetPiece) {
+      // Combat
+      if (piece.type === 'pawn') {
+        const roll = Math.floor(Math.random() * 6) + 1;
+        if (roll === 1) {
+          // Success
+          state.capturedPieces[color].push(targetPiece);
+          board[to.row][to.col].piece = { ...piece, hasMoved: true };
+          board[from.row][from.col].piece = null;
+        }
+        // Failure - turn still changes
+      } else {
+        // Non-pawn captures succeed
+        state.capturedPieces[color].push(targetPiece);
+        board[to.row][to.col].piece = { ...piece, hasMoved: true };
+        board[from.row][from.col].piece = null;
+      }
+    } else {
+      // Regular move
+      board[to.row][to.col].piece = { ...piece, hasMoved: true };
+      board[from.row][from.col].piece = null;
+      
+      // Castling
+      if (piece.type === 'king' && Math.abs(to.col - from.col) > 1) {
+        const isKingside = to.col === BOARD_SIZE - 1;
+        const rookFromCol = isKingside ? BOARD_SIZE - 1 : 0;
+        const rookToCol = isKingside ? to.col - 1 : to.col + 1;
+        const rookPiece = board[from.row][rookFromCol].piece;
+        if (rookPiece) {
+          board[from.row][rookToCol].piece = { ...rookPiece, hasMoved: true };
+          if (rookFromCol !== to.col) {
+            board[from.row][rookFromCol].piece = null;
+          }
+        }
+      }
+    }
+    
+    // Pawn promotion
+    if (piece.type === 'pawn') {
+      const promotionRow = color === 'white' ? 0 : BOARD_SIZE - 1;
+      if (to.row === promotionRow && board[to.row][to.col].piece) {
+        const promotionTypes: PieceType[] = ['queen', 'rook', 'bishop', 'knight'];
+        const randomPromotion = promotionTypes[Math.floor(Math.random() * promotionTypes.length)];
+        board[to.row][to.col].piece = { type: randomPromotion, color, hasMoved: true };
+      }
+    }
+    
+    state.moveHistory.push({ from, to, piece, capturedPiece: targetPiece || undefined });
+    
+    // Check for king capture
+    if (targetPiece && targetPiece.type === 'king') {
+      state.winner = color;
+      state.phase = 'finished';
+    } else {
+      // Switch turns - checkmate detection happens in makeCvCMove loop
+      state.currentTurn = color === 'white' ? 'black' : 'white';
+    }
+  }
+  
+  private executeCvCArrowAttack(state: GameState, from: Position, to: Position): void {
+    const board = state.board;
+    const targetPiece = board[to.row][to.col].piece;
+    const piece = board[from.row][from.col].piece!;
+    const color = piece.color;
+    
+    if (targetPiece) {
+      const distance = Math.abs(to.row - from.row);
+      const roll1 = Math.floor(Math.random() * 6) + 1;
+      const roll2 = Math.floor(Math.random() * 6) + 1;
+      const total = roll1 + roll2;
+      
+      if (total >= distance) {
+        state.capturedPieces[color].push(targetPiece);
+        board[to.row][to.col].piece = null;
+      }
+    }
+    
+    const enemyColor = color === 'white' ? 'black' : 'white';
+    state.currentTurn = enemyColor;
+  }
+  
+  private executeCvCAxeAttack(state: GameState, from: Position, to: Position): void {
+    const board = state.board;
+    const targetPiece = board[to.row][to.col].piece;
+    const piece = board[from.row][from.col].piece!;
+    const color = piece.color;
+    
+    if (targetPiece) {
+      const roll = Math.floor(Math.random() * 6) + 1;
+      if (roll >= 4) {
+        state.capturedPieces[color].push(targetPiece);
+        board[to.row][to.col].piece = null;
+      }
+    }
+    
+    const enemyColor = color === 'white' ? 'black' : 'white';
+    state.currentTurn = enemyColor;
+  }
+  
+  // Allow a human to take over a color in a saved game
+  takeoverGame(ws: WebSocket, gameId: string, color: PlayerColor): { playerId: string; state: GameState } | null {
+    // Load game from file if not in memory
+    let state = this.games.get(gameId)?.state;
+    if (!state) {
+      state = this.loadGame(gameId);
+      if (!state) return null;
+    }
+    
+    const playerId = randomUUID();
+    
+    // Update the game state
+    state.players[color] = playerId;
+    
+    // If CvC game being taken over, change to PvC or PvP
+    if (state.gameMode === 'cvc') {
+      const otherColor = color === 'white' ? 'black' : 'white';
+      if (state.players[otherColor] === AI_PLAYER_ID) {
+        state.gameMode = 'pvc';
+        state.aiColor = otherColor;
+      } else {
+        state.gameMode = 'pvp';
+      }
+    } else if (state.gameMode === 'pvc') {
+      // If taking over the AI color
+      if (state.aiColor === color) {
+        state.gameMode = 'pvp';
+        state.aiColor = undefined;
+      }
+    }
+    
+    // Create/update room
+    let room = this.games.get(gameId);
+    if (!room) {
+      room = {
+        state,
+        players: new Map(),
+        readyPlayers: new Set(),
+      };
+      this.games.set(gameId, room);
+    }
+    
+    room.players.set(playerId, { ws, id: playerId, color });
+    this.playerToGame.set(playerId, gameId);
+    
+    // Save updated game
+    this.saveGame(state);
+    
+    return { playerId, state };
+  }
+  
   private placeAIWalls(state: GameState, count: number): void {
     const aiColor = state.aiColor;
     if (!aiColor) return;
@@ -862,6 +1218,30 @@ class GameManager {
             targets.push({ row: newRow, col: newCol });
           }
           break;
+        }
+      }
+    }
+    
+    return targets;
+  }
+
+  private getAxeTargets(board: Board, from: Position, color: PlayerColor): Position[] {
+    const targets: Position[] = [];
+    
+    // Check all 8 adjacent squares
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        
+        const newRow = from.row + dr;
+        const newCol = from.col + dc;
+        
+        if (!this.isValidPosition(newRow, newCol)) continue;
+        if (board[newRow][newCol].isWall) continue;
+        
+        const targetPiece = board[newRow][newCol].piece;
+        if (targetPiece && targetPiece.color !== color) {
+          targets.push({ row: newRow, col: newCol });
         }
       }
     }

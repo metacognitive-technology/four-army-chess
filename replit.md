@@ -43,6 +43,12 @@ Preferred communication style: Simple, everyday language.
   - `GET /api/games` - List all saved games with metadata
   - `GET /api/games/:id` - Load a specific game
   - `DELETE /api/games/:id?playerId=...` - Delete game (requires ownership)
+  - `POST /api/games/cvc` - Create a Computer vs Computer game that runs at full speed
+- **Game Modes**:
+  - `pvp` - Player vs Player (multiplayer via shareable links)
+  - `pvc` - Player vs Computer (AI opponent)
+  - `cvc` - Computer vs Computer (watch AI play itself at full speed)
+- **CvC Game Takeover**: Humans can load saved CvC games and take over as White or Black
 - **Reconnection Flow**:
   - Player IDs stored in localStorage (`playerId_{gameId}`)
   - WebSocket reconnect loads game from file if not in memory

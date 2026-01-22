@@ -57,7 +57,7 @@ export interface Move {
 export type PromotionPieceType = 'queen' | 'rook' | 'bishop' | 'knight';
 
 export type GamePhase = 'waiting' | 'setup' | 'playing' | 'finished';
-export type GameMode = 'pvp' | 'pvc';
+export type GameMode = 'pvp' | 'pvc' | 'cvc';
 
 export interface GameState {
   id: string;
@@ -78,7 +78,7 @@ export interface GameState {
 }
 
 export interface GameMessage {
-  type: 'join' | 'setup_wall' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion';
+  type: 'join' | 'setup_wall' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover';
   payload: any;
   playerId?: string;
 }

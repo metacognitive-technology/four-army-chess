@@ -13,7 +13,7 @@ import { getValidMoves, getCheckSafeMoves, getArrowTargets, getAxeTargets, findH
 import type { Position, GameState, SavedGameInfo, PromotionPieceType } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Wifi, WifiOff, Plus, Link2, Bot, Users, History, Trash2 } from "lucide-react";
+import { Loader2, Wifi, WifiOff, Plus, Link2, Bot, Users, History, Trash2, MonitorPlay, Play } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -49,6 +49,7 @@ export default function Game() {
     createGame,
     joinGame,
     reconnectGame,
+    takeoverGame,
     lastError,
     pendingPromotion,
     clearPendingPromotion,
@@ -62,6 +63,7 @@ export default function Game() {
   const [joinGameId, setJoinGameId] = useState(gameIdFromUrl || '');
   const [flashingSquare, setFlashingSquare] = useState<Position | null>(null);
   const [flashColor, setFlashColor] = useState<'red' | 'yellow'>('red');
+  const [isCreatingCvC, setIsCreatingCvC] = useState(false);
   const lastDiceRollRef = useRef<string | null>(null);
   
   // Fetch saved games
@@ -95,6 +97,31 @@ export default function Game() {
   const handleReconnectToGame = useCallback((game: SavedGameInfo, storedPlayerId: string | null) => {
     reconnectGame(game.id, storedPlayerId);
   }, [reconnectGame]);
+
+  const handleCreateCvCGame = useCallback(async () => {
+    setIsCreatingCvC(true);
+    try {
+      const response = await apiRequest('POST', '/api/games/cvc', { maxWalls });
+      const data = await response.json();
+      queryClient.invalidateQueries({ queryKey: ['/api/games'] });
+      toast({
+        title: "CvC Game Complete",
+        description: `Game finished: ${data.winner === 'draw' ? 'Draw' : `${data.winner} won`} after ${data.moveCount} moves. Check saved games to replay or take over.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create computer vs computer game.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingCvC(false);
+    }
+  }, [maxWalls, toast]);
+
+  const handleTakeoverGame = useCallback((gameId: string, color: 'white' | 'black') => {
+    takeoverGame(gameId, color);
+  }, [takeoverGame]);
 
   const handleClearAllGames = useCallback(async () => {
     try {
@@ -411,6 +438,22 @@ export default function Game() {
                 Create Multiplayer Game
               </Button>
               
+              <Button 
+                className="w-full gap-2" 
+                size="lg"
+                variant="secondary"
+                onClick={handleCreateCvCGame}
+                disabled={isCreatingCvC}
+                data-testid="button-cvc-game"
+              >
+                {isCreatingCvC ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <MonitorPlay className="w-5 h-5" />
+                )}
+                {isCreatingCvC ? 'Running...' : 'Computer vs Computer'}
+              </Button>
+              
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
@@ -481,6 +524,7 @@ export default function Game() {
                       savedGames.map((game) => {
                         const storedPlayerId = localStorage.getItem(`playerId_${game.id}`);
                         const isYourGame = storedPlayerId && (game.whitePlayer === storedPlayerId || game.blackPlayer === storedPlayerId);
+                        const isCvCGame = game.gameMode === 'cvc';
                         const timeAgo = formatTimeAgo(game.updatedAt);
                         const statusText = game.phase === 'finished' 
                           ? (game.winner ? `${game.winner} won` : 'Draw') 
@@ -499,20 +543,46 @@ export default function Game() {
                                 {game.gameMode === 'pvc' && (
                                   <span className="text-xs bg-primary/10 text-primary px-1 rounded">vs AI</span>
                                 )}
+                                {isCvCGame && (
+                                  <span className="text-xs bg-secondary text-secondary-foreground px-1 rounded">CvC</span>
+                                )}
                               </div>
                               <div className="text-xs text-muted-foreground">
                                 {statusText} - {game.moveCount} moves - {timeAgo}
                               </div>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleReconnectToGame(game, storedPlayerId)}
-                              data-testid={`button-resume-${game.id}`}
-                            >
-                              {isYourGame ? 'Resume' : 'Join'}
-                            </Button>
-                            {isYourGame && (
+                            {isCvCGame ? (
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleTakeoverGame(game.id, 'white')}
+                                  data-testid={`button-takeover-white-${game.id}`}
+                                >
+                                  <Play className="w-3 h-3 mr-1" />
+                                  White
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleTakeoverGame(game.id, 'black')}
+                                  data-testid={`button-takeover-black-${game.id}`}
+                                >
+                                  <Play className="w-3 h-3 mr-1" />
+                                  Black
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleReconnectToGame(game, storedPlayerId)}
+                                data-testid={`button-resume-${game.id}`}
+                              >
+                                {isYourGame ? 'Resume' : 'Join'}
+                              </Button>
+                            )}
+                            {(isYourGame || isCvCGame) && (
                               <Button
                                 size="icon"
                                 variant="ghost"

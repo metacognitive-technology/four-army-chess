@@ -17,6 +17,7 @@ interface UseWebSocketReturn {
   createGame: (maxWalls: number, gameMode?: GameMode) => void;
   joinGame: (gameId: string) => void;
   reconnectGame: (gameId: string, storedPlayerId: string | null) => void;
+  takeoverGame: (gameId: string, color: 'white' | 'black') => void;
   lastError: string | null;
   pendingPromotion: PendingPromotion | null;
   clearPendingPromotion: () => void;
@@ -214,6 +215,23 @@ export function useWebSocket(): UseWebSocketReturn {
     }
   }, [connect, joinGame]);
   
+  const takeoverGame = useCallback((gameId: string, color: 'white' | 'black') => {
+    gameIdRef.current = gameId;
+    connect();
+    
+    const checkAndSend = () => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({
+          type: 'takeover',
+          payload: { gameId, color },
+        }));
+      } else {
+        setTimeout(checkAndSend, 100);
+      }
+    };
+    checkAndSend();
+  }, [connect]);
+  
   return {
     gameState,
     playerId,
@@ -223,6 +241,7 @@ export function useWebSocket(): UseWebSocketReturn {
     createGame,
     joinGame,
     reconnectGame,
+    takeoverGame,
     lastError,
     pendingPromotion,
     clearPendingPromotion,

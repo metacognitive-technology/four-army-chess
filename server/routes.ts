@@ -62,6 +62,22 @@ export async function registerRoutes(
     }
   });
 
+  // Create a computer vs computer game
+  app.post('/api/games/cvc', (req, res) => {
+    try {
+      const maxWalls = req.body?.maxWalls ?? 8;
+      const result = gameManager.createCvCGame(maxWalls);
+      res.json({
+        gameId: result.gameId,
+        winner: result.state.winner,
+        moveCount: result.state.moveHistory.length,
+      });
+    } catch (error) {
+      console.error('Failed to create CvC game:', error);
+      res.status(500).json({ error: 'Failed to create CvC game' });
+    }
+  });
+
   // Create WebSocket server
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
@@ -148,6 +164,48 @@ export async function registerRoutes(
                 ws.send(JSON.stringify({
                   type: 'error',
                   payload: { message: 'Failed to reconnect' },
+                }));
+              }
+            }
+            break;
+          }
+
+          case 'takeover': {
+            if (message.payload.gameId && message.payload.color) {
+              const result = gameManager.takeoverGame(
+                ws,
+                message.payload.gameId,
+                message.payload.color
+              );
+              if (result) {
+                currentPlayerId = result.playerId;
+                currentGameId = message.payload.gameId;
+
+                ws.send(JSON.stringify({
+                  type: 'state',
+                  payload: {
+                    state: result.state,
+                    playerId: result.playerId,
+                    color: message.payload.color,
+                  },
+                }));
+
+                // Notify other players in the room
+                const room = gameManager.getRoom(message.payload.gameId);
+                if (room) {
+                  room.players.forEach((player, id) => {
+                    if (id !== result.playerId) {
+                      player.ws.send(JSON.stringify({
+                        type: 'player_joined',
+                        payload: { state: result.state },
+                      }));
+                    }
+                  });
+                }
+              } else {
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  payload: { message: 'Failed to take over game' },
                 }));
               }
             }
