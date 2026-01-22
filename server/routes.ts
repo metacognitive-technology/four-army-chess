@@ -33,6 +33,18 @@ export async function registerRoutes(
     }
   });
 
+  // Track all connected clients for broadcasting
+  const allClients = new Set<WebSocket>();
+  
+  const broadcastGamesUpdated = () => {
+    const message = JSON.stringify({ type: 'games_updated', payload: {} });
+    allClients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  };
+
   app.delete('/api/games/:gameId', (req, res) => {
     try {
       const playerId = req.query.playerId as string | undefined;
@@ -42,6 +54,7 @@ export async function registerRoutes(
       }
       const success = gameManager.deleteGame(req.params.gameId, playerId);
       if (success) {
+        broadcastGamesUpdated();
         res.json({ success: true });
       } else {
         res.status(404).json({ error: 'Game not found or not authorized' });
@@ -55,6 +68,7 @@ export async function registerRoutes(
   app.delete('/api/games', (_req, res) => {
     try {
       const deleted = gameManager.deleteAllGames();
+      broadcastGamesUpdated();
       res.json({ success: true, deleted });
     } catch (error) {
       console.error('Failed to delete all games:', error);
@@ -82,6 +96,7 @@ export async function registerRoutes(
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
   wss.on('connection', (ws: WebSocket) => {
+    allClients.add(ws);
     let currentPlayerId: string | null = null;
     let currentGameId: string | null = null;
 
@@ -391,6 +406,7 @@ export async function registerRoutes(
     });
 
     ws.on('close', () => {
+      allClients.delete(ws);
       if (currentPlayerId && currentGameId) {
         const room = gameManager.getRoom(currentGameId);
         if (room) {

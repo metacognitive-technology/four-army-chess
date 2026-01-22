@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { GameMessage, GameState, GameMode, Position } from "@shared/schema";
+import { queryClient } from "@/lib/queryClient";
 
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
@@ -112,6 +113,11 @@ export function useWebSocket(): UseWebSocketReturn {
               from: message.payload.from,
               to: message.payload.to,
             });
+            break;
+            
+          case 'games_updated':
+            // Refresh the saved games list when another player deletes a game
+            queryClient.invalidateQueries({ queryKey: ['/api/games'] });
             break;
         }
       } catch (e) {

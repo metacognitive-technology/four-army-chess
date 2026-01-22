@@ -78,7 +78,7 @@ export interface GameState {
 }
 
 export interface GameMessage {
-  type: 'join' | 'setup_wall' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover';
+  type: 'join' | 'setup_wall' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover' | 'games_updated';
   payload: any;
   playerId?: string;
 }
