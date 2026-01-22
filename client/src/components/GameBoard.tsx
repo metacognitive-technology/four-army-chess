@@ -215,14 +215,14 @@ export function GameBoard({
                   <Button
                     size="icon"
                     variant="secondary"
-                    className="absolute -top-1 -right-1 w-5 h-5 z-10 p-0"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 z-10 p-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       onArrowModeToggle({ row: rowIndex, col: colIndex });
                     }}
                     data-testid={`arrow-button-${rowIndex}-${colIndex}`}
                   >
-                    <Target className="w-3 h-3" />
+                    <Target className="w-4 h-4" />
                   </Button>
                 )}
                 
@@ -230,14 +230,14 @@ export function GameBoard({
                   <Button
                     size="icon"
                     variant="secondary"
-                    className="absolute -top-1 -right-1 w-5 h-5 z-10 p-0"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 z-10 p-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       onAxeModeToggle({ row: rowIndex, col: colIndex });
                     }}
                     data-testid={`axe-button-${rowIndex}-${colIndex}`}
                   >
-                    <Axe className="w-3 h-3" />
+                    <Axe className="w-4 h-4" />
                   </Button>
                 )}
                 
