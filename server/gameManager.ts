@@ -418,7 +418,7 @@ class GameManager {
     return room.state;
   }
 
-  handleMove(playerId: string, from: Position, to: Position, resign?: boolean): { state: GameState; diceRoll?: { value: number; type: 'd4' | 'd6'; success: boolean } } | null {
+  handleMove(playerId: string, from: Position, to: Position, resign?: boolean, promotionPiece?: 'queen' | 'rook' | 'bishop' | 'knight'): { state: GameState; diceRoll?: { value: number; type: 'd4' | 'd6'; success: boolean }; needsPromotion?: boolean } | null {
     const gameId = this.playerToGame.get(playerId);
     if (!gameId) return null;
     
@@ -482,7 +482,22 @@ class GameManager {
       }
     }
     
-    board[to.row][to.col].piece = { ...piece, hasMoved: true };
+    // Check for pawn promotion
+    const isPromotion = piece.type === 'pawn' && 
+      ((player.color === 'white' && to.row === 0) || (player.color === 'black' && to.row === 11));
+    
+    if (isPromotion && !promotionPiece) {
+      // Need to ask client for promotion choice - don't execute move yet
+      // Restore piece to original position
+      board[from.row][from.col].piece = piece;
+      return { state: room.state, needsPromotion: true };
+    }
+    
+    // Place piece (possibly promoted)
+    const finalPiece = isPromotion && promotionPiece 
+      ? { type: promotionPiece, color: piece.color, hasMoved: true }
+      : { ...piece, hasMoved: true };
+    board[to.row][to.col].piece = finalPiece;
     
     const move: Move = {
       from,
@@ -492,7 +507,8 @@ class GameManager {
       diceRoll: diceRoll?.value,
       diceRequired: piece.type === 'pawn' && targetPiece ? 6 : undefined,
       success: diceRoll ? diceRoll.success : undefined,
-      notation: this.getMoveNotation(piece, from, to, targetPiece || undefined, diceRoll?.value),
+      notation: this.getMoveNotation(piece, from, to, targetPiece || undefined, diceRoll?.value, promotionPiece),
+      promotionPiece: promotionPiece,
     };
     room.state.moveHistory.push(move);
     
@@ -1186,15 +1202,18 @@ class GameManager {
     return true;
   }
 
-  private getMoveNotation(piece: Piece, from: Position, to: Position, captured?: Piece, diceRoll?: number, isArrow?: boolean): string {
+  private getMoveNotation(piece: Piece, from: Position, to: Position, captured?: Piece, diceRoll?: number, isArrowOrPromotion?: boolean | string): string {
     const pieceSymbol = piece.type === 'pawn' ? '' : piece.type[0].toUpperCase();
     const fromNotation = `${String.fromCharCode(97 + from.col)}${BOARD_SIZE - from.row}`;
     const toNotation = `${String.fromCharCode(97 + to.col)}${BOARD_SIZE - to.row}`;
     const captureSymbol = captured ? 'x' : '';
+    const isArrow = isArrowOrPromotion === true;
+    const promotionPiece = typeof isArrowOrPromotion === 'string' ? isArrowOrPromotion : undefined;
     const arrowSymbol = isArrow ? '→' : '';
     const dice = diceRoll ? `[${isArrow ? 'd4' : 'd6'}:${diceRoll}]` : '';
+    const promotion = promotionPiece ? `=${promotionPiece[0].toUpperCase()}` : '';
     
-    return `${pieceSymbol}${fromNotation}${captureSymbol}${arrowSymbol}${toNotation}${dice}`;
+    return `${pieceSymbol}${fromNotation}${captureSymbol}${arrowSymbol}${toNotation}${dice}${promotion}`;
   }
 }
 

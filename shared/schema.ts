@@ -51,7 +51,10 @@ export interface Move {
   diceRequired?: number;
   success?: boolean;
   notation: string;
+  promotionPiece?: PieceType;
 }
+
+export type PromotionPieceType = 'queen' | 'rook' | 'bishop' | 'knight';
 
 export type GamePhase = 'waiting' | 'setup' | 'playing' | 'finished';
 export type GameMode = 'pvp' | 'pvc';
@@ -75,7 +78,7 @@ export interface GameState {
 }
 
 export interface GameMessage {
-  type: 'join' | 'setup_wall' | 'ready' | 'move' | 'arrow_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect';
+  type: 'join' | 'setup_wall' | 'ready' | 'move' | 'arrow_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion';
   payload: any;
   playerId?: string;
 }

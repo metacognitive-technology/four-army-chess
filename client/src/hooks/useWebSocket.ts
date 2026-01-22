@@ -1,7 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { GameMessage, GameState, GameMode } from "@shared/schema";
+import type { GameMessage, GameState, GameMode, Position } from "@shared/schema";
 
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
+
+interface PendingPromotion {
+  from: Position;
+  to: Position;
+}
 
 interface UseWebSocketReturn {
   gameState: GameState | null;
@@ -13,6 +18,8 @@ interface UseWebSocketReturn {
   joinGame: (gameId: string) => void;
   reconnectGame: (gameId: string, storedPlayerId: string | null) => void;
   lastError: string | null;
+  pendingPromotion: PendingPromotion | null;
+  clearPendingPromotion: () => void;
 }
 
 export function useWebSocket(): UseWebSocketReturn {
@@ -21,12 +28,17 @@ export function useWebSocket(): UseWebSocketReturn {
   const [playerColor, setPlayerColor] = useState<'white' | 'black' | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
   const [lastError, setLastError] = useState<string | null>(null);
+  const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null);
   
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const gameIdRef = useRef<string | null>(null);
   const playerIdRef = useRef<string | null>(null);
   const pendingReconnectRef = useRef<{ gameId: string; playerId: string } | null>(null);
+  
+  const clearPendingPromotion = useCallback(() => {
+    setPendingPromotion(null);
+  }, []);
   
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
@@ -92,6 +104,13 @@ export function useWebSocket(): UseWebSocketReturn {
           case 'player_joined':
           case 'player_left':
             setGameState(message.payload.state);
+            break;
+            
+          case 'needsPromotion':
+            setPendingPromotion({
+              from: message.payload.from,
+              to: message.payload.to,
+            });
             break;
         }
       } catch (e) {
@@ -205,5 +224,7 @@ export function useWebSocket(): UseWebSocketReturn {
     joinGame,
     reconnectGame,
     lastError,
+    pendingPromotion,
+    clearPendingPromotion,
   };
 }

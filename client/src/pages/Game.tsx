@@ -9,8 +9,8 @@ import { GameStatus } from "@/components/GameStatus";
 import { GameRules } from "@/components/GameRules";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useToast } from "@/hooks/use-toast";
-import { getValidMoves, getCheckSafeMoves, getArrowTargets, findHangingPieces, isInCheck, isCheckmate, createInitialBoard } from "@/lib/gameUtils";
-import type { Position, GameState, SavedGameInfo } from "@shared/schema";
+import { getValidMoves, getCheckSafeMoves, getArrowTargets, findHangingPieces, isInCheck, isCheckmate, createInitialBoard, PIECE_SYMBOLS } from "@/lib/gameUtils";
+import type { Position, GameState, SavedGameInfo, PromotionPieceType } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Wifi, WifiOff, Plus, Link2, Bot, Users, History, Trash2 } from "lucide-react";
@@ -50,6 +50,8 @@ export default function Game() {
     joinGame,
     reconnectGame,
     lastError,
+    pendingPromotion,
+    clearPendingPromotion,
   } = useWebSocket();
   
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
@@ -295,6 +297,20 @@ export default function Game() {
   const handleResign = useCallback(() => {
     sendMessage({ type: 'move', payload: { resign: true } });
   }, [sendMessage]);
+  
+  const handlePromotion = useCallback((pieceType: PromotionPieceType) => {
+    if (pendingPromotion) {
+      sendMessage({
+        type: 'move',
+        payload: { 
+          from: pendingPromotion.from, 
+          to: pendingPromotion.to,
+          promotionPiece: pieceType,
+        },
+      });
+      clearPendingPromotion();
+    }
+  }, [pendingPromotion, sendMessage, clearPendingPromotion]);
   
   
   // Lobby view - no game yet
@@ -543,6 +559,26 @@ export default function Game() {
               flashingSquare={flashingSquare}
               flashColor={flashColor}
             />
+            
+            {pendingPromotion && (
+              <Card className="p-4" data-testid="promotion-dialog">
+                <p className="text-center font-semibold mb-3">Choose piece to promote to:</p>
+                <div className="flex justify-center gap-2">
+                  {(['queen', 'rook', 'bishop', 'knight'] as PromotionPieceType[]).map((pieceType) => (
+                    <Button
+                      key={pieceType}
+                      variant="outline"
+                      size="lg"
+                      onClick={() => handlePromotion(pieceType)}
+                      className="text-3xl w-14 h-14"
+                      data-testid={`promotion-${pieceType}`}
+                    >
+                      {PIECE_SYMBOLS[pieceType][playerColor || 'white']}
+                    </Button>
+                  ))}
+                </div>
+              </Card>
+            )}
             
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               {connectionStatus === 'connected' ? (

@@ -211,30 +211,39 @@ export async function registerRoutes(
                 message.playerId || currentPlayerId!,
                 message.payload.from,
                 message.payload.to,
-                message.payload.resign
+                message.payload.resign,
+                message.payload.promotionPiece
               );
               if (result && currentGameId) {
                 const room = gameManager.getRoom(currentGameId);
                 if (room) {
-                  broadcastToRoom(room, {
-                    type: 'state',
-                    payload: { state: result.state },
-                  });
-                  
-                  // Check if AI should move after human move
-                  if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(() => {
-                      const aiResult = gameManager.makeAIMove(currentGameId!);
-                      if (aiResult) {
-                        const aiRoom = gameManager.getRoom(currentGameId!);
-                        if (aiRoom) {
-                          broadcastToRoom(aiRoom, {
-                            type: 'state',
-                            payload: { state: aiResult.state },
-                          });
+                  // Check if promotion is needed
+                  if (result.needsPromotion) {
+                    ws.send(JSON.stringify({
+                      type: 'needsPromotion',
+                      payload: { from: message.payload.from, to: message.payload.to },
+                    }));
+                  } else {
+                    broadcastToRoom(room, {
+                      type: 'state',
+                      payload: { state: result.state },
+                    });
+                    
+                    // Check if AI should move after human move
+                    if (gameManager.isAITurn(currentGameId)) {
+                      setTimeout(() => {
+                        const aiResult = gameManager.makeAIMove(currentGameId!);
+                        if (aiResult) {
+                          const aiRoom = gameManager.getRoom(currentGameId!);
+                          if (aiRoom) {
+                            broadcastToRoom(aiRoom, {
+                              type: 'state',
+                              payload: { state: aiResult.state },
+                            });
+                          }
                         }
-                      }
-                    }, 800);
+                      }, 800);
+                    }
                   }
                 }
               }
