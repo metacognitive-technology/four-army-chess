@@ -921,8 +921,8 @@
     ]
   ],
   "currentTurn": "black",
-  "phase": "playing",
-  "gameMode": "cvc",
+  "phase": "finished",
+  "gameMode": "pvc",
   "setupWallsRemaining": {
     "white": 0,
     "black": 0
@@ -4534,8 +4534,14 @@
     ]
   },
   "players": {
-    "white": "ai-player",
+    "white": "4a951d5a-7722-4100-b84d-8ff702a22803",
     "black": "ai-player"
   },
-  "winner": null
+  "winner": "black",
+  "attackSettings": {
+    "pawnSuccessRoll": 1,
+    "bishopMinRoll": 0,
+    "knightMinRoll": 4
+  },
+  "aiColor": "black"
 }
