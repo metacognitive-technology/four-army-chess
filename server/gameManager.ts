@@ -467,7 +467,7 @@ class GameManager {
             possibleMoves.push({ from, to, score, escapesCheck });
           }
           
-          // Arrow attacks for bishops
+          // Arrow attacks for bishops - always try to shoot if target available
           if (piece.type === 'bishop' && !inCheck) {
             const arrowTargets = this.getArrowTargets(board, from, color);
             for (const to of arrowTargets) {
@@ -476,9 +476,8 @@ class GameManager {
                 const values: Record<PieceType, number> = {
                   pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
                 };
-                const distance = Math.abs(to.row - from.row);
-                const successChance = (5 - distance) / 4;
-                const score = values[targetPiece.type] * 10 * successChance + Math.random() * 0.5;
+                // High priority for arrow attacks
+                const score = values[targetPiece.type] * 10 + 400 + Math.random() * 0.5;
                 possibleMoves.push({ from, to, score, isArrow: true });
               }
             }
@@ -1223,7 +1222,7 @@ class GameManager {
             possibleMoves.push({ from, to, score, escapesCheck });
           }
           
-          // Add arrow attacks for bishops (only if not in check - arrows don't escape check)
+          // Add arrow attacks for bishops - always try to shoot if target available
           if (piece.type === 'bishop' && !inCheck) {
             const arrowTargets = this.getArrowTargets(board, from, aiColor);
             for (const to of arrowTargets) {
@@ -1232,9 +1231,8 @@ class GameManager {
                 const values: Record<PieceType, number> = {
                   pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
                 };
-                const distance = Math.abs(to.row - from.row);
-                const successChance = (5 - distance) / 4; // d4 roll: 1-4, need <= roll
-                const score = values[targetPiece.type] * 10 * successChance + Math.random() * 0.5;
+                // High priority for arrow attacks
+                const score = values[targetPiece.type] * 10 + 400 + Math.random() * 0.5;
                 possibleMoves.push({ from, to, score, isArrow: true });
               }
             }
