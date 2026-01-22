@@ -69,8 +69,62 @@ export function getValidMoves(board: Board, position: Position, includeAttacks: 
   
   switch (piece.type) {
     case 'king':
+      // King moves 1 square in any direction
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const newRow = position.row + dr;
+          const newCol = position.col + dc;
+          if (isValidPosition(newRow, newCol) && !board[newRow][newCol].isWall) {
+            const targetPiece = board[newRow][newCol].piece;
+            if (!targetPiece || (includeAttacks && targetPiece.color !== piece.color)) {
+              moves.push({ row: newRow, col: newCol });
+            }
+          }
+        }
+      }
+      // Castling - king moves to end file, rook moves next to it
+      if (!piece.hasMoved) {
+        const row = position.row;
+        // Kingside castling (to column 11)
+        const kingsideRookCol = 9; // Initial rook position (offset 2 + 7)
+        const kingsideRook = board[row][kingsideRookCol]?.piece;
+        if (kingsideRook?.type === 'rook' && kingsideRook.color === piece.color && !kingsideRook.hasMoved) {
+          // Check path is clear from king to end (columns 7 to 11)
+          let pathClear = true;
+          for (let c = position.col + 1; c <= 11; c++) {
+            if (c === kingsideRookCol) continue; // Skip the rook's position
+            if (board[row][c].piece || board[row][c].isWall) {
+              pathClear = false;
+              break;
+            }
+          }
+          if (pathClear) {
+            moves.push({ row, col: 11 }); // King to end file
+          }
+        }
+        // Queenside castling (to column 0)
+        const queensideRookCol = 2; // Initial rook position (offset 2 + 0)
+        const queensideRook = board[row][queensideRookCol]?.piece;
+        if (queensideRook?.type === 'rook' && queensideRook.color === piece.color && !queensideRook.hasMoved) {
+          // Check path is clear from king to column 0 (columns 5 to 0)
+          let pathClear = true;
+          for (let c = position.col - 1; c >= 0; c--) {
+            if (c === queensideRookCol) continue; // Skip the rook's position
+            if (board[row][c].piece || board[row][c].isWall) {
+              pathClear = false;
+              break;
+            }
+          }
+          if (pathClear) {
+            moves.push({ row, col: 0 }); // King to end file
+          }
+        }
+      }
+      break;
+      
     case 'pawn':
-      // King and pawns move 1 square in any direction
+      // Pawns move 1 square in any direction
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
           if (dr === 0 && dc === 0) continue;

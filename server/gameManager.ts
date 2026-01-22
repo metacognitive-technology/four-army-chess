@@ -493,6 +493,26 @@ class GameManager {
       return { state: room.state, needsPromotion: true };
     }
     
+    // Check for castling
+    let isCastling = false;
+    let castlingNotation = '';
+    if (piece.type === 'king' && !piece.hasMoved && Math.abs(to.col - from.col) > 1) {
+      isCastling = true;
+      if (to.col === 11) {
+        // Kingside castling - move rook from col 9 to col 10
+        const rook = board[from.row][9].piece;
+        board[from.row][9].piece = null;
+        board[from.row][10].piece = { ...rook!, hasMoved: true };
+        castlingNotation = 'O-O';
+      } else if (to.col === 0) {
+        // Queenside castling - move rook from col 2 to col 1
+        const rook = board[from.row][2].piece;
+        board[from.row][2].piece = null;
+        board[from.row][1].piece = { ...rook!, hasMoved: true };
+        castlingNotation = 'O-O-O';
+      }
+    }
+    
     // Place piece (possibly promoted)
     const finalPiece = isPromotion && promotionPiece 
       ? { type: promotionPiece, color: piece.color, hasMoved: true }
@@ -507,7 +527,7 @@ class GameManager {
       diceRoll: diceRoll?.value,
       diceRequired: piece.type === 'pawn' && targetPiece ? 6 : undefined,
       success: diceRoll ? diceRoll.success : undefined,
-      notation: this.getMoveNotation(piece, from, to, targetPiece || undefined, diceRoll?.value, promotionPiece),
+      notation: isCastling ? castlingNotation : this.getMoveNotation(piece, from, to, targetPiece || undefined, diceRoll?.value, promotionPiece),
       promotionPiece: promotionPiece,
     };
     room.state.moveHistory.push(move);
@@ -959,6 +979,67 @@ class GameManager {
                 if (!this.wouldBeInCheck(testBoard, piece.color, { row: newRow, col: newCol })) {
                   moves.push({ row: newRow, col: newCol });
                 }
+              }
+            }
+          }
+        }
+        // Castling - king moves to end file, rook moves next to it
+        if (!piece.hasMoved && !this.isInCheck(board, piece.color)) {
+          const row = position.row;
+          // Kingside castling (to column 11)
+          const kingsideRookCol = 9; // Initial rook position (offset 2 + 7)
+          const kingsideRook = board[row][kingsideRookCol]?.piece;
+          if (kingsideRook?.type === 'rook' && kingsideRook.color === piece.color && !kingsideRook.hasMoved) {
+            let pathClear = true;
+            for (let c = position.col + 1; c <= 11; c++) {
+              if (c === kingsideRookCol) continue;
+              if (board[row][c].piece || board[row][c].isWall) {
+                pathClear = false;
+                break;
+              }
+            }
+            // Also check that king doesn't pass through check
+            if (pathClear) {
+              let passesThroughCheck = false;
+              for (let c = position.col + 1; c <= 11; c++) {
+                const testBoard: Board = JSON.parse(JSON.stringify(board));
+                testBoard[row][c].piece = piece;
+                testBoard[position.row][position.col].piece = null;
+                if (this.wouldBeInCheck(testBoard, piece.color, { row, col: c })) {
+                  passesThroughCheck = true;
+                  break;
+                }
+              }
+              if (!passesThroughCheck) {
+                moves.push({ row, col: 11 });
+              }
+            }
+          }
+          // Queenside castling (to column 0)
+          const queensideRookCol = 2; // Initial rook position (offset 2 + 0)
+          const queensideRook = board[row][queensideRookCol]?.piece;
+          if (queensideRook?.type === 'rook' && queensideRook.color === piece.color && !queensideRook.hasMoved) {
+            let pathClear = true;
+            for (let c = position.col - 1; c >= 0; c--) {
+              if (c === queensideRookCol) continue;
+              if (board[row][c].piece || board[row][c].isWall) {
+                pathClear = false;
+                break;
+              }
+            }
+            if (pathClear) {
+              let passesThroughCheck = false;
+              for (let c = position.col - 1; c >= 0; c--) {
+                const testBoard: Board = JSON.parse(JSON.stringify(board));
+                testBoard[row][c].piece = piece;
+                testBoard[position.row][position.col].piece = null;
+                if (this.wouldBeInCheck(testBoard, piece.color, { row, col: c })) {
+                  passesThroughCheck = true;
+                  break;
+                }
+              }
+              if (!passesThroughCheck) {
+                moves.push({ row, col: 0 });
               }
             }
           }
