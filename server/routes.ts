@@ -83,8 +83,7 @@ export async function registerRoutes(
       const result = gameManager.createCvCGame(maxWalls);
       res.json({
         gameId: result.gameId,
-        winner: result.state.winner,
-        moveCount: result.state.moveHistory.length,
+        phase: result.state.phase,
       });
     } catch (error) {
       console.error('Failed to create CvC game:', error);
@@ -221,6 +220,28 @@ export async function registerRoutes(
                 ws.send(JSON.stringify({
                   type: 'error',
                   payload: { message: 'Failed to take over game' },
+                }));
+              }
+            }
+            break;
+          }
+
+          case 'watch_cvc': {
+            if (message.payload.gameId) {
+              const result = gameManager.joinCvCAsObserver(ws, message.payload.gameId);
+              if (result) {
+                currentGameId = message.payload.gameId;
+                ws.send(JSON.stringify({
+                  type: 'state',
+                  payload: {
+                    state: result.state,
+                    isObserver: true,
+                  },
+                }));
+              } else {
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  payload: { message: 'Game not found' },
                 }));
               }
             }
@@ -442,6 +463,17 @@ export async function registerRoutes(
       }
     });
   }
+
+  // Set up CvC state update callback
+  gameManager.setCvCStateUpdateCallback((gameId, state) => {
+    const room = gameManager.getRoom(gameId);
+    if (room) {
+      broadcastToRoom(room, {
+        type: 'state',
+        payload: { state, isObserver: true },
+      });
+    }
+  });
 
   return httpServer;
 }

@@ -254,7 +254,17 @@ class GameManager {
     return { gameId, playerId, color: 'white' };
   }
   
-  // Create a computer vs computer game that runs to completion
+  // Active CvC game intervals
+  private cvcIntervals: Map<string, NodeJS.Timeout> = new Map();
+  
+  // Callback for broadcasting state updates
+  private onCvCStateUpdate?: (gameId: string, state: GameState) => void;
+  
+  setCvCStateUpdateCallback(callback: (gameId: string, state: GameState) => void) {
+    this.onCvCStateUpdate = callback;
+  }
+
+  // Create a computer vs computer game that plays visibly
   createCvCGame(maxWalls: number): { gameId: string; state: GameState } {
     const gameId = randomUUID().slice(0, 8);
     
@@ -277,11 +287,41 @@ class GameManager {
     this.placeCvCWalls(state, maxWalls, 'white');
     this.placeCvCWalls(state, maxWalls, 'black');
     
-    // Run the game to completion at full speed
-    const MAX_MOVES = 500; // Prevent infinite games
-    let moveCount = 0;
+    // Create game room
+    const room: GameRoom = {
+      state,
+      players: new Map(),
+      readyPlayers: new Set(),
+    };
     
-    while (state.phase === 'playing' && moveCount < MAX_MOVES) {
+    this.games.set(gameId, room);
+    this.saveGame(state);
+    
+    // Start the game with visible moves (500ms between moves)
+    this.startCvCGameLoop(gameId);
+    
+    return { gameId, state };
+  }
+  
+  private startCvCGameLoop(gameId: string) {
+    const MAX_MOVES = 500;
+    
+    const interval = setInterval(() => {
+      const room = this.games.get(gameId);
+      if (!room || room.state.phase !== 'playing') {
+        clearInterval(interval);
+        this.cvcIntervals.delete(gameId);
+        return;
+      }
+      
+      // Check if a human has taken over (game mode changed)
+      if (room.state.gameMode !== 'cvc') {
+        clearInterval(interval);
+        this.cvcIntervals.delete(gameId);
+        return;
+      }
+      
+      const state = room.state;
       const currentColor = state.currentTurn;
       const moveResult = this.makeCvCMove(state, currentColor);
       
@@ -289,29 +329,60 @@ class GameManager {
         // No valid moves - check for checkmate or stalemate
         const inCheck = this.isInCheck(state.board, currentColor);
         if (inCheck) {
-          // Checkmate
           state.winner = currentColor === 'white' ? 'black' : 'white';
         } else {
-          // Stalemate
           state.winner = 'draw';
         }
         state.phase = 'finished';
-        break;
+        this.saveGame(state);
+        this.onCvCStateUpdate?.(gameId, state);
+        clearInterval(interval);
+        this.cvcIntervals.delete(gameId);
+        return;
       }
       
-      moveCount++;
+      // Save and broadcast state after each move
+      this.saveGame(state);
+      this.onCvCStateUpdate?.(gameId, state);
+      
+      // Check max moves
+      if (state.moveHistory.length >= MAX_MOVES) {
+        state.winner = 'draw';
+        state.phase = 'finished';
+        this.saveGame(state);
+        this.onCvCStateUpdate?.(gameId, state);
+        clearInterval(interval);
+        this.cvcIntervals.delete(gameId);
+      }
+    }, 500); // 500ms between moves
+    
+    this.cvcIntervals.set(gameId, interval);
+  }
+  
+  // Join as observer for CvC game
+  joinCvCAsObserver(ws: WebSocket, gameId: string): { state: GameState } | null {
+    let room = this.games.get(gameId);
+    if (!room) {
+      const state = this.loadGame(gameId);
+      if (!state) return null;
+      room = {
+        state,
+        players: new Map(),
+        readyPlayers: new Set(),
+      };
+      this.games.set(gameId, room);
+      
+      // If game is still playing, restart the loop
+      if (state.phase === 'playing' && state.gameMode === 'cvc') {
+        this.startCvCGameLoop(gameId);
+      }
     }
     
-    // If max moves reached, it's a draw
-    if (moveCount >= MAX_MOVES && state.phase === 'playing') {
-      state.winner = 'draw';
-      state.phase = 'finished';
-    }
+    // Add as observer (no player ID needed)
+    const observerId = `observer-${randomUUID().slice(0, 8)}`;
+    room.players.set(observerId, { ws, id: observerId, color: 'white' });
     
-    // Save the completed game
-    this.saveGame(state);
-    
-    return { gameId, state };
+    return { state: room.state };
   }
   
   private placeCvCWalls(state: GameState, count: number, color: PlayerColor): void {

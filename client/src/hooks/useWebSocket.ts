@@ -19,6 +19,8 @@ interface UseWebSocketReturn {
   joinGame: (gameId: string) => void;
   reconnectGame: (gameId: string, storedPlayerId: string | null) => void;
   takeoverGame: (gameId: string, color: 'white' | 'black') => void;
+  watchCvCGame: (gameId: string) => void;
+  isObserver: boolean;
   lastError: string | null;
   pendingPromotion: PendingPromotion | null;
   clearPendingPromotion: () => void;
@@ -31,6 +33,7 @@ export function useWebSocket(): UseWebSocketReturn {
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
   const [lastError, setLastError] = useState<string | null>(null);
   const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null);
+  const [isObserver, setIsObserver] = useState(false);
   
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -83,6 +86,9 @@ export function useWebSocket(): UseWebSocketReturn {
         switch (message.type) {
           case 'state':
             setGameState(message.payload.state);
+            if (message.payload.isObserver) {
+              setIsObserver(true);
+            }
             if (message.payload.playerId && !playerId) {
               setPlayerId(message.payload.playerId);
               playerIdRef.current = message.payload.playerId;
@@ -223,6 +229,7 @@ export function useWebSocket(): UseWebSocketReturn {
   
   const takeoverGame = useCallback((gameId: string, color: 'white' | 'black') => {
     gameIdRef.current = gameId;
+    setIsObserver(false);
     connect();
     
     const checkAndSend = () => {
@@ -230,6 +237,24 @@ export function useWebSocket(): UseWebSocketReturn {
         wsRef.current.send(JSON.stringify({
           type: 'takeover',
           payload: { gameId, color },
+        }));
+      } else {
+        setTimeout(checkAndSend, 100);
+      }
+    };
+    checkAndSend();
+  }, [connect]);
+  
+  const watchCvCGame = useCallback((gameId: string) => {
+    gameIdRef.current = gameId;
+    setIsObserver(true);
+    connect();
+    
+    const checkAndSend = () => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({
+          type: 'watch_cvc',
+          payload: { gameId },
         }));
       } else {
         setTimeout(checkAndSend, 100);
@@ -248,6 +273,8 @@ export function useWebSocket(): UseWebSocketReturn {
     joinGame,
     reconnectGame,
     takeoverGame,
+    watchCvCGame,
+    isObserver,
     lastError,
     pendingPromotion,
     clearPendingPromotion,
