@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, unlinkSync, statSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import type { GameState, Board, Square, Piece, Position, PlayerColor, Move, PieceType, GameMessage, GameMode } from "@shared/schema";
+import type { GameState, Board, Square, Piece, Position, PlayerColor, Move, PieceType, GameMessage, GameMode, AttackSettings } from "@shared/schema";
 import type { WebSocket } from "ws";
 
 const BOARD_SIZE = 12;
@@ -85,7 +85,16 @@ class GameManager {
       const filePath = this.getGameFilePath(gameId);
       if (!existsSync(filePath)) return null;
       const data = readFileSync(filePath, 'utf-8');
-      return JSON.parse(data) as GameState;
+      const state = JSON.parse(data) as GameState;
+      // Add default attackSettings for old games that don't have them
+      if (!state.attackSettings) {
+        state.attackSettings = {
+          pawnSuccessRoll: 1,
+          bishopMinRoll: 0,
+          knightMinRoll: 4,
+        };
+      }
+      return state;
     } catch (error) {
       console.error(`Failed to load game ${gameId}:`, error);
       return null;
@@ -212,11 +221,17 @@ class GameManager {
     return state;
   }
 
-  createGame(ws: WebSocket, maxWalls: number, gameMode: GameMode = 'pvp'): { gameId: string; playerId: string; color: PlayerColor } {
+  createGame(ws: WebSocket, maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings): { gameId: string; playerId: string; color: PlayerColor } {
     const gameId = randomUUID().slice(0, 8);
     const playerId = randomUUID();
     
     const isVsComputer = gameMode === 'pvc';
+    
+    const defaultAttackSettings: AttackSettings = {
+      pawnSuccessRoll: 1,
+      bishopMinRoll: 0,
+      knightMinRoll: 4,
+    };
     
     const state: GameState = {
       id: gameId,
@@ -231,6 +246,7 @@ class GameManager {
       capturedPieces: { white: [], black: [] },
       players: { white: playerId, black: isVsComputer ? AI_PLAYER_ID : null },
       winner: null,
+      attackSettings: attackSettings || defaultAttackSettings,
     };
     
     const room: GameRoom = {
@@ -265,8 +281,14 @@ class GameManager {
   }
 
   // Create a computer vs computer game that plays visibly
-  createCvCGame(maxWalls: number): { gameId: string; state: GameState } {
+  createCvCGame(maxWalls: number, attackSettings?: AttackSettings): { gameId: string; state: GameState } {
     const gameId = randomUUID().slice(0, 8);
+    
+    const defaultAttackSettings: AttackSettings = {
+      pawnSuccessRoll: 1,
+      bishopMinRoll: 0,
+      knightMinRoll: 4,
+    };
     
     const state: GameState = {
       id: gameId,
@@ -281,6 +303,7 @@ class GameManager {
       capturedPieces: { white: [], black: [] },
       players: { white: AI_PLAYER_ID, black: AI_PLAYER_ID },
       winner: null,
+      attackSettings: attackSettings || defaultAttackSettings,
     };
     
     // Place walls for both sides
@@ -899,7 +922,8 @@ class GameManager {
     // Pawn attack requires dice roll
     if (piece.type === 'pawn' && targetPiece) {
       const roll = Math.floor(Math.random() * 6) + 1;
-      const success = roll === 1;
+      const pawnThreshold = room.state.attackSettings?.pawnSuccessRoll ?? 1;
+      const success = roll <= pawnThreshold;
       diceRoll = { value: roll, type: 'd6', success };
       room.state.lastDiceRoll = diceRoll;
       
@@ -1035,11 +1059,12 @@ class GameManager {
     if (!targetPiece || targetPiece.color === player.color) return null;
     if (targetPiece.type === 'knight' || targetPiece.type === 'rook') return null;
     
-    // Roll 2d6 for arrow - need to roll >= distance to hit
+    // Roll 2d6 for arrow - need to roll >= threshold to hit
     const die1 = Math.floor(Math.random() * 6) + 1;
     const die2 = Math.floor(Math.random() * 6) + 1;
     const roll = die1 + die2;
-    const success = roll >= distance;
+    const bishopThreshold = room.state.attackSettings?.bishopMinRoll || distance; // 0 means use distance
+    const success = roll >= bishopThreshold;
     
     const diceRoll = { value: roll, type: '2d6' as const, success };
     room.state.lastDiceRoll = diceRoll;
@@ -1100,9 +1125,10 @@ class GameManager {
     const targetPiece = board[to.row][to.col].piece;
     if (!targetPiece || targetPiece.color === player.color) return null;
     
-    // Roll 1d6 for axe - 50/50 chance (need to roll 4, 5, or 6 to hit)
+    // Roll 1d6 for axe - need to roll >= threshold to hit
     const roll = Math.floor(Math.random() * 6) + 1;
-    const success = roll >= 4;
+    const knightThreshold = room.state.attackSettings?.knightMinRoll ?? 4;
+    const success = roll >= knightThreshold;
     
     const diceRoll = { value: roll, type: 'd6' as const, success };
     room.state.lastDiceRoll = diceRoll;
@@ -1365,7 +1391,8 @@ class GameManager {
     // Pawn attack requires dice roll
     if (piece.type === 'pawn' && targetPiece) {
       const roll = Math.floor(Math.random() * 6) + 1;
-      const success = roll === 1;
+      const pawnThreshold = state.attackSettings?.pawnSuccessRoll ?? 1;
+      const success = roll <= pawnThreshold;
       diceRoll = { value: roll, type: 'd6', success };
       state.lastDiceRoll = diceRoll;
 

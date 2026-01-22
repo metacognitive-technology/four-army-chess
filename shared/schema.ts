@@ -59,6 +59,12 @@ export type PromotionPieceType = 'queen' | 'rook' | 'bishop' | 'knight';
 export type GamePhase = 'waiting' | 'setup' | 'playing' | 'finished';
 export type GameMode = 'pvp' | 'pvc' | 'cvc';
 
+export interface AttackSettings {
+  pawnSuccessRoll: number;   // Roll this or lower on d6 to succeed (default 1)
+  bishopMinRoll: number;     // Roll this or higher on 2d6 for arrow (default: distance)
+  knightMinRoll: number;     // Roll this or higher on d6 for axe (default 4)
+}
+
 export interface GameState {
   id: string;
   board: Board;
@@ -75,6 +81,7 @@ export interface GameState {
   lastDiceRoll?: { value: number; type: 'd4' | 'd6' | '2d6'; success: boolean };
   pendingArrowTarget?: Position;
   selectedPiece?: Position;
+  attackSettings: AttackSettings;
 }
 
 export interface GameMessage {
@@ -85,6 +92,11 @@ export interface GameMessage {
 
 export const gameConfigSchema = z.object({
   maxWallsPerPlayer: z.number().min(0).max(32).default(8),
+  attackSettings: z.object({
+    pawnSuccessRoll: z.number().min(1).max(6).default(1),
+    bishopMinRoll: z.number().min(2).max(12).default(0), // 0 means use distance
+    knightMinRoll: z.number().min(1).max(6).default(4),
+  }).optional(),
 });
 
 export type GameConfig = z.infer<typeof gameConfigSchema>;

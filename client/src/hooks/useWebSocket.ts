@@ -15,7 +15,7 @@ interface UseWebSocketReturn {
   playerColor: 'white' | 'black' | null;
   connectionStatus: ConnectionStatus;
   sendMessage: (message: GameMessage) => void;
-  createGame: (maxWalls: number, gameMode?: GameMode) => void;
+  createGame: (maxWalls: number, gameMode?: GameMode, attackSettings?: { pawnSuccessRoll: number; bishopMinRoll: number; knightMinRoll: number }) => void;
   joinGame: (gameId: string) => void;
   reconnectGame: (gameId: string, storedPlayerId: string | null) => void;
   takeoverGame: (gameId: string, color: 'white' | 'black') => void;
@@ -168,7 +168,7 @@ export function useWebSocket(): UseWebSocketReturn {
     }
   }, [playerId]);
   
-  const createGame = useCallback((maxWalls: number, gameMode: GameMode = 'pvp') => {
+  const createGame = useCallback((maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: { pawnSuccessRoll: number; bishopMinRoll: number; knightMinRoll: number }) => {
     connect();
     
     // Wait for connection then send create message
@@ -176,7 +176,7 @@ export function useWebSocket(): UseWebSocketReturn {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({
           type: 'join',
-          payload: { action: 'create', maxWalls, gameMode },
+          payload: { action: 'create', maxWalls, gameMode, attackSettings },
         }));
       } else {
         setTimeout(checkAndSend, 100);
