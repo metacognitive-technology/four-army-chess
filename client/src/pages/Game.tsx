@@ -20,6 +20,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
+const GAME_VERSION = "1.0.0";
+
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
@@ -378,6 +380,7 @@ export default function Game() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Battle Chess</CardTitle>
             <p className="text-muted-foreground">A novel chess variant with walls, dice, and arrows</p>
+            <p className="text-xs text-muted-foreground mt-1">Version {GAME_VERSION}</p>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center gap-2 justify-center text-sm">
