@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-const GAME_VERSION = "1.7.0";
+const GAME_VERSION = "1.7.1";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -363,8 +363,13 @@ export default function Game() {
   }, []);
   
   const handleResign = useCallback(() => {
-    sendMessage({ type: 'move', payload: { resign: true } });
-  }, [sendMessage]);
+    // For CvC games, send stop_cvc message instead
+    if (gameState?.gameMode === 'cvc') {
+      sendMessage({ type: 'stop_cvc', payload: {} });
+    } else {
+      sendMessage({ type: 'move', payload: { resign: true } });
+    }
+  }, [sendMessage, gameState?.gameMode]);
   
   const handlePromotion = useCallback((pieceType: PromotionPieceType) => {
     if (pendingPromotion) {

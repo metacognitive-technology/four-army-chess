@@ -299,6 +299,23 @@ export async function registerRoutes(
             break;
           }
 
+          case 'stop_cvc': {
+            // Handle stopping a CvC game
+            if (currentGameId) {
+              const state = gameManager.stopCvCGame(currentGameId);
+              if (state) {
+                const room = gameManager.getRoom(currentGameId);
+                if (room) {
+                  broadcastToRoom(room, {
+                    type: 'state',
+                    payload: { state },
+                  });
+                }
+              }
+            }
+            break;
+          }
+
           case 'move': {
             if (message.playerId || currentPlayerId) {
               const result = gameManager.handleMove(

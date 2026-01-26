@@ -383,6 +383,26 @@ class GameManager {
   }
   
   // Join as observer for CvC game
+  // Stop a CvC game (for resign/stop functionality)
+  stopCvCGame(gameId: string): GameState | null {
+    const room = this.games.get(gameId);
+    if (!room || room.state.gameMode !== 'cvc') return null;
+    
+    // Stop the game loop
+    const interval = this.cvcIntervals.get(gameId);
+    if (interval) {
+      clearInterval(interval);
+      this.cvcIntervals.delete(gameId);
+    }
+    
+    // Mark game as finished (draw/stopped)
+    room.state.phase = 'finished';
+    room.state.winner = null; // Stopped, no winner
+    this.saveGame(room.state);
+    
+    return room.state;
+  }
+
   joinCvCAsObserver(ws: WebSocket, gameId: string): { state: GameState } | null {
     let room = this.games.get(gameId);
     if (!room) {
