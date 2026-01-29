@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import type { Board, Position, PlayerColor, PieceType } from "@shared/schema";
 import { PIECE_SYMBOLS, BOARD_SIZE, getValidMoves, getArrowTargets, findHangingPieces } from "@/lib/gameUtils";
 import { cn } from "@/lib/utils";
-import { Target, ZoomIn, ZoomOut, RotateCcw, Axe } from "lucide-react";
+import { Target, ZoomIn, ZoomOut, RotateCcw, Axe, Bomb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface GameBoardProps {
@@ -14,12 +14,15 @@ interface GameBoardProps {
   validMoves: Position[];
   arrowTargets: Position[];
   axeTargets: Position[];
+  bombTargets: Position[];
   hangingPieces: Position[];
   isArrowMode: boolean;
   isAxeMode: boolean;
+  isBombMode: boolean;
   onSquareClick: (position: Position) => void;
   onArrowModeToggle: (position: Position) => void;
   onAxeModeToggle: (position: Position) => void;
+  onBombModeToggle: (position: Position) => void;
   setupWallsRemaining: number;
   flashingSquare: Position | null;
   flashColor?: 'red' | 'yellow';
@@ -34,12 +37,15 @@ export function GameBoard({
   validMoves,
   arrowTargets,
   axeTargets,
+  bombTargets,
   hangingPieces,
   isArrowMode,
   isAxeMode,
+  isBombMode,
   onSquareClick,
   onArrowModeToggle,
   onAxeModeToggle,
+  onBombModeToggle,
   setupWallsRemaining,
   flashingSquare,
   flashColor = 'red',
@@ -62,6 +68,10 @@ export function GameBoard({
   const isAxeTarget = useCallback((row: number, col: number) => {
     return axeTargets.some(t => t.row === row && t.col === col);
   }, [axeTargets]);
+  
+  const isBombTarget = useCallback((row: number, col: number) => {
+    return bombTargets.some(t => t.row === row && t.col === col);
+  }, [bombTargets]);
   
   const isHanging = useCallback((row: number, col: number) => {
     return hangingPieces.some(h => h.row === row && h.col === col);
@@ -158,7 +168,9 @@ export function GameBoard({
             const showFlashing = isFlashing(rowIndex, colIndex);
             const isBishop = piece?.type === 'bishop' && piece?.color === playerColor && phase === 'playing' && isMyTurn;
             const isKnight = piece?.type === 'knight' && piece?.color === playerColor && phase === 'playing' && isMyTurn;
+            const isRook = piece?.type === 'rook' && piece?.color === playerColor && phase === 'playing' && isMyTurn;
             const showAxeTarget = isAxeTarget(rowIndex, colIndex);
+            const showBombTarget = isBombTarget(rowIndex, colIndex);
             
             // During setup, only show walls on player's own half
             const isOwnHalf = playerColor === 'white' 
@@ -181,6 +193,7 @@ export function GameBoard({
                   showValidMove && square.piece && "ring-2 ring-inset ring-red-500",
                   showArrowTarget && "ring-2 ring-inset ring-orange-500 bg-orange-400/30",
                   showAxeTarget && "ring-2 ring-inset ring-purple-500 bg-purple-400/30",
+                  showBombTarget && "ring-2 ring-inset ring-red-600 bg-red-400/30",
                   showHanging && "ring-2 ring-inset ring-yellow-400",
                 )}
                 style={showWall ? {
@@ -211,7 +224,7 @@ export function GameBoard({
                   </span>
                 )}
                 
-                {isBishop && showSelected && !isArrowMode && !isAxeMode && (
+                {isBishop && showSelected && !isArrowMode && !isAxeMode && !isBombMode && (
                   <div
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-7 h-7 rounded-full bg-orange-500 border-2 border-white shadow-lg cursor-pointer"
                     onClick={(e) => {
@@ -224,7 +237,7 @@ export function GameBoard({
                   </div>
                 )}
                 
-                {isKnight && showSelected && !isArrowMode && !isAxeMode && (
+                {isKnight && showSelected && !isArrowMode && !isAxeMode && !isBombMode && (
                   <div
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-7 h-7 rounded-full bg-purple-500 border-2 border-white shadow-lg cursor-pointer"
                     onClick={(e) => {
@@ -234,6 +247,19 @@ export function GameBoard({
                     data-testid={`axe-button-${rowIndex}-${colIndex}`}
                   >
                     <Axe className="w-5 h-5 text-white" />
+                  </div>
+                )}
+                
+                {isRook && showSelected && !isArrowMode && !isAxeMode && !isBombMode && (
+                  <div
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-7 h-7 rounded-full bg-red-600 border-2 border-white shadow-lg cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onBombModeToggle({ row: rowIndex, col: colIndex });
+                    }}
+                    data-testid={`bomb-button-${rowIndex}-${colIndex}`}
+                  >
+                    <Bomb className="w-5 h-5 text-white" />
                   </div>
                 )}
                 

@@ -1185,6 +1185,64 @@ class GameManager {
     return { state: room.state, diceRoll };
   }
 
+  handleBombAttack(playerId: string, from: Position, to: Position): { state: GameState; diceRoll: { value: number; type: 'd10'; success: boolean } } | null {
+    const gameId = this.playerToGame.get(playerId);
+    if (!gameId) return null;
+    
+    const room = this.games.get(gameId);
+    if (!room || room.state.phase !== 'playing') return null;
+    
+    const player = room.players.get(playerId);
+    if (!player) return null;
+    
+    if (room.state.currentTurn !== player.color) return null;
+    
+    const board = room.state.board;
+    const piece = board[from.row][from.col].piece;
+    if (!piece || piece.type !== 'rook' || piece.color !== player.color) return null;
+    
+    // Validate target is adjacent (1 square away)
+    const rowDiff = Math.abs(to.row - from.row);
+    const colDiff = Math.abs(to.col - from.col);
+    if (rowDiff > 1 || colDiff > 1 || (rowDiff === 0 && colDiff === 0)) return null;
+    
+    // Validate target is a wall
+    if (!board[to.row][to.col].isWall) return null;
+    
+    // Roll 1d10 for bomb attack - 10% success (need to roll 1)
+    const roll = Math.floor(Math.random() * 10) + 1;
+    const success = roll === 1;
+    
+    const diceRoll = { value: roll, type: 'd10' as const, success };
+    room.state.lastDiceRoll = diceRoll;
+    
+    const move: Move = {
+      from,
+      to,
+      piece,
+      captured: undefined,
+      isArrowAttack: false,
+      diceRoll: roll,
+      diceRequired: 10,
+      success,
+      notation: `R${String.fromCharCode(97 + from.col)}${12 - from.row}💣${String.fromCharCode(97 + to.col)}${12 - to.row}[d10:${roll}]`,
+    };
+    room.state.moveHistory.push(move);
+    
+    if (success) {
+      // Destroy the wall - revert to normal square
+      board[to.row][to.col].isWall = false;
+    }
+    
+    // Swap turns
+    room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
+    
+    // Save game to file
+    this.saveGame(room.state);
+    
+    return { state: room.state, diceRoll };
+  }
+
   getRoom(gameId: string): GameRoom | undefined {
     return this.games.get(gameId);
   }

@@ -240,6 +240,26 @@ export function getAxeTargets(board: Board, position: Position): Position[] {
   return targets;
 }
 
+export function getBombTargets(board: Board, position: Position): Position[] {
+  const square = board[position.row][position.col];
+  if (!square.piece || square.piece.type !== 'rook') return [];
+  
+  const targets: Position[] = [];
+  // Rook bomb attack can target adjacent wall squares
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const newRow = position.row + dr;
+      const newCol = position.col + dc;
+      if (isValidPosition(newRow, newCol) && board[newRow][newCol].isWall) {
+        targets.push({ row: newRow, col: newCol });
+      }
+    }
+  }
+  
+  return targets;
+}
+
 export function getArrowTargets(board: Board, position: Position): Position[] {
   const square = board[position.row][position.col];
   if (!square.piece || square.piece.type !== 'bishop') return [];

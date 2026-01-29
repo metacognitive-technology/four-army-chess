@@ -9,7 +9,7 @@ import { GameStatus } from "@/components/GameStatus";
 import { GameRules } from "@/components/GameRules";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useToast } from "@/hooks/use-toast";
-import { getValidMoves, getCheckSafeMoves, getArrowTargets, getAxeTargets, findHangingPieces, isInCheck, isCheckmate, createInitialBoard, PIECE_SYMBOLS } from "@/lib/gameUtils";
+import { getValidMoves, getCheckSafeMoves, getArrowTargets, getAxeTargets, getBombTargets, findHangingPieces, isInCheck, isCheckmate, createInitialBoard, PIECE_SYMBOLS } from "@/lib/gameUtils";
 import type { Position, GameState, SavedGameInfo, PromotionPieceType } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-const GAME_VERSION = "1.7.2";
+const GAME_VERSION = "1.8.0";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -62,6 +62,7 @@ export default function Game() {
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [isArrowMode, setIsArrowMode] = useState(false);
   const [isAxeMode, setIsAxeMode] = useState(false);
+  const [isBombMode, setIsBombMode] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [maxWalls, setMaxWalls] = useState(8);
   const [joinGameId, setJoinGameId] = useState(gameIdFromUrl || '');
@@ -228,12 +229,12 @@ export default function Game() {
   const currentTurn = gameState?.currentTurn || 'white';
   
   const validMoves = useMemo(() => {
-    if (!selectedPosition || !gameState || phase !== 'playing' || isArrowMode || isAxeMode) return [];
+    if (!selectedPosition || !gameState || phase !== 'playing' || isArrowMode || isAxeMode || isBombMode) return [];
     const piece = board[selectedPosition.row][selectedPosition.col].piece;
     if (!piece || piece.color !== playerColor || playerColor !== currentTurn) return [];
     // Use getCheckSafeMoves to filter out moves that would leave king in check
     return getCheckSafeMoves(board, selectedPosition);
-  }, [selectedPosition, gameState, phase, isArrowMode, isAxeMode, board, playerColor, currentTurn]);
+  }, [selectedPosition, gameState, phase, isArrowMode, isAxeMode, isBombMode, board, playerColor, currentTurn]);
   
   const arrowTargets = useMemo(() => {
     if (!selectedPosition || !isArrowMode || !gameState || phase !== 'playing') return [];
@@ -244,6 +245,11 @@ export default function Game() {
     if (!selectedPosition || !isAxeMode || !gameState || phase !== 'playing') return [];
     return getAxeTargets(board, selectedPosition);
   }, [selectedPosition, isAxeMode, gameState, phase, board]);
+  
+  const bombTargets = useMemo(() => {
+    if (!selectedPosition || !isBombMode || !gameState || phase !== 'playing') return [];
+    return getBombTargets(board, selectedPosition);
+  }, [selectedPosition, isBombMode, gameState, phase, board]);
   
   const hangingPieces = useMemo(() => {
     if (!gameState || phase !== 'playing' || !playerColor) return [];
@@ -316,6 +322,22 @@ export default function Game() {
       return;
     }
     
+    // Bomb mode - select wall target
+    if (isBombMode && selectedPosition) {
+      const isTarget = bombTargets.some(t => t.row === position.row && t.col === position.col);
+      if (isTarget) {
+        sendMessage({
+          type: 'bomb_attack',
+          payload: { from: selectedPosition, to: position },
+        });
+        setIsBombMode(false);
+        setSelectedPosition(null);
+      } else {
+        setIsBombMode(false);
+      }
+      return;
+    }
+    
     const clickedPiece = board[position.row][position.col].piece;
     
     // If clicking on own piece, select it
@@ -323,6 +345,7 @@ export default function Game() {
       setSelectedPosition(position);
       setIsArrowMode(false);
       setIsAxeMode(false);
+      setIsBombMode(false);
       return;
     }
     
@@ -339,17 +362,26 @@ export default function Game() {
         setSelectedPosition(null);
       }
     }
-  }, [gameState, phase, playerColor, currentTurn, isArrowMode, isAxeMode, selectedPosition, arrowTargets, axeTargets, validMoves, board, sendMessage]);
+  }, [gameState, phase, playerColor, currentTurn, isArrowMode, isAxeMode, isBombMode, selectedPosition, arrowTargets, axeTargets, bombTargets, validMoves, board, sendMessage]);
   
   const handleArrowModeToggle = useCallback((position: Position) => {
     setIsArrowMode(true);
     setIsAxeMode(false);
+    setIsBombMode(false);
     setSelectedPosition(position);
   }, []);
   
   const handleAxeModeToggle = useCallback((position: Position) => {
     setIsAxeMode(true);
     setIsArrowMode(false);
+    setIsBombMode(false);
+    setSelectedPosition(position);
+  }, []);
+  
+  const handleBombModeToggle = useCallback((position: Position) => {
+    setIsBombMode(true);
+    setIsArrowMode(false);
+    setIsAxeMode(false);
     setSelectedPosition(position);
   }, []);
   
@@ -722,12 +754,15 @@ export default function Game() {
               validMoves={validMoves}
               arrowTargets={arrowTargets}
               axeTargets={axeTargets}
+              bombTargets={bombTargets}
               hangingPieces={hangingPieces}
               isArrowMode={isArrowMode}
               isAxeMode={isAxeMode}
+              isBombMode={isBombMode}
               onSquareClick={handleSquareClick}
               onArrowModeToggle={handleArrowModeToggle}
               onAxeModeToggle={handleAxeModeToggle}
+              onBombModeToggle={handleBombModeToggle}
               setupWallsRemaining={playerColor ? gameState.setupWallsRemaining[playerColor] : 0}
               flashingSquare={flashingSquare}
               flashColor={flashColor}

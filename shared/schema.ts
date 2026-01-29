@@ -78,14 +78,14 @@ export interface GameState {
   capturedPieces: { white: Piece[]; black: Piece[] };
   players: { white: string | null; black: string | null };
   winner: PlayerColor | 'draw' | null;
-  lastDiceRoll?: { value: number; type: 'd4' | 'd6' | '2d6'; success: boolean };
+  lastDiceRoll?: { value: number; type: 'd4' | 'd6' | '2d6' | 'd10'; success: boolean };
   pendingArrowTarget?: Position;
   selectedPiece?: Position;
   attackSettings: AttackSettings;
 }
 
 export interface GameMessage {
-  type: 'join' | 'setup_wall' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover' | 'games_updated' | 'watch_cvc' | 'stop_cvc';
+  type: 'join' | 'setup_wall' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'bomb_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover' | 'games_updated' | 'watch_cvc' | 'stop_cvc';
   payload: any;
   playerId?: string;
 }
