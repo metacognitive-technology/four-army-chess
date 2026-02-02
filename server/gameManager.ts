@@ -1276,7 +1276,7 @@ class GameManager {
            room.state.phase === 'playing';
   }
 
-  makeAIMove(gameId: string): { state: GameState; diceRoll?: { value: number; type: 'd4' | 'd6'; success: boolean } } | null {
+  makeAIMove(gameId: string): { state: GameState; diceRoll?: { value: number; type: 'd4' | 'd6' | 'd10'; success: boolean } } | null {
     const room = this.games.get(gameId);
     if (!room || !this.isAITurn(gameId)) return null;
 
@@ -1288,7 +1288,7 @@ class GameManager {
     const inCheck = this.isInCheck(board, aiColor);
 
     // Collect all possible moves for AI
-    interface AIMove { from: Position; to: Position; score: number; isArrow?: boolean; escapesCheck?: boolean }
+    interface AIMove { from: Position; to: Position; score: number; isArrow?: boolean; isAxe?: boolean; isBomb?: boolean; escapesCheck?: boolean }
     const possibleMoves: AIMove[] = [];
 
     for (let row = 0; row < BOARD_SIZE; row++) {
@@ -1366,10 +1366,36 @@ class GameManager {
                 const values: Record<PieceType, number> = {
                   pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
                 };
-                // High priority for arrow attacks
-                const score = values[targetPiece.type] * 10 + 400 + Math.random() * 0.5;
+                // Very high priority for arrow attacks (prioritize special attacks)
+                const score = values[targetPiece.type] * 15 + 600 + Math.random() * 0.5;
                 possibleMoves.push({ from, to, score, isArrow: true });
               }
+            }
+          }
+          
+          // Add axe attacks for knights - high priority ranged attack
+          if (piece.type === 'knight' && !inCheck) {
+            const axeTargets = this.getAxeTargets(board, from, aiColor);
+            for (const to of axeTargets) {
+              const targetPiece = board[to.row][to.col].piece;
+              if (targetPiece) {
+                const values: Record<PieceType, number> = {
+                  pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
+                };
+                // Very high priority for axe attacks
+                const score = values[targetPiece.type] * 12 + 550 + Math.random() * 0.5;
+                possibleMoves.push({ from, to, score, isAxe: true });
+              }
+            }
+          }
+          
+          // Add bomb attacks for rooks - destroy adjacent walls
+          if (piece.type === 'rook' && !inCheck) {
+            const bombTargets = this.getBombTargets(board, from);
+            for (const to of bombTargets) {
+              // Prioritize bombing walls that block key squares
+              const score = 450 + Math.random() * 0.5;
+              possibleMoves.push({ from, to, score, isBomb: true });
             }
           }
         }
@@ -1400,6 +1426,10 @@ class GameManager {
     // Execute the move
     if (selectedMove.isArrow) {
       return this.executeAIArrowAttack(gameId, selectedMove.from, selectedMove.to);
+    } else if (selectedMove.isAxe) {
+      return this.executeAIAxeAttack(gameId, selectedMove.from, selectedMove.to);
+    } else if (selectedMove.isBomb) {
+      return this.executeAIBombAttack(gameId, selectedMove.from, selectedMove.to);
     } else {
       return this.executeAIMove(gameId, selectedMove.from, selectedMove.to);
     }
@@ -1448,6 +1478,29 @@ class GameManager {
         
         const targetPiece = board[newRow][newCol].piece;
         if (targetPiece && targetPiece.color !== color) {
+          targets.push({ row: newRow, col: newCol });
+        }
+      }
+    }
+    
+    return targets;
+  }
+
+  private getBombTargets(board: Board, from: Position): Position[] {
+    const targets: Position[] = [];
+    
+    // Check all 8 adjacent squares for walls
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        
+        const newRow = from.row + dr;
+        const newCol = from.col + dc;
+        
+        if (!this.isValidPosition(newRow, newCol)) continue;
+        
+        // Bomb targets walls, not pieces
+        if (board[newRow][newCol].isWall) {
           targets.push({ row: newRow, col: newCol });
         }
       }
@@ -1561,6 +1614,96 @@ class GameManager {
         state.winner = aiColor;
         state.phase = 'finished';
       }
+    }
+
+    state.currentTurn = aiColor === 'white' ? 'black' : 'white';
+
+    this.saveGame(state);
+    return { state, diceRoll };
+  }
+
+  private executeAIAxeAttack(gameId: string, from: Position, to: Position): { state: GameState; diceRoll: { value: number; type: 'd6'; success: boolean } } | null {
+    const room = this.games.get(gameId);
+    if (!room) return null;
+
+    const state = room.state;
+    const aiColor = state.aiColor!;
+    const board = state.board;
+    const piece = board[from.row][from.col].piece;
+    if (!piece) return null;
+
+    const targetPiece = board[to.row][to.col].piece;
+    if (!targetPiece) return null;
+
+    // Knight axe attack: roll d6, need >= knightMinRoll (default 4)
+    const roll = Math.floor(Math.random() * 6) + 1;
+    const threshold = state.attackSettings?.knightMinRoll ?? 4;
+    const success = roll >= threshold;
+
+    const diceRoll = { value: roll, type: 'd6' as const, success };
+    state.lastDiceRoll = diceRoll;
+
+    const move: Move = {
+      from,
+      to,
+      piece,
+      captured: success ? targetPiece : undefined,
+      isAxeAttack: true,
+      diceRoll: roll,
+      diceRequired: threshold,
+      success,
+      notation: `${piece.type === 'knight' ? 'N' : ''}🪓${String.fromCharCode(97 + to.col)}${BOARD_SIZE - to.row}(${roll}${success ? '✓' : '✗'})`,
+    };
+    state.moveHistory.push(move);
+
+    if (success) {
+      state.capturedPieces[aiColor].push(targetPiece);
+      board[to.row][to.col].piece = null;
+
+      if (targetPiece.type === 'king') {
+        state.winner = aiColor;
+        state.phase = 'finished';
+      }
+    }
+
+    state.currentTurn = aiColor === 'white' ? 'black' : 'white';
+
+    this.saveGame(state);
+    return { state, diceRoll };
+  }
+
+  private executeAIBombAttack(gameId: string, from: Position, to: Position): { state: GameState; diceRoll: { value: number; type: 'd10'; success: boolean } } | null {
+    const room = this.games.get(gameId);
+    if (!room) return null;
+
+    const state = room.state;
+    const aiColor = state.aiColor!;
+    const board = state.board;
+    const piece = board[from.row][from.col].piece;
+    if (!piece) return null;
+
+    // Rook bomb attack: roll d10, need <= bombSuccessRoll (default 1)
+    const roll = Math.floor(Math.random() * 10) + 1;
+    const threshold = state.attackSettings?.bombSuccessRoll ?? 1;
+    const success = roll <= threshold;
+
+    const diceRoll = { value: roll, type: 'd10' as const, success };
+    state.lastDiceRoll = diceRoll;
+
+    const move: Move = {
+      from,
+      to,
+      piece,
+      isBombAttack: true,
+      diceRoll: roll,
+      diceRequired: threshold,
+      success,
+      notation: `R💣${String.fromCharCode(97 + to.col)}${BOARD_SIZE - to.row}(${roll}${success ? '✓' : '✗'})`,
+    };
+    state.moveHistory.push(move);
+
+    if (success) {
+      board[to.row][to.col].isWall = false;
     }
 
     state.currentTurn = aiColor === 'white' ? 'black' : 'white';

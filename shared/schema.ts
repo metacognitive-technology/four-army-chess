@@ -47,6 +47,8 @@ export interface Move {
   piece: Piece;
   captured?: Piece;
   isArrowAttack?: boolean;
+  isAxeAttack?: boolean;
+  isBombAttack?: boolean;
   diceRoll?: number;
   diceRequired?: number;
   success?: boolean;
