@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-const GAME_VERSION = "1.8.1";
+const GAME_VERSION = "1.8.2";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -189,7 +189,6 @@ export default function Game() {
       if (lastDiceRollRef.current !== rollKey) {
         lastDiceRollRef.current = rollKey;
         
-        const isArrow = lastMove.isArrowAttack;
         const diceType = gameState.lastDiceRoll.type;
         const rolled = gameState.lastDiceRoll.value;
         const success = gameState.lastDiceRoll.success;
@@ -197,6 +196,7 @@ export default function Game() {
           Math.abs(lastMove.to.row - lastMove.from.row),
           Math.abs(lastMove.to.col - lastMove.from.col)
         );
+        const pieceType = lastMove.piece?.type || 'pawn';
         
         // Flash the target square on success (red), or the attacker on failure (yellow)
         if (success) {
@@ -207,12 +207,22 @@ export default function Game() {
           setFlashingSquare(lastMove.from);
         }
         
+        // Build description based on piece type
+        let attackDescription = '';
+        if (pieceType === 'bishop') {
+          attackDescription = `Bishop arrow: rolled ${rolled} on ${diceType} (needed ${distance}+)${success ? ' - target hit!' : ' - missed!'}`;
+        } else if (pieceType === 'knight') {
+          attackDescription = `Knight axe: rolled ${rolled} on ${diceType} (needed 4+)${success ? ' - target slain!' : ' - missed!'}`;
+        } else if (pieceType === 'rook') {
+          attackDescription = `Rook bomb: rolled ${rolled} on ${diceType} (needed 1)${success ? ' - wall destroyed!' : ' - failed!'}`;
+        } else {
+          attackDescription = `Pawn attack: rolled ${rolled} on ${diceType}${success ? ' - captured!' : ' - needed 1 to succeed'}`;
+        }
+        
         setTimeout(() => {
           toast({
             title: success ? "Attack Successful!" : "Attack Failed!",
-            description: isArrow 
-              ? `Arrow attack: rolled ${rolled} on ${diceType} (needed ${distance}+)${success ? ' - target hit!' : ' - missed!'}`
-              : `Pawn attack: rolled ${rolled} on ${diceType}${success ? ' - captured!' : ' - needed 1 to succeed'}`,
+            description: attackDescription,
             variant: success ? "default" : "destructive",
           });
         }, 300);
