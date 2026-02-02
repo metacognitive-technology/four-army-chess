@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { Board, Position, PlayerColor, PieceType } from "@shared/schema";
 import { PIECE_SYMBOLS, BOARD_SIZE, getValidMoves, getArrowTargets, findHangingPieces } from "@/lib/gameUtils";
 import { cn } from "@/lib/utils";
@@ -63,6 +63,7 @@ export function GameBoard({
 }: GameBoardProps) {
   const isMyTurn = playerColor === currentTurn;
   const [zoom, setZoom] = useState(1);
+  const boardRef = useRef<HTMLDivElement>(null);
   
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.2, 2));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.2, 0.6));
@@ -156,7 +157,8 @@ export function GameBoard({
         }}
       >
         <div 
-          className="grid gap-0 border-2 border-foreground/20 rounded-md overflow-hidden shadow-lg"
+          ref={boardRef}
+          className="grid gap-0 border-2 border-foreground/20 rounded-md overflow-hidden shadow-lg relative"
           style={{ 
             gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
             aspectRatio: '1 / 1',
@@ -298,22 +300,43 @@ export function GameBoard({
         </div>
       )}
       
-      {attackAnimation && (
-        <AttackAnimationOverlay animation={attackAnimation} />
+      {attackAnimation && boardRef.current && (
+        <AttackAnimationOverlay animation={attackAnimation} boardRef={boardRef} />
       )}
     </div>
   );
 }
 
-function AttackAnimationOverlay({ animation }: { animation: AttackAnimation }) {
+function AttackAnimationOverlay({ 
+  animation, 
+  boardRef 
+}: { 
+  animation: AttackAnimation;
+  boardRef: React.RefObject<HTMLDivElement>;
+}) {
   const [visible, setVisible] = useState(true);
+  const [positions, setPositions] = useState<{ fromX: number; fromY: number; toX: number; toY: number } | null>(null);
   
   useEffect(() => {
-    const timer = setTimeout(() => setVisible(false), 800);
+    // Calculate positions based on board element
+    if (boardRef.current) {
+      const rect = boardRef.current.getBoundingClientRect();
+      const cellSize = rect.width / BOARD_SIZE;
+      
+      // Calculate center of each cell
+      const fromX = rect.left + (animation.from.col + 0.5) * cellSize;
+      const fromY = rect.top + (animation.from.row + 0.5) * cellSize;
+      const toX = rect.left + (animation.to.col + 0.5) * cellSize;
+      const toY = rect.top + (animation.to.row + 0.5) * cellSize;
+      
+      setPositions({ fromX, fromY, toX, toY });
+    }
+    
+    const timer = setTimeout(() => setVisible(false), 1000);
     return () => clearTimeout(timer);
-  }, [animation]);
+  }, [animation, boardRef]);
   
-  if (!visible) return null;
+  if (!visible || !positions) return null;
   
   const getAnimationEmoji = () => {
     switch (animation.type) {
@@ -325,34 +348,65 @@ function AttackAnimationOverlay({ animation }: { animation: AttackAnimation }) {
     }
   };
   
-  const getAnimationColor = () => {
+  const getGlowColor = () => {
     switch (animation.type) {
-      case 'arrow': return 'text-orange-500';
-      case 'axe': return 'text-purple-500';
-      case 'bomb': return 'text-red-500';
-      case 'pawn': return 'text-yellow-500';
-      default: return 'text-white';
+      case 'arrow': return 'drop-shadow(0 0 8px rgb(249 115 22))';
+      case 'axe': return 'drop-shadow(0 0 8px rgb(168 85 247))';
+      case 'bomb': return 'drop-shadow(0 0 8px rgb(239 68 68))';
+      case 'pawn': return 'drop-shadow(0 0 8px rgb(234 179 8))';
+      default: return 'drop-shadow(0 0 8px white)';
     }
   };
   
+  // Calculate angle for rotation (arrow/axe should point toward target)
+  const dx = positions.toX - positions.fromX;
+  const dy = positions.toY - positions.fromY;
+  const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+  
   return (
-    <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
+    <div className="fixed inset-0 pointer-events-none z-50">
       <div 
-        className={cn(
-          "text-6xl animate-bounce",
-          getAnimationColor(),
-        )}
+        className="absolute text-4xl"
         style={{
-          animation: 'attackPulse 0.8s ease-out forwards',
-        }}
+          left: positions.fromX,
+          top: positions.fromY,
+          transform: 'translate(-50%, -50%)',
+          filter: getGlowColor(),
+          animation: 'attackSlide 1s ease-in-out forwards',
+          '--from-x': `${positions.fromX}px`,
+          '--from-y': `${positions.fromY}px`,
+          '--to-x': `${positions.toX}px`,
+          '--to-y': `${positions.toY}px`,
+          '--angle': `${angle}deg`,
+        } as React.CSSProperties}
       >
         {getAnimationEmoji()}
         <style>{`
-          @keyframes attackPulse {
-            0% { transform: scale(0.5); opacity: 0; }
-            30% { transform: scale(1.5); opacity: 1; }
-            60% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(1); opacity: 0; }
+          @keyframes attackSlide {
+            0% { 
+              left: var(--from-x);
+              top: var(--from-y);
+              transform: translate(-50%, -50%) scale(1.2);
+              opacity: 1;
+            }
+            20% { 
+              left: var(--from-x);
+              top: var(--from-y);
+              transform: translate(-50%, -50%) scale(1.5);
+              opacity: 1;
+            }
+            80% { 
+              left: var(--to-x);
+              top: var(--to-y);
+              transform: translate(-50%, -50%) scale(1.2);
+              opacity: 1;
+            }
+            100% { 
+              left: var(--to-x);
+              top: var(--to-y);
+              transform: translate(-50%, -50%) scale(1);
+              opacity: 0;
+            }
           }
         `}</style>
       </div>

@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-const GAME_VERSION = "1.8.4";
+const GAME_VERSION = "1.8.5";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -214,7 +214,7 @@ export default function Game() {
         });
         
         // Clear animation after it plays
-        setTimeout(() => setAttackAnimation(null), 900);
+        setTimeout(() => setAttackAnimation(null), 1100);
         
         // Flash the target square on success (red), or the attacker on failure (yellow)
         if (success) {
