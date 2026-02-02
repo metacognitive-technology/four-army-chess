@@ -19,9 +19,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { playAttackSound, playSuccessSound, playFailSound } from "@/lib/sounds";
+import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.8.6";
+const GAME_VERSION = "1.8.7";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -72,6 +72,7 @@ export default function Game() {
   const [flashColor, setFlashColor] = useState<'red' | 'yellow'>('red');
   const [isCreatingCvC, setIsCreatingCvC] = useState(false);
   const lastDiceRollRef = useRef<string | null>(null);
+  const lastPhaseRef = useRef<string | null>(null);
   
   // Attack probability settings
   const [pawnSuccessRoll, setPawnSuccessRoll] = useState(1);  // Roll this or lower on d6
@@ -265,6 +266,32 @@ export default function Game() {
       }
     }
   }, [gameState?.lastDiceRoll, gameState?.moveHistory, toast]);
+  
+  // Play victory/defeat sounds when game ends
+  useEffect(() => {
+    if (!gameState) return;
+    
+    const currentPhase = gameState.phase;
+    const prevPhase = lastPhaseRef.current;
+    
+    // Detect transition to 'finished' phase
+    if (currentPhase === 'finished' && prevPhase !== 'finished') {
+      const winner = gameState.winner;
+      
+      if (playerColor && winner) {
+        // Delay slightly to let the final move register
+        setTimeout(() => {
+          if (winner === playerColor) {
+            playVictoryFanfare();
+          } else {
+            playDefeatSound();
+          }
+        }, 500);
+      }
+    }
+    
+    lastPhaseRef.current = currentPhase;
+  }, [gameState?.phase, gameState?.winner, playerColor]);
   
   const board = gameState?.board || createInitialBoard();
   const phase = gameState?.phase || 'waiting';

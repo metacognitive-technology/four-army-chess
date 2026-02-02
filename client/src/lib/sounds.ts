@@ -113,3 +113,24 @@ export function playFailSound() {
   playTone(300, 0.15, 'sawtooth', 0.2, 200);
   setTimeout(() => playTone(200, 0.2, 'sawtooth', 0.15, 100), 100);
 }
+
+export function playVictoryFanfare() {
+  // Triumphant fanfare
+  playTone(523, 0.15, 'square', 0.25); // C5
+  setTimeout(() => playTone(659, 0.15, 'square', 0.25), 150); // E5
+  setTimeout(() => playTone(784, 0.15, 'square', 0.25), 300); // G5
+  setTimeout(() => playTone(1047, 0.3, 'square', 0.3), 450); // C6
+  setTimeout(() => {
+    playTone(784, 0.1, 'square', 0.2); // G5
+    playTone(1047, 0.4, 'sine', 0.35); // C6 sustained
+  }, 600);
+  setTimeout(() => playTone(1319, 0.5, 'sine', 0.3), 800); // E6 finale
+}
+
+export function playDefeatSound() {
+  // Sad trombone "wah wah wah wahhh"
+  playTone(311, 0.3, 'sawtooth', 0.3, 293); // Eb4 -> D4
+  setTimeout(() => playTone(293, 0.3, 'sawtooth', 0.28, 277), 350); // D4 -> Db4
+  setTimeout(() => playTone(277, 0.3, 'sawtooth', 0.26, 261), 700); // Db4 -> C4
+  setTimeout(() => playTone(261, 0.6, 'sawtooth', 0.3, 195), 1050); // C4 -> G3 (long slide down)
+}
