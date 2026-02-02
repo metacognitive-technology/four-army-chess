@@ -19,8 +19,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { playAttackSound, playSuccessSound, playFailSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.8.5";
+const GAME_VERSION = "1.8.6";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -205,13 +206,25 @@ export default function Game() {
         else if (pieceType === 'knight') animType = 'axe';
         else if (pieceType === 'rook') animType = 'bomb';
         
-        // Trigger attack animation
+        // Trigger attack animation and sound
         setAttackAnimation({
           type: animType,
           from: lastMove.from,
           to: lastMove.to,
           success,
         });
+        
+        // Play attack sound
+        playAttackSound(animType);
+        
+        // Play success/fail sound after attack lands
+        setTimeout(() => {
+          if (success) {
+            playSuccessSound();
+          } else {
+            playFailSound();
+          }
+        }, 600);
         
         // Clear animation after it plays
         setTimeout(() => setAttackAnimation(null), 1100);
