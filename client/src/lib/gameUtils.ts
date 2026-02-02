@@ -402,9 +402,18 @@ export function isInCheck(board: Board, color: PlayerColor): boolean {
     for (let col = 0; col < BOARD_SIZE; col++) {
       const piece = board[row][col].piece;
       if (piece && piece.color === opponentColor) {
+        // Check regular attacks
         const attacks = getValidMoves(board, { row, col }, true);
         if (attacks.some(pos => pos.row === kingPos!.row && pos.col === kingPos!.col)) {
           return true;
+        }
+        
+        // Check bishop arrow attacks (potential future attacks)
+        if (piece.type === 'bishop') {
+          const arrowTargets = getArrowTargets(board, { row, col });
+          if (arrowTargets.some(pos => pos.row === kingPos!.row && pos.col === kingPos!.col)) {
+            return true;
+          }
         }
       }
     }

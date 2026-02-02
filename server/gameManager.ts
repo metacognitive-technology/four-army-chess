@@ -1821,6 +1821,14 @@ class GameManager {
           if (attacks.some(pos => pos.row === kingPos.row && pos.col === kingPos.col)) {
             return true;
           }
+          
+          // Check bishop arrow attacks (potential future attacks)
+          if (piece.type === 'bishop') {
+            const arrowTargets = this.getArrowTargets(board, { row, col }, opponentColor);
+            if (arrowTargets.some(pos => pos.row === kingPos.row && pos.col === kingPos.col)) {
+              return true;
+            }
+          }
         }
       }
     }
