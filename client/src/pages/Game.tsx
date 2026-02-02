@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-const GAME_VERSION = "1.8.0";
+const GAME_VERSION = "1.8.1";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -75,6 +75,7 @@ export default function Game() {
   const [pawnSuccessRoll, setPawnSuccessRoll] = useState(1);  // Roll this or lower on d6
   const [bishopMinRoll, setBishopMinRoll] = useState(0);      // 0 = use distance, else fixed threshold
   const [knightMinRoll, setKnightMinRoll] = useState(4);      // Roll this or higher on d6
+  const [bombSuccessRoll, setBombSuccessRoll] = useState(1);  // Roll this or lower on d10
   
   // Fetch saved games
   const { data: savedGames = [], isLoading: loadingSavedGames } = useQuery<SavedGameInfo[]>({
@@ -516,13 +517,29 @@ export default function Game() {
                   data-testid="slider-knight-attack"
                 />
               </div>
+              
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <Label>Rook Bomb: roll {bombSuccessRoll} or less on d10</Label>
+                  <span className="text-muted-foreground">{bombSuccessRoll * 10}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={bombSuccessRoll}
+                  onChange={(e) => setBombSuccessRoll(parseInt(e.target.value))}
+                  className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                  data-testid="slider-bomb-attack"
+                />
+              </div>
             </div>
             
             <div className="space-y-4">
               <Button 
                 className="w-full gap-2" 
                 size="lg"
-                onClick={() => createGame(maxWalls, 'pvc', { pawnSuccessRoll, bishopMinRoll, knightMinRoll })}
+                onClick={() => createGame(maxWalls, 'pvc', { pawnSuccessRoll, bishopMinRoll, knightMinRoll, bombSuccessRoll })}
                 data-testid="button-play-computer"
               >
                 <Bot className="w-5 h-5" />
@@ -533,7 +550,7 @@ export default function Game() {
                 className="w-full gap-2" 
                 size="lg"
                 variant="outline"
-                onClick={() => createGame(maxWalls, 'pvp', { pawnSuccessRoll, bishopMinRoll, knightMinRoll })}
+                onClick={() => createGame(maxWalls, 'pvp', { pawnSuccessRoll, bishopMinRoll, knightMinRoll, bombSuccessRoll })}
                 data-testid="button-create-game"
               >
                 <Users className="w-5 h-5" />

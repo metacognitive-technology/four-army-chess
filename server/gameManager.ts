@@ -231,6 +231,7 @@ class GameManager {
       pawnSuccessRoll: 1,
       bishopMinRoll: 0,
       knightMinRoll: 4,
+      bombSuccessRoll: 1,
     };
     
     const state: GameState = {
@@ -288,6 +289,7 @@ class GameManager {
       pawnSuccessRoll: 1,
       bishopMinRoll: 0,
       knightMinRoll: 4,
+      bombSuccessRoll: 1,
     };
     
     const state: GameState = {
@@ -1209,9 +1211,10 @@ class GameManager {
     // Validate target is a wall
     if (!board[to.row][to.col].isWall) return null;
     
-    // Roll 1d10 for bomb attack - 10% success (need to roll 1)
+    // Roll 1d10 for bomb attack - configurable success rate
+    const bombSuccessRoll = room.state.attackSettings.bombSuccessRoll;
     const roll = Math.floor(Math.random() * 10) + 1;
-    const success = roll === 1;
+    const success = roll <= bombSuccessRoll;
     
     const diceRoll = { value: roll, type: 'd10' as const, success };
     room.state.lastDiceRoll = diceRoll;
@@ -1225,7 +1228,7 @@ class GameManager {
       diceRoll: roll,
       diceRequired: 10,
       success,
-      notation: `R${String.fromCharCode(97 + from.col)}${12 - from.row}💣${String.fromCharCode(97 + to.col)}${12 - to.row}[d10:${roll}]`,
+      notation: `R${String.fromCharCode(97 + from.col)}${12 - from.row}💣${String.fromCharCode(97 + to.col)}${12 - to.row}[d10:${roll}≤${bombSuccessRoll}]`,
     };
     room.state.moveHistory.push(move);
     

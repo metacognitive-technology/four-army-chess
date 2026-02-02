@@ -63,6 +63,7 @@ export interface AttackSettings {
   pawnSuccessRoll: number;   // Roll this or lower on d6 to succeed (default 1)
   bishopMinRoll: number;     // Roll this or higher on 2d6 for arrow (default: distance)
   knightMinRoll: number;     // Roll this or higher on d6 for axe (default 4)
+  bombSuccessRoll: number;   // Roll this or lower on d10 to succeed (default 1 = 10%)
 }
 
 export interface GameState {
