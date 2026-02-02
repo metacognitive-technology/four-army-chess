@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { GameBoard } from "@/components/GameBoard";
+import { GameBoard, AttackAnimation, AttackAnimationType } from "@/components/GameBoard";
 import { PlayerPanel } from "@/components/PlayerPanel";
 import { MoveHistory } from "@/components/MoveHistory";
 import { GameControls } from "@/components/GameControls";
@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-const GAME_VERSION = "1.8.2";
+const GAME_VERSION = "1.8.3";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -67,6 +67,7 @@ export default function Game() {
   const [maxWalls, setMaxWalls] = useState(8);
   const [joinGameId, setJoinGameId] = useState(gameIdFromUrl || '');
   const [flashingSquare, setFlashingSquare] = useState<Position | null>(null);
+  const [attackAnimation, setAttackAnimation] = useState<AttackAnimation | null>(null);
   const [flashColor, setFlashColor] = useState<'red' | 'yellow'>('red');
   const [isCreatingCvC, setIsCreatingCvC] = useState(false);
   const lastDiceRollRef = useRef<string | null>(null);
@@ -197,6 +198,23 @@ export default function Game() {
           Math.abs(lastMove.to.col - lastMove.from.col)
         );
         const pieceType = lastMove.piece?.type || 'pawn';
+        
+        // Determine animation type based on piece
+        let animType: AttackAnimationType = 'pawn';
+        if (pieceType === 'bishop') animType = 'arrow';
+        else if (pieceType === 'knight') animType = 'axe';
+        else if (pieceType === 'rook') animType = 'bomb';
+        
+        // Trigger attack animation
+        setAttackAnimation({
+          type: animType,
+          from: lastMove.from,
+          to: lastMove.to,
+          success,
+        });
+        
+        // Clear animation after it plays
+        setTimeout(() => setAttackAnimation(null), 900);
         
         // Flash the target square on success (red), or the attacker on failure (yellow)
         if (success) {
@@ -793,6 +811,7 @@ export default function Game() {
               setupWallsRemaining={playerColor ? gameState.setupWallsRemaining[playerColor] : 0}
               flashingSquare={flashingSquare}
               flashColor={flashColor}
+              attackAnimation={attackAnimation}
             />
             
             {pendingPromotion && (

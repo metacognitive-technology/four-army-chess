@@ -1,9 +1,18 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { Board, Position, PlayerColor, PieceType } from "@shared/schema";
 import { PIECE_SYMBOLS, BOARD_SIZE, getValidMoves, getArrowTargets, findHangingPieces } from "@/lib/gameUtils";
 import { cn } from "@/lib/utils";
 import { Target, ZoomIn, ZoomOut, RotateCcw, Axe, Bomb } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+export type AttackAnimationType = 'arrow' | 'axe' | 'bomb' | 'pawn';
+
+export interface AttackAnimation {
+  type: AttackAnimationType;
+  from: Position;
+  to: Position;
+  success: boolean;
+}
 
 interface GameBoardProps {
   board: Board;
@@ -26,6 +35,7 @@ interface GameBoardProps {
   setupWallsRemaining: number;
   flashingSquare: Position | null;
   flashColor?: 'red' | 'yellow';
+  attackAnimation?: AttackAnimation | null;
 }
 
 export function GameBoard({
@@ -49,6 +59,7 @@ export function GameBoard({
   setupWallsRemaining,
   flashingSquare,
   flashColor = 'red',
+  attackAnimation,
 }: GameBoardProps) {
   const isMyTurn = playerColor === currentTurn;
   const [zoom, setZoom] = useState(1);
@@ -286,6 +297,65 @@ export function GameBoard({
           Walls remaining: {setupWallsRemaining}
         </div>
       )}
+      
+      {attackAnimation && (
+        <AttackAnimationOverlay animation={attackAnimation} />
+      )}
+    </div>
+  );
+}
+
+function AttackAnimationOverlay({ animation }: { animation: AttackAnimation }) {
+  const [visible, setVisible] = useState(true);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(false), 800);
+    return () => clearTimeout(timer);
+  }, [animation]);
+  
+  if (!visible) return null;
+  
+  const getAnimationEmoji = () => {
+    switch (animation.type) {
+      case 'arrow': return '🏹';
+      case 'axe': return '🪓';
+      case 'bomb': return '💣';
+      case 'pawn': return '⚔️';
+      default: return '💥';
+    }
+  };
+  
+  const getAnimationColor = () => {
+    switch (animation.type) {
+      case 'arrow': return 'text-orange-500';
+      case 'axe': return 'text-purple-500';
+      case 'bomb': return 'text-red-500';
+      case 'pawn': return 'text-yellow-500';
+      default: return 'text-white';
+    }
+  };
+  
+  return (
+    <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
+      <div 
+        className={cn(
+          "text-6xl animate-bounce",
+          getAnimationColor(),
+        )}
+        style={{
+          animation: 'attackPulse 0.8s ease-out forwards',
+        }}
+      >
+        {getAnimationEmoji()}
+        <style>{`
+          @keyframes attackPulse {
+            0% { transform: scale(0.5); opacity: 0; }
+            30% { transform: scale(1.5); opacity: 1; }
+            60% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+          }
+        `}</style>
+      </div>
     </div>
   );
 }
