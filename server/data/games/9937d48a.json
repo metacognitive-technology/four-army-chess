@@ -552,7 +552,7 @@
         "row": 6,
         "col": 9,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 6,
@@ -614,7 +614,7 @@
         "row": 7,
         "col": 7,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
@@ -987,11 +987,11 @@
     ]
   ],
   "currentTurn": "white",
-  "phase": "setup",
+  "phase": "playing",
   "gameMode": "pvc",
   "aiColor": "black",
   "setupWallsRemaining": {
-    "white": 2,
+    "white": 0,
     "black": 0
   },
   "maxWallsPerPlayer": 8,
