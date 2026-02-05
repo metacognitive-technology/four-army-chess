@@ -359,7 +359,7 @@ export function GameBoard({
       )}
       
       {attackAnimation && boardRef.current && (
-        <AttackAnimationOverlay animation={attackAnimation} boardRef={boardRef} />
+        <AttackAnimationOverlay animation={attackAnimation} boardRef={boardRef} shouldFlipBoard={shouldFlipBoard} />
       )}
     </div>
   );
@@ -367,10 +367,12 @@ export function GameBoard({
 
 function AttackAnimationOverlay({ 
   animation, 
-  boardRef 
+  boardRef,
+  shouldFlipBoard = false
 }: { 
   animation: AttackAnimation;
   boardRef: React.RefObject<HTMLDivElement>;
+  shouldFlipBoard?: boolean;
 }) {
   const [visible, setVisible] = useState(true);
   const [positions, setPositions] = useState<{ fromX: number; fromY: number; toX: number; toY: number } | null>(null);
@@ -381,18 +383,24 @@ function AttackAnimationOverlay({
       const rect = boardRef.current.getBoundingClientRect();
       const cellSize = rect.width / BOARD_SIZE;
       
+      // Account for board flip when calculating visual positions
+      const fromCol = shouldFlipBoard ? BOARD_SIZE - 1 - animation.from.col : animation.from.col;
+      const fromRow = shouldFlipBoard ? BOARD_SIZE - 1 - animation.from.row : animation.from.row;
+      const toCol = shouldFlipBoard ? BOARD_SIZE - 1 - animation.to.col : animation.to.col;
+      const toRow = shouldFlipBoard ? BOARD_SIZE - 1 - animation.to.row : animation.to.row;
+      
       // Calculate center of each cell
-      const fromX = rect.left + (animation.from.col + 0.5) * cellSize;
-      const fromY = rect.top + (animation.from.row + 0.5) * cellSize;
-      const toX = rect.left + (animation.to.col + 0.5) * cellSize;
-      const toY = rect.top + (animation.to.row + 0.5) * cellSize;
+      const fromX = rect.left + (fromCol + 0.5) * cellSize;
+      const fromY = rect.top + (fromRow + 0.5) * cellSize;
+      const toX = rect.left + (toCol + 0.5) * cellSize;
+      const toY = rect.top + (toRow + 0.5) * cellSize;
       
       setPositions({ fromX, fromY, toX, toY });
     }
     
     const timer = setTimeout(() => setVisible(false), 1000);
     return () => clearTimeout(timer);
-  }, [animation, boardRef]);
+  }, [animation, boardRef, shouldFlipBoard]);
   
   if (!visible || !positions) return null;
   

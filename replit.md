@@ -30,6 +30,12 @@ Always update `GAME_VERSION` in `client/src/pages/Game.tsx` whenever code is mod
 - **State Flow**: Client sends actions via WebSocket → Server validates and updates state → Server broadcasts to all players in room
 - **Reconnection**: Players can reconnect to games using their player ID and game ID
 
+### Board Perspective System
+- **Board Flip**: In PvP mode, black player's board is visually flipped (rotated 180°)
+- **Position Handling**: Logical positions are always row 0-11, col 0-11 regardless of visual flip
+- **Attack Animations**: AttackAnimationOverlay transforms logical to display positions when board is flipped
+- **Click Handling**: GameBoard translates display positions to logical positions using rowIndex/colIndex calculations
+
 ### AI System
 - **A* Pathfinding**: AI uses A* algorithm with Chebyshev distance heuristic for 8-directional movement
 - **Caching**: Path distances are cached per board wall configuration to reduce compute cost
