@@ -284,6 +284,24 @@ export async function registerRoutes(
             }
             break;
           }
+          
+          case 'setup_maze_walls': {
+            if (message.playerId || currentPlayerId) {
+              const state = gameManager.handleMazeWalls(
+                message.playerId || currentPlayerId!
+              );
+              if (state && currentGameId) {
+                const room = gameManager.getRoom(currentGameId);
+                if (room) {
+                  broadcastToRoom(room, {
+                    type: 'state',
+                    payload: { state },
+                  });
+                }
+              }
+            }
+            break;
+          }
 
           case 'ready': {
             if (message.playerId || currentPlayerId) {

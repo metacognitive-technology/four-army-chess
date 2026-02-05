@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.9.4";
+const GAME_VERSION = "1.9.6";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -507,6 +507,10 @@ export default function Game() {
   
   const handleRandomWalls = useCallback(() => {
     sendMessage({ type: 'setup_random_walls', payload: {} });
+  }, [sendMessage]);
+  
+  const handleMazeWalls = useCallback(() => {
+    sendMessage({ type: 'setup_maze_walls', payload: {} });
   }, [sendMessage]);
   
   const handleNewGame = useCallback(() => {
@@ -1000,6 +1004,7 @@ export default function Game() {
               onAcceptDraw={handleAcceptDraw}
               onDeclineDraw={handleDeclineDraw}
               onRandomWalls={handleRandomWalls}
+              onMazeWalls={handleMazeWalls}
               wallsRemaining={playerColor ? gameState.setupWallsRemaining[playerColor] : 0}
             />
             

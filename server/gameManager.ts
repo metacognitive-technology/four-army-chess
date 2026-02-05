@@ -1157,6 +1157,179 @@ class GameManager {
     
     return room.state;
   }
+  
+  handleMazeWalls(playerId: string): GameState | null {
+    const gameId = this.playerToGame.get(playerId);
+    if (!gameId) return null;
+    
+    const room = this.games.get(gameId);
+    if (!room || room.state.phase !== 'setup') return null;
+    
+    const player = room.players.get(playerId);
+    if (!player) return null;
+    
+    const color = player.color;
+    
+    // First clear existing walls for this player
+    const isWhite = color === 'white';
+    const startRow = isWhite ? BOARD_SIZE / 2 : 0;
+    const endRow = isWhite ? BOARD_SIZE : BOARD_SIZE / 2;
+    
+    let wallCount = 0;
+    for (let row = startRow; row < endRow; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        if (room.state.board[row][col].isWall) {
+          room.state.board[row][col].isWall = false;
+          wallCount++;
+        }
+      }
+    }
+    
+    // Restore wall count
+    const totalWalls = room.state.setupWallsRemaining[color] + wallCount;
+    const halfHeight = BOARD_SIZE / 2;
+    
+    // Generate maze using recursive division with corridors
+    const generateMazePattern = (): Position[] => {
+      const positions: Position[] = [];
+      const validSquares: Position[] = [];
+      
+      // Collect all valid positions (no pieces)
+      for (let row = startRow; row < endRow; row++) {
+        for (let col = 0; col < BOARD_SIZE; col++) {
+          if (!room.state.board[row][col].piece) {
+            validSquares.push({ row, col });
+          }
+        }
+      }
+      
+      // Create maze structure with chambers and corridors
+      // Divide the half into chambers using walls with passage gaps
+      
+      // Vertical dividers at different columns with 2-cell gaps
+      const dividerCols = [3, 7, 11];
+      for (const col of dividerCols) {
+        if (col >= BOARD_SIZE) continue;
+        // Create gap positions (2-3 squares wide)
+        const gapStart = startRow + Math.floor(Math.random() * (halfHeight - 2));
+        const gapSize = 2 + Math.floor(Math.random() * 2);
+        
+        for (let row = startRow; row < endRow; row++) {
+          // Skip the gap area
+          if (row >= gapStart && row < gapStart + gapSize) continue;
+          if (!room.state.board[row][col].piece) {
+            positions.push({ row, col });
+          }
+        }
+      }
+      
+      // Horizontal dividers with gaps
+      const midRow = startRow + Math.floor(halfHeight / 2);
+      const horizontalRows = [midRow];
+      if (halfHeight > 4) {
+        horizontalRows.push(startRow + 1);
+        horizontalRows.push(endRow - 2);
+      }
+      
+      for (const row of horizontalRows) {
+        if (row < startRow || row >= endRow) continue;
+        // Create multiple gaps in horizontal walls
+        const numGaps = 2 + Math.floor(Math.random() * 2);
+        const gaps: number[] = [];
+        for (let g = 0; g < numGaps; g++) {
+          gaps.push(Math.floor(Math.random() * BOARD_SIZE));
+        }
+        
+        for (let col = 0; col < BOARD_SIZE; col++) {
+          // Skip gap areas (2 squares wide)
+          const nearGap = gaps.some(g => Math.abs(col - g) <= 1);
+          if (nearGap) continue;
+          if (!room.state.board[row][col].piece) {
+            positions.push({ row, col });
+          }
+        }
+      }
+      
+      // Add some L-shaped and corner pieces for visual interest
+      const cornerPatterns = [
+        [[0, 0], [0, 1], [1, 0]], // L top-left
+        [[0, 0], [0, 1], [-1, 0]], // L bottom-left
+        [[0, 0], [1, 0], [1, 1]], // corner
+      ];
+      
+      for (let i = 0; i < Math.floor(totalWalls * 0.15); i++) {
+        const pattern = cornerPatterns[Math.floor(Math.random() * cornerPatterns.length)];
+        const baseRow = startRow + 1 + Math.floor(Math.random() * (halfHeight - 2));
+        const baseCol = 1 + Math.floor(Math.random() * (BOARD_SIZE - 2));
+        
+        for (const [dr, dc] of pattern) {
+          const r = baseRow + dr;
+          const c = baseCol + dc;
+          if (r >= startRow && r < endRow && c >= 0 && c < BOARD_SIZE) {
+            if (!room.state.board[r][c].piece) {
+              positions.push({ row: r, col: c });
+            }
+          }
+        }
+      }
+      
+      return positions;
+    };
+    
+    const allPositions = generateMazePattern();
+    
+    // Remove duplicates
+    const uniquePositions = allPositions.filter((pos, idx) => 
+      allPositions.findIndex(p => p.row === pos.row && p.col === pos.col) === idx
+    );
+    
+    // Shuffle positions for variety
+    for (let i = uniquePositions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [uniquePositions[i], uniquePositions[j]] = [uniquePositions[j], uniquePositions[i]];
+    }
+    
+    // Place walls up to the limit
+    let placed = 0;
+    for (const pos of uniquePositions) {
+      if (placed >= totalWalls) break;
+      if (!room.state.board[pos.row][pos.col].piece && !room.state.board[pos.row][pos.col].isWall) {
+        room.state.board[pos.row][pos.col].isWall = true;
+        placed++;
+      }
+    }
+    
+    // If we haven't placed all walls, fill remaining randomly
+    if (placed < totalWalls) {
+      const remaining: Position[] = [];
+      for (let row = startRow; row < endRow; row++) {
+        for (let col = 0; col < BOARD_SIZE; col++) {
+          if (!room.state.board[row][col].piece && !room.state.board[row][col].isWall) {
+            remaining.push({ row, col });
+          }
+        }
+      }
+      
+      // Shuffle remaining
+      for (let i = remaining.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+      }
+      
+      for (const pos of remaining) {
+        if (placed >= totalWalls) break;
+        room.state.board[pos.row][pos.col].isWall = true;
+        placed++;
+      }
+    }
+    
+    room.state.setupWallsRemaining[color] = totalWalls - placed;
+    
+    // Save game to file
+    this.saveGame(room.state);
+    
+    return room.state;
+  }
 
   handleReady(playerId: string): GameState | null {
     const gameId = this.playerToGame.get(playerId);
