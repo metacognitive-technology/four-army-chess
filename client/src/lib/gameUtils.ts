@@ -7,11 +7,11 @@ export const MAX_MOVE_DISTANCE = 8;
 // Using variation selector-15 (U+FE0E) to force text rendering instead of emoji
 export const PIECE_SYMBOLS: Record<PieceType, { white: string; black: string }> = {
   king: { white: '♔\uFE0E', black: '♚\uFE0E' },
-  queen: { white: '♕\uFE0E', black: '♛\uFE0E' },
+  queen: { white: '♛\uFE0E', black: '♛\uFE0E' },
   rook: { white: '♖\uFE0E', black: '♜\uFE0E' },
   bishop: { white: '♗\uFE0E', black: '♝\uFE0E' },
-  knight: { white: '♘\uFE0E', black: '♞\uFE0E' },
-  pawn: { white: '♙\uFE0E', black: '♙\uFE0E' },
+  knight: { white: '♞\uFE0E', black: '♞\uFE0E' },
+  pawn: { white: '♟\uFE0E', black: '♟\uFE0E' },
 };
 
 export function createInitialBoard(): Board {
