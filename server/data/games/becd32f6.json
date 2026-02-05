@@ -590,7 +590,7 @@
         "row": 7,
         "col": 3,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
@@ -608,7 +608,7 @@
         "row": 7,
         "col": 6,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
@@ -620,7 +620,7 @@
         "row": 7,
         "col": 8,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
@@ -991,7 +991,7 @@
   "gameMode": "pvc",
   "aiColor": "black",
   "setupWallsRemaining": {
-    "white": 24,
+    "white": 21,
     "black": 0
   },
   "maxWallsPerPlayer": 24,

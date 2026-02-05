@@ -8,7 +8,7 @@ export const MAX_MOVE_DISTANCE = 8;
 export const PIECE_SYMBOLS: Record<PieceType, { white: string; black: string }> = {
   king: { white: '♔\uFE0E', black: '♚\uFE0E' },
   queen: { white: '♛\uFE0E', black: '♛\uFE0E' },
-  rook: { white: '♖\uFE0E', black: '♜\uFE0E' },
+  rook: { white: '♜\uFE0E', black: '♜\uFE0E' },
   bishop: { white: '♗\uFE0E', black: '♝\uFE0E' },
   knight: { white: '♞\uFE0E', black: '♞\uFE0E' },
   pawn: { white: '♟\uFE0E', black: '♟\uFE0E' },
