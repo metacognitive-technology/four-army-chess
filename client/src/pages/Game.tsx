@@ -9,7 +9,7 @@ import { GameStatus } from "@/components/GameStatus";
 import { GameRules } from "@/components/GameRules";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useToast } from "@/hooks/use-toast";
-import { getValidMoves, getCheckSafeMoves, getArrowTargets, getAxeTargets, getBombTargets, findHangingPieces, isInCheck, isCheckmate, createInitialBoard, PIECE_SYMBOLS } from "@/lib/gameUtils";
+import { getValidMoves, getCheckSafeMoves, getArrowTargets, getAxeTargets, getBombTargets, getWallBuildTargets, findHangingPieces, isInCheck, isCheckmate, createInitialBoard, PIECE_SYMBOLS } from "@/lib/gameUtils";
 import type { Position, GameState, SavedGameInfo, PromotionPieceType } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.10.1";
+const GAME_VERSION = "1.10.2";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -87,6 +87,7 @@ export default function Game() {
   const [isArrowMode, setIsArrowMode] = useState(false);
   const [isAxeMode, setIsAxeMode] = useState(false);
   const [isBombMode, setIsBombMode] = useState(false);
+  const [isWallBuildMode, setIsWallBuildMode] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [maxWalls, setMaxWalls] = useState(8);
   const [joinGameId, setJoinGameId] = useState(gameIdFromUrl || '');
@@ -105,6 +106,7 @@ export default function Game() {
   const [bishopMinRoll, setBishopMinRoll] = useState(0);      // 0 = use distance, else fixed threshold
   const [knightMinRoll, setKnightMinRoll] = useState(4);      // Roll this or higher on d6
   const [bombSuccessRoll, setBombSuccessRoll] = useState(1);  // Roll this or lower on d10
+  const [wallBuildRoll, setWallBuildRoll] = useState(5);      // Roll this or lower on d10
   
   // Fetch saved games
   const { data: savedGames = [], isLoading: loadingSavedGames } = useQuery<SavedGameInfo[]>({
@@ -344,12 +346,12 @@ export default function Game() {
   const currentTurn = gameState?.currentTurn || 'white';
   
   const validMoves = useMemo(() => {
-    if (!selectedPosition || !gameState || phase !== 'playing' || isArrowMode || isAxeMode || isBombMode) return [];
+    if (!selectedPosition || !gameState || phase !== 'playing' || isArrowMode || isAxeMode || isBombMode || isWallBuildMode) return [];
     const piece = board[selectedPosition.row][selectedPosition.col].piece;
     if (!piece || piece.color !== playerColor || playerColor !== currentTurn) return [];
     // Use getCheckSafeMoves to filter out moves that would leave king in check
     return getCheckSafeMoves(board, selectedPosition);
-  }, [selectedPosition, gameState, phase, isArrowMode, isAxeMode, isBombMode, board, playerColor, currentTurn]);
+  }, [selectedPosition, gameState, phase, isArrowMode, isAxeMode, isBombMode, isWallBuildMode, board, playerColor, currentTurn]);
   
   const arrowTargets = useMemo(() => {
     if (!selectedPosition || !isArrowMode || !gameState || phase !== 'playing') return [];
@@ -365,6 +367,11 @@ export default function Game() {
     if (!selectedPosition || !isBombMode || !gameState || phase !== 'playing') return [];
     return getBombTargets(board, selectedPosition);
   }, [selectedPosition, isBombMode, gameState, phase, board]);
+  
+  const wallBuildTargets = useMemo(() => {
+    if (!selectedPosition || !isWallBuildMode || !gameState || phase !== 'playing') return [];
+    return getWallBuildTargets(board, selectedPosition);
+  }, [selectedPosition, isWallBuildMode, gameState, phase, board]);
   
   const hangingPieces = useMemo(() => {
     if (!gameState || phase !== 'playing' || !playerColor) return [];
@@ -453,6 +460,21 @@ export default function Game() {
       return;
     }
     
+    if (isWallBuildMode && selectedPosition) {
+      const isTarget = wallBuildTargets.some(t => t.row === position.row && t.col === position.col);
+      if (isTarget) {
+        sendMessage({
+          type: 'wall_attack',
+          payload: { from: selectedPosition, to: position },
+        });
+        setIsWallBuildMode(false);
+        setSelectedPosition(null);
+      } else {
+        setIsWallBuildMode(false);
+      }
+      return;
+    }
+    
     const clickedPiece = board[position.row][position.col].piece;
     
     // If clicking on own piece, select it
@@ -477,7 +499,7 @@ export default function Game() {
         setSelectedPosition(null);
       }
     }
-  }, [gameState, phase, playerColor, currentTurn, isArrowMode, isAxeMode, isBombMode, selectedPosition, arrowTargets, axeTargets, bombTargets, validMoves, board, sendMessage]);
+  }, [gameState, phase, playerColor, currentTurn, isArrowMode, isAxeMode, isBombMode, isWallBuildMode, selectedPosition, arrowTargets, axeTargets, bombTargets, wallBuildTargets, validMoves, board, sendMessage]);
   
   const handleArrowModeToggle = useCallback((position: Position) => {
     setIsArrowMode(true);
@@ -497,6 +519,15 @@ export default function Game() {
     setIsBombMode(true);
     setIsArrowMode(false);
     setIsAxeMode(false);
+    setIsWallBuildMode(false);
+    setSelectedPosition(position);
+  }, []);
+  
+  const handleWallBuildModeToggle = useCallback((position: Position) => {
+    setIsWallBuildMode(true);
+    setIsArrowMode(false);
+    setIsAxeMode(false);
+    setIsBombMode(false);
     setSelectedPosition(position);
   }, []);
   
@@ -700,13 +731,29 @@ export default function Game() {
                   data-testid="slider-bomb-attack"
                 />
               </div>
+              
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <Label>Rook Wall Build: roll {wallBuildRoll} or less on d10</Label>
+                  <span className="text-muted-foreground">{wallBuildRoll * 10}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={wallBuildRoll}
+                  onChange={(e) => setWallBuildRoll(parseInt(e.target.value))}
+                  className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                  data-testid="slider-wall-build"
+                />
+              </div>
             </div>
             
             <div className="space-y-4">
               <Button 
                 className="w-full gap-2" 
                 size="lg"
-                onClick={() => createGame(maxWalls, 'pvc', { pawnSuccessRoll, bishopMinRoll, knightMinRoll, bombSuccessRoll })}
+                onClick={() => createGame(maxWalls, 'pvc', { pawnSuccessRoll, bishopMinRoll, knightMinRoll, bombSuccessRoll, wallBuildRoll })}
                 data-testid="button-play-computer"
               >
                 <Bot className="w-5 h-5" />
@@ -717,7 +764,7 @@ export default function Game() {
                 className="w-full gap-2" 
                 size="lg"
                 variant="outline"
-                onClick={() => createGame(maxWalls, 'pvp', { pawnSuccessRoll, bishopMinRoll, knightMinRoll, bombSuccessRoll })}
+                onClick={() => createGame(maxWalls, 'pvp', { pawnSuccessRoll, bishopMinRoll, knightMinRoll, bombSuccessRoll, wallBuildRoll })}
                 data-testid="button-create-game"
               >
                 <Users className="w-5 h-5" />
@@ -939,14 +986,17 @@ export default function Game() {
               arrowTargets={arrowTargets}
               axeTargets={axeTargets}
               bombTargets={bombTargets}
+              wallBuildTargets={wallBuildTargets}
               hangingPieces={hangingPieces}
               isArrowMode={isArrowMode}
               isAxeMode={isAxeMode}
               isBombMode={isBombMode}
+              isWallBuildMode={isWallBuildMode}
               onSquareClick={handleSquareClick}
               onArrowModeToggle={handleArrowModeToggle}
               onAxeModeToggle={handleAxeModeToggle}
               onBombModeToggle={handleBombModeToggle}
+              onWallBuildModeToggle={handleWallBuildModeToggle}
               setupWallsRemaining={playerColor ? gameState.setupWallsRemaining[playerColor] : 0}
               flashingSquare={flashingSquare}
               flashColor={flashColor}

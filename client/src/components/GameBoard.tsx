@@ -2,10 +2,10 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import type { Board, Position, PlayerColor, PieceType } from "@shared/schema";
 import { PIECE_SYMBOLS, BOARD_SIZE, getValidMoves, getArrowTargets, findHangingPieces } from "@/lib/gameUtils";
 import { cn } from "@/lib/utils";
-import { Target, ZoomIn, ZoomOut, RotateCcw, Axe, Bomb } from "lucide-react";
+import { Target, ZoomIn, ZoomOut, RotateCcw, Axe, Bomb, Blocks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export type AttackAnimationType = 'arrow' | 'axe' | 'bomb' | 'pawn';
+export type AttackAnimationType = 'arrow' | 'axe' | 'bomb' | 'pawn' | 'wallbuild';
 
 export interface AttackAnimation {
   type: AttackAnimationType;
@@ -24,14 +24,17 @@ interface GameBoardProps {
   arrowTargets: Position[];
   axeTargets: Position[];
   bombTargets: Position[];
+  wallBuildTargets: Position[];
   hangingPieces: Position[];
   isArrowMode: boolean;
   isAxeMode: boolean;
   isBombMode: boolean;
+  isWallBuildMode: boolean;
   onSquareClick: (position: Position) => void;
   onArrowModeToggle: (position: Position) => void;
   onAxeModeToggle: (position: Position) => void;
   onBombModeToggle: (position: Position) => void;
+  onWallBuildModeToggle: (position: Position) => void;
   setupWallsRemaining: number;
   flashingSquare: Position | null;
   flashColor?: 'red' | 'yellow';
@@ -50,14 +53,17 @@ export function GameBoard({
   arrowTargets,
   axeTargets,
   bombTargets,
+  wallBuildTargets,
   hangingPieces,
   isArrowMode,
   isAxeMode,
   isBombMode,
+  isWallBuildMode,
   onSquareClick,
   onArrowModeToggle,
   onAxeModeToggle,
   onBombModeToggle,
+  onWallBuildModeToggle,
   setupWallsRemaining,
   flashingSquare,
   flashColor = 'red',
@@ -91,6 +97,10 @@ export function GameBoard({
   const isBombTarget = useCallback((row: number, col: number) => {
     return bombTargets.some(t => t.row === row && t.col === col);
   }, [bombTargets]);
+  
+  const isWallBuildTarget = useCallback((row: number, col: number) => {
+    return wallBuildTargets.some(t => t.row === row && t.col === col);
+  }, [wallBuildTargets]);
   
   const isHanging = useCallback((row: number, col: number) => {
     return hangingPieces.some(h => h.row === row && h.col === col);
@@ -212,6 +222,7 @@ export function GameBoard({
             const isRook = piece?.type === 'rook' && piece?.color === playerColor && phase === 'playing' && isMyTurn;
             const showAxeTarget = isAxeTarget(rowIndex, colIndex);
             const showBombTarget = isBombTarget(rowIndex, colIndex);
+            const showWallBuildTarget = isWallBuildTarget(rowIndex, colIndex);
             
             // During setup, only show walls on player's own half
             const isOwnHalf = playerColor === 'white' 
@@ -237,6 +248,7 @@ export function GameBoard({
                   showArrowTarget && "ring-2 ring-inset ring-orange-500 bg-orange-400/30",
                   showAxeTarget && "ring-2 ring-inset ring-purple-500 bg-purple-400/30",
                   showBombTarget && "ring-2 ring-inset ring-red-600 bg-red-400/30",
+                  showWallBuildTarget && "ring-2 ring-inset ring-cyan-500 bg-cyan-400/30",
                   showHanging && "ring-2 ring-inset ring-yellow-400",
                 )}
                 style={showWall ? {
@@ -293,16 +305,30 @@ export function GameBoard({
                   </div>
                 )}
                 
-                {isRook && showSelected && !isArrowMode && !isAxeMode && !isBombMode && (
-                  <div
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-7 h-7 rounded-full bg-red-600 border-2 border-white shadow-lg cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onBombModeToggle({ row: rowIndex, col: colIndex });
-                    }}
-                    data-testid={`bomb-button-${rowIndex}-${colIndex}`}
-                  >
-                    <Bomb className="w-5 h-5 text-white" />
+                {isRook && showSelected && !isArrowMode && !isAxeMode && !isBombMode && !isWallBuildMode && (
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-1">
+                    <div
+                      className="flex items-center justify-center w-6 h-6 rounded-full bg-red-600 border-2 border-white shadow-lg cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onBombModeToggle({ row: rowIndex, col: colIndex });
+                      }}
+                      data-testid={`bomb-button-${rowIndex}-${colIndex}`}
+                      title="Bomb (destroy wall)"
+                    >
+                      <Bomb className="w-4 h-4 text-white" />
+                    </div>
+                    <div
+                      className="flex items-center justify-center w-6 h-6 rounded-full bg-cyan-600 border-2 border-white shadow-lg cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onWallBuildModeToggle({ row: rowIndex, col: colIndex });
+                      }}
+                      data-testid={`wallbuild-button-${rowIndex}-${colIndex}`}
+                      title="Build wall"
+                    >
+                      <Blocks className="w-4 h-4 text-white" />
+                    </div>
                   </div>
                 )}
                 

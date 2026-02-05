@@ -408,6 +408,7 @@ class GameManager {
       bishopMinRoll: 0,
       knightMinRoll: 4,
       bombSuccessRoll: 1,
+      wallBuildRoll: 5,
     };
     
     const state: GameState = {
@@ -467,6 +468,7 @@ class GameManager {
       bishopMinRoll: 0,
       knightMinRoll: 4,
       bombSuccessRoll: 1,
+      wallBuildRoll: 5,
     };
     
     const state: GameState = {
@@ -1801,6 +1803,65 @@ class GameManager {
     
     return { state: room.state, diceRoll };
   }
+  
+  handleWallAttack(playerId: string, from: Position, to: Position): { state: GameState; diceRoll: { value: number; type: 'd10'; success: boolean } } | null {
+    const gameId = this.playerToGame.get(playerId);
+    if (!gameId) return null;
+    
+    const room = this.games.get(gameId);
+    if (!room || room.state.phase !== 'playing') return null;
+    
+    const player = room.players.get(playerId);
+    if (!player) return null;
+    
+    if (room.state.currentTurn !== player.color) return null;
+    
+    const board = room.state.board;
+    const piece = board[from.row][from.col].piece;
+    if (!piece || piece.type !== 'rook' || piece.color !== player.color) return null;
+    
+    // Validate target is adjacent (1 square away)
+    const rowDiff = Math.abs(to.row - from.row);
+    const colDiff = Math.abs(to.col - from.col);
+    if (rowDiff > 1 || colDiff > 1 || (rowDiff === 0 && colDiff === 0)) return null;
+    
+    // Validate target is an empty square (no piece, no wall)
+    if (board[to.row][to.col].piece || board[to.row][to.col].isWall) return null;
+    
+    // Roll 1d10 for wall build - configurable success rate (default 50%)
+    const wallBuildRoll = room.state.attackSettings?.wallBuildRoll ?? 5;
+    const roll = Math.floor(Math.random() * 10) + 1;
+    const success = roll <= wallBuildRoll;
+    
+    const diceRoll = { value: roll, type: 'd10' as const, success };
+    room.state.lastDiceRoll = diceRoll;
+    
+    const move: Move = {
+      from,
+      to,
+      piece,
+      captured: undefined,
+      isArrowAttack: false,
+      diceRoll: roll,
+      diceRequired: 10,
+      success,
+      notation: `R${String.fromCharCode(97 + from.col)}${12 - from.row}🧱${String.fromCharCode(97 + to.col)}${12 - to.row}[d10:${roll}≤${wallBuildRoll}]`,
+    };
+    room.state.moveHistory.push(move);
+    
+    if (success) {
+      // Build a wall on the target square
+      board[to.row][to.col].isWall = true;
+    }
+    
+    // Swap turns
+    room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
+    
+    // Save game to file
+    this.saveGame(room.state);
+    
+    return { state: room.state, diceRoll };
+  }
 
   getRoom(gameId: string): GameRoom | undefined {
     return this.games.get(gameId);
@@ -2209,6 +2270,29 @@ class GameManager {
         
         // Bomb targets walls, not pieces
         if (board[newRow][newCol].isWall) {
+          targets.push({ row: newRow, col: newCol });
+        }
+      }
+    }
+    
+    return targets;
+  }
+  
+  private getWallBuildTargets(board: Board, from: Position): Position[] {
+    const targets: Position[] = [];
+    
+    // Check all 8 adjacent squares for empty squares (no piece, no wall)
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        
+        const newRow = from.row + dr;
+        const newCol = from.col + dc;
+        
+        if (!this.isValidPosition(newRow, newCol)) continue;
+        
+        // Wall build targets empty squares
+        if (!board[newRow][newCol].isWall && !board[newRow][newCol].piece) {
           targets.push({ row: newRow, col: newCol });
         }
       }

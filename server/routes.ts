@@ -632,6 +632,42 @@ export async function registerRoutes(
             }
             break;
           }
+          
+          case 'wall_attack': {
+            if (message.playerId || currentPlayerId) {
+              const result = gameManager.handleWallAttack(
+                message.playerId || currentPlayerId!,
+                message.payload.from,
+                message.payload.to
+              );
+              if (result && currentGameId) {
+                const room = gameManager.getRoom(currentGameId);
+                if (room) {
+                  broadcastToRoom(room, {
+                    type: 'state',
+                    payload: { state: result.state },
+                  });
+                  
+                  // Check if AI should move after human wall attack
+                  if (gameManager.isAITurn(currentGameId)) {
+                    setTimeout(() => {
+                      const aiResult = gameManager.makeAIMove(currentGameId!);
+                      if (aiResult) {
+                        const aiRoom = gameManager.getRoom(currentGameId!);
+                        if (aiRoom) {
+                          broadcastToRoom(aiRoom, {
+                            type: 'state',
+                            payload: { state: aiResult.state },
+                          });
+                        }
+                      }
+                    }, 800);
+                  }
+                }
+              }
+            }
+            break;
+          }
         }
       } catch (error) {
         console.error('WebSocket message error:', error);

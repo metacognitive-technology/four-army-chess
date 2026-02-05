@@ -260,6 +260,26 @@ export function getBombTargets(board: Board, position: Position): Position[] {
   return targets;
 }
 
+export function getWallBuildTargets(board: Board, position: Position): Position[] {
+  const square = board[position.row][position.col];
+  if (!square.piece || square.piece.type !== 'rook') return [];
+  
+  const targets: Position[] = [];
+  // Rook wall build can target adjacent empty squares (no piece, no wall)
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const newRow = position.row + dr;
+      const newCol = position.col + dc;
+      if (isValidPosition(newRow, newCol) && !board[newRow][newCol].isWall && !board[newRow][newCol].piece) {
+        targets.push({ row: newRow, col: newCol });
+      }
+    }
+  }
+  
+  return targets;
+}
+
 export function getArrowTargets(board: Board, position: Position): Position[] {
   const square = board[position.row][position.col];
   if (!square.piece || square.piece.type !== 'bishop') return [];

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Battle Chess is a real-time multiplayer chess variant game featuring a 16x16 board with unique mechanics including walls, dice-based pawn attacks, and bishop arrow attacks. Players can create or join games via shareable links and compete in turn-based gameplay with WebSocket-powered real-time synchronization.
+Battle Chess is a real-time multiplayer chess variant game featuring a 12x12 board with unique mechanics including walls, dice-based pawn attacks, bishop arrow attacks, knight axe attacks, and rook special attacks (bomb to destroy walls, wall build to create walls). Players can create or join games via shareable links and compete in turn-based gameplay with WebSocket-powered real-time synchronization.
 
 ## User Preferences
 
@@ -35,6 +35,7 @@ Always update `GAME_VERSION` in `client/src/pages/Game.tsx` whenever code is mod
 - **Caching**: Path distances are cached per board wall configuration to reduce compute cost
 - **Move Scoring**: AI prioritizes moves that reduce path distance to enemy king
 - **Bomb Strategy**: Rook bomb attacks are scored based on whether they open paths to the enemy king
+- **Wall Build Strategy**: Rook wall building attacks can create new walls on adjacent empty squares
 - **Applied to both PvC and CvC modes** for consistent AI behavior
 
 ### Data Layer

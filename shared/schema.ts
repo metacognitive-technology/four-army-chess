@@ -66,6 +66,7 @@ export interface AttackSettings {
   bishopMinRoll: number;     // Roll this or higher on 2d6 for arrow (default: distance)
   knightMinRoll: number;     // Roll this or higher on d6 for axe (default 4)
   bombSuccessRoll: number;   // Roll this or lower on d10 to succeed (default 1 = 10%)
+  wallBuildRoll: number;     // Roll this or lower on d10 to build wall (default 5 = 50%)
 }
 
 export interface GameState {
@@ -89,7 +90,7 @@ export interface GameState {
 }
 
 export interface GameMessage {
-  type: 'join' | 'setup_wall' | 'setup_random_walls' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'bomb_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover' | 'games_updated' | 'watch_cvc' | 'stop_cvc' | 'pause_cvc' | 'offer_draw' | 'respond_draw' | 'draw_offered' | 'draw_response' | 'handoff' | 'take_control';
+  type: 'join' | 'setup_wall' | 'setup_random_walls' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'bomb_attack' | 'wall_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover' | 'games_updated' | 'watch_cvc' | 'stop_cvc' | 'pause_cvc' | 'offer_draw' | 'respond_draw' | 'draw_offered' | 'draw_response' | 'handoff' | 'take_control';
   payload: any;
   playerId?: string;
 }
@@ -101,6 +102,7 @@ export const gameConfigSchema = z.object({
     bishopMinRoll: z.number().min(2).max(12).default(0), // 0 means use distance
     knightMinRoll: z.number().min(1).max(6).default(4),
     bombSuccessRoll: z.number().min(1).max(10).default(1), // Roll this or lower on d10
+    wallBuildRoll: z.number().min(1).max(10).default(5), // Roll this or lower on d10 (default 50%)
   }).optional(),
 });
 
