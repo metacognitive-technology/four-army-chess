@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.10.0";
+const GAME_VERSION = "1.10.1";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -555,6 +555,22 @@ export default function Game() {
     pauseCvCGame(newPaused);
   }, [isCvCPaused, pauseCvCGame]);
   
+  const handleHandoff = useCallback(() => {
+    sendMessage({ type: 'handoff', payload: {} });
+    toast({
+      title: "Handed Off to AI",
+      description: "The AI will play for you. Click 'Take Control' to resume.",
+    });
+  }, [sendMessage, toast]);
+  
+  const handleTakeControl = useCallback(() => {
+    sendMessage({ type: 'take_control', payload: {} });
+    toast({
+      title: "Control Resumed",
+      description: "You are now playing again.",
+    });
+  }, [sendMessage, toast]);
+  
   const handlePromotion = useCallback((pieceType: PromotionPieceType) => {
     if (pendingPromotion) {
       sendMessage({
@@ -1006,6 +1022,9 @@ export default function Game() {
               onRandomWalls={handleRandomWalls}
               onMazeWalls={handleMazeWalls}
               wallsRemaining={playerColor ? gameState.setupWallsRemaining[playerColor] : 0}
+              isAIControlled={playerColor ? gameState.aiControlled?.[playerColor] ?? false : false}
+              onHandoff={handleHandoff}
+              onTakeControl={handleTakeControl}
             />
             
             <MoveHistory moves={gameState.moveHistory} />

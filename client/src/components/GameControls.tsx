@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Play, RotateCcw, Flag, CheckCircle, Copy, Share2, Pause, Handshake, Shuffle, Grid3X3 } from "lucide-react";
+import { Play, RotateCcw, Flag, CheckCircle, Copy, Share2, Pause, Handshake, Shuffle, Grid3X3, Bot, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface GameControlsProps {
@@ -26,6 +26,9 @@ interface GameControlsProps {
   onRandomWalls?: () => void;
   onMazeWalls?: () => void;
   wallsRemaining?: number;
+  isAIControlled?: boolean;
+  onHandoff?: () => void;
+  onTakeControl?: () => void;
 }
 
 export function GameControls({
@@ -49,6 +52,9 @@ export function GameControls({
   onRandomWalls,
   onMazeWalls,
   wallsRemaining = 0,
+  isAIControlled = false,
+  onHandoff,
+  onTakeControl,
 }: GameControlsProps) {
   const { toast } = useToast();
   
@@ -173,6 +179,30 @@ export function GameControls({
         
         {phase === 'playing' && (
           <div className="space-y-2">
+            {!isCvCGame && (onHandoff || onTakeControl) && (
+              isAIControlled ? (
+                <Button 
+                  variant="default" 
+                  className="w-full gap-2" 
+                  onClick={onTakeControl}
+                  data-testid="button-take-control"
+                >
+                  <User className="w-4 h-4" />
+                  Take Control
+                </Button>
+              ) : (
+                <Button 
+                  variant="secondary" 
+                  className="w-full gap-2" 
+                  onClick={onHandoff}
+                  data-testid="button-handoff"
+                >
+                  <Bot className="w-4 h-4" />
+                  Hand Off to AI
+                </Button>
+              )
+            )}
+            
             {drawOfferPending && onAcceptDraw && onDeclineDraw ? (
               <div className="p-2 bg-muted rounded-md">
                 <p className="text-sm text-center mb-2">Opponent offers a draw</p>

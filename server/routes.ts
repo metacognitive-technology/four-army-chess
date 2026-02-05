@@ -408,6 +408,76 @@ export async function registerRoutes(
             }
             break;
           }
+          
+          case 'handoff': {
+            // Hand off control to AI
+            if (currentPlayerId && currentGameId) {
+              const state = gameManager.handoffToAI(currentPlayerId);
+              if (state) {
+                const room = gameManager.getRoom(currentGameId);
+                if (room) {
+                  broadcastToRoom(room, {
+                    type: 'state',
+                    payload: { state },
+                  });
+                  
+                  // Trigger AI move if it's now AI's turn
+                  if (gameManager.isAITurn(currentGameId)) {
+                    setTimeout(() => {
+                      const result = gameManager.makeAIMove(currentGameId);
+                      if (result) {
+                        const updatedRoom = gameManager.getRoom(currentGameId);
+                        if (updatedRoom) {
+                          broadcastToRoom(updatedRoom, {
+                            type: 'state',
+                            payload: { state: result.state, diceRoll: result.diceRoll },
+                          });
+                          
+                          // Continue AI moves if needed
+                          const checkAndMakeAIMove = () => {
+                            if (gameManager.isAITurn(currentGameId)) {
+                              setTimeout(() => {
+                                const aiResult = gameManager.makeAIMove(currentGameId);
+                                if (aiResult) {
+                                  const rm = gameManager.getRoom(currentGameId);
+                                  if (rm) {
+                                    broadcastToRoom(rm, {
+                                      type: 'state',
+                                      payload: { state: aiResult.state, diceRoll: aiResult.diceRoll },
+                                    });
+                                    checkAndMakeAIMove();
+                                  }
+                                }
+                              }, 800);
+                            }
+                          };
+                          checkAndMakeAIMove();
+                        }
+                      }
+                    }, 500);
+                  }
+                }
+              }
+            }
+            break;
+          }
+          
+          case 'take_control': {
+            // Take back control from AI
+            if (currentPlayerId && currentGameId) {
+              const state = gameManager.takeControl(currentPlayerId);
+              if (state) {
+                const room = gameManager.getRoom(currentGameId);
+                if (room) {
+                  broadcastToRoom(room, {
+                    type: 'state',
+                    payload: { state },
+                  });
+                }
+              }
+            }
+            break;
+          }
 
           case 'move': {
             if (message.playerId || currentPlayerId) {

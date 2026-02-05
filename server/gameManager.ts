@@ -417,6 +417,7 @@ class GameManager {
       phase: isVsComputer ? (maxWalls > 0 ? 'setup' : 'playing') : 'waiting',
       gameMode,
       aiColor: isVsComputer ? 'black' : undefined,
+      aiControlled: { white: false, black: isVsComputer },
       setupWallsRemaining: { white: maxWalls, black: maxWalls },
       maxWallsPerPlayer: maxWalls,
       moveHistory: [],
@@ -475,6 +476,7 @@ class GameManager {
       phase: 'playing',
       gameMode: 'cvc',
       aiColor: undefined, // Both are AI, no single "AI" color
+      aiControlled: { white: true, black: true },
       setupWallsRemaining: { white: 0, black: 0 },
       maxWallsPerPlayer: maxWalls,
       moveHistory: [],
@@ -1825,9 +1827,55 @@ class GameManager {
   isAITurn(gameId: string): boolean {
     const room = this.games.get(gameId);
     if (!room) return false;
-    return room.state.gameMode === 'pvc' && 
-           room.state.currentTurn === room.state.aiColor &&
-           room.state.phase === 'playing';
+    const state = room.state;
+    if (state.phase !== 'playing') return false;
+    
+    // Check if current turn's player has handed off to AI
+    const currentColor = state.currentTurn;
+    if (state.aiControlled?.[currentColor]) return true;
+    
+    // Legacy check for PvC games
+    return state.gameMode === 'pvc' && state.currentTurn === state.aiColor;
+  }
+  
+  handoffToAI(playerId: string): GameState | null {
+    const gameId = this.playerToGame.get(playerId);
+    if (!gameId) return null;
+    
+    const room = this.games.get(gameId);
+    if (!room || room.state.phase !== 'playing') return null;
+    
+    const player = room.players.get(playerId);
+    if (!player) return null;
+    
+    // Initialize aiControlled if not present
+    if (!room.state.aiControlled) {
+      room.state.aiControlled = { white: false, black: false };
+    }
+    
+    room.state.aiControlled[player.color] = true;
+    this.saveGame(room.state);
+    return room.state;
+  }
+  
+  takeControl(playerId: string): GameState | null {
+    const gameId = this.playerToGame.get(playerId);
+    if (!gameId) return null;
+    
+    const room = this.games.get(gameId);
+    if (!room || room.state.phase !== 'playing') return null;
+    
+    const player = room.players.get(playerId);
+    if (!player) return null;
+    
+    // Initialize aiControlled if not present
+    if (!room.state.aiControlled) {
+      room.state.aiControlled = { white: false, black: false };
+    }
+    
+    room.state.aiControlled[player.color] = false;
+    this.saveGame(room.state);
+    return room.state;
   }
 
   makeAIMove(gameId: string): { state: GameState; diceRoll?: { value: number; type: 'd4' | 'd6' | 'd10'; success: boolean } } | null {
