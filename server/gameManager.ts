@@ -1672,6 +1672,12 @@ class GameManager {
     // Swap turns
     room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
     
+    // Check for checkmate after attack
+    if (room.state.phase !== 'finished' && this.isCheckmate(board, room.state.currentTurn)) {
+      room.state.winner = player.color;
+      room.state.phase = 'finished';
+    }
+    
     // Save game to file
     this.saveGame(room.state);
     
@@ -1738,6 +1744,12 @@ class GameManager {
     
     // Swap turns
     room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
+    
+    // Check for checkmate after attack
+    if (room.state.phase !== 'finished' && this.isCheckmate(board, room.state.currentTurn)) {
+      room.state.winner = player.color;
+      room.state.phase = 'finished';
+    }
     
     // Save game to file
     this.saveGame(room.state);
@@ -2410,6 +2422,12 @@ class GameManager {
 
     state.currentTurn = aiColor === 'white' ? 'black' : 'white';
 
+    // Check for checkmate after attack
+    if (state.phase !== 'finished' && this.isCheckmate(board, state.currentTurn)) {
+      state.winner = aiColor;
+      state.phase = 'finished';
+    }
+
     this.saveGame(state);
     return { state, diceRoll };
   }
@@ -2459,6 +2477,12 @@ class GameManager {
     }
 
     state.currentTurn = aiColor === 'white' ? 'black' : 'white';
+
+    // Check for checkmate after attack
+    if (state.phase !== 'finished' && this.isCheckmate(board, state.currentTurn)) {
+      state.winner = aiColor;
+      state.phase = 'finished';
+    }
 
     this.saveGame(state);
     return { state, diceRoll };
