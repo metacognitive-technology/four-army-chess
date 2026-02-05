@@ -1698,6 +1698,9 @@ class GameManager {
     const targetPiece = board[to.row][to.col].piece;
     if (!targetPiece || targetPiece.color === player.color) return null;
     
+    // Rooks are immune to knight axe attacks
+    if (targetPiece.type === 'rook') return null;
+    
     // Roll 1d6 for axe - need to roll >= threshold to hit
     const roll = Math.floor(Math.random() * 6) + 1;
     const knightThreshold = room.state.attackSettings?.knightMinRoll ?? 4;
@@ -2133,7 +2136,8 @@ class GameManager {
         if (board[newRow][newCol].isWall) continue;
         
         const targetPiece = board[newRow][newCol].piece;
-        if (targetPiece && targetPiece.color !== color) {
+        // Rooks are immune to knight axe attacks
+        if (targetPiece && targetPiece.color !== color && targetPiece.type !== 'rook') {
           targets.push({ row: newRow, col: newCol });
         }
       }
