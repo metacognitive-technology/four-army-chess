@@ -1957,7 +1957,8 @@ class GameManager {
     if (!room || !this.isAITurn(gameId)) return null;
 
     const state = room.state;
-    const aiColor = state.aiColor!;
+    // Use current turn color when that player is AI-controlled, fallback to legacy aiColor
+    const aiColor = state.aiControlled?.[state.currentTurn] ? state.currentTurn : state.aiColor!;
     const board = state.board;
 
     // Check if AI is currently in check
@@ -2319,7 +2320,8 @@ class GameManager {
     if (!room) return null;
 
     const state = room.state;
-    const aiColor = state.aiColor!;
+    // Use current turn color when that player is AI-controlled, fallback to legacy aiColor
+    const aiColor = state.aiControlled?.[state.currentTurn] ? state.currentTurn : state.aiColor!;
     const board = state.board;
     const piece = board[from.row][from.col].piece;
     if (!piece) return null;
@@ -2383,7 +2385,8 @@ class GameManager {
     if (!room) return null;
 
     const state = room.state;
-    const aiColor = state.aiColor!;
+    // Use current turn color when that player is AI-controlled, fallback to legacy aiColor
+    const aiColor = state.aiControlled?.[state.currentTurn] ? state.currentTurn : state.aiColor!;
     const board = state.board;
     const piece = board[from.row][from.col].piece;
     if (!piece) return null;
@@ -2438,7 +2441,8 @@ class GameManager {
     if (!room) return null;
 
     const state = room.state;
-    const aiColor = state.aiColor!;
+    // Use current turn color when that player is AI-controlled, fallback to legacy aiColor
+    const aiColor = state.aiControlled?.[state.currentTurn] ? state.currentTurn : state.aiColor!;
     const board = state.board;
     const piece = board[from.row][from.col].piece;
     if (!piece) return null;
@@ -2494,7 +2498,8 @@ class GameManager {
     if (!room) return null;
 
     const state = room.state;
-    const aiColor = state.aiColor!;
+    // Use current turn color when that player is AI-controlled, fallback to legacy aiColor
+    const aiColor = state.aiControlled?.[state.currentTurn] ? state.currentTurn : state.aiColor!;
     const board = state.board;
     const piece = board[from.row][from.col].piece;
     if (!piece) return null;
