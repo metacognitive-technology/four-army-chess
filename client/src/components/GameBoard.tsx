@@ -230,7 +230,7 @@ export function GameBoard({
                   showFlashing && flashColor === 'red' && "animate-pulse bg-red-500",
                   showFlashing && flashColor === 'yellow' && "animate-pulse bg-yellow-400",
                   showMoveFlash && "move-flash-animation",
-                  showWallAvailable && "ring-2 ring-inset ring-blue-400/50 bg-blue-400/20",
+                  showWallAvailable && "ring-1 ring-inset ring-blue-500/40",
                   showSelected && "ring-2 ring-inset ring-blue-500",
                   showValidMove && !square.piece && "after:absolute after:w-1/3 after:h-1/3 after:rounded-full after:bg-black/20",
                   showValidMove && square.piece && "ring-2 ring-inset ring-red-500",
