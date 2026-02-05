@@ -658,7 +658,7 @@ class GameManager {
     const board = state.board;
     const inCheck = this.isInCheck(board, color);
     
-    interface AIMove { from: Position; to: Position; score: number; isArrow?: boolean; isAxe?: boolean; escapesCheck?: boolean }
+    interface AIMove { from: Position; to: Position; score: number; isArrow?: boolean; isAxe?: boolean; isBomb?: boolean; escapesCheck?: boolean }
     const possibleMoves: AIMove[] = [];
     
     for (let row = 0; row < BOARD_SIZE; row++) {
@@ -776,6 +776,78 @@ class GameManager {
               }
             }
           }
+          
+          // Bomb attacks for rooks - prioritize clearing paths through walled areas
+          if (piece.type === 'rook' && !inCheck) {
+            const bombTargets = this.getBombTargets(board, from);
+            const enemyColor = color === 'white' ? 'black' : 'white';
+            const enemyKingPos = findKingPosition(board, enemyColor);
+            
+            // Count walls and blocked pieces
+            let totalWalls = 0;
+            for (let r = 0; r < BOARD_SIZE; r++) {
+              for (let c = 0; c < BOARD_SIZE; c++) {
+                if (board[r][c].isWall) totalWalls++;
+              }
+            }
+            const isHeavilyWalled = totalWalls > 15;
+            
+            let blockedPieces = 0;
+            if (enemyKingPos) {
+              for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                  const p = board[r][c].piece;
+                  if (p && p.color === color && p.type !== 'king') {
+                    if (aStarPathfind(board, { row: r, col: c }, enemyKingPos) === Infinity) {
+                      blockedPieces++;
+                    }
+                  }
+                }
+              }
+            }
+            
+            for (const to of bombTargets) {
+              let score = 350 + Math.random() * 0.5;
+              if (isHeavilyWalled) score += 150;
+              if (blockedPieces >= 3) score += 200;
+              
+              if (enemyKingPos) {
+                const currentPathDist = aStarPathfind(board, from, enemyKingPos);
+                const tempBoard: Board = JSON.parse(JSON.stringify(board));
+                tempBoard[to.row][to.col].isWall = false;
+                const newPathDist = aStarPathfind(tempBoard, from, enemyKingPos);
+                
+                if (currentPathDist === Infinity && newPathDist !== Infinity) {
+                  score += 500;
+                } else if (newPathDist < currentPathDist) {
+                  score += (currentPathDist - newPathDist) * 25;
+                }
+                
+                let piecesHelped = 0;
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                  for (let c = 0; c < BOARD_SIZE; c++) {
+                    const otherPiece = board[r][c].piece;
+                    if (otherPiece && otherPiece.color === color && (r !== from.row || c !== from.col)) {
+                      const otherCurrentDist = aStarPathfind(board, { row: r, col: c }, enemyKingPos);
+                      const otherNewDist = aStarPathfind(tempBoard, { row: r, col: c }, enemyKingPos);
+                      
+                      if (otherCurrentDist === Infinity && otherNewDist !== Infinity) {
+                        score += 150;
+                        piecesHelped++;
+                      } else if (otherNewDist < otherCurrentDist - 2) {
+                        score += 40;
+                        piecesHelped++;
+                      }
+                    }
+                  }
+                }
+                
+                if (piecesHelped >= 3) score += 100;
+              }
+              
+              possibleMoves.push({ from, to, score, isBomb: true });
+            }
+          }
         }
       }
     }
@@ -799,6 +871,8 @@ class GameManager {
       this.executeCvCArrowAttack(state, selected.from, selected.to);
     } else if (selected.isAxe) {
       this.executeCvCAxeAttack(state, selected.from, selected.to);
+    } else if (selected.isBomb) {
+      this.executeCvCBombAttack(state, selected.from, selected.to);
     } else {
       this.executeCvCMove(state, selected.from, selected.to);
     }
@@ -906,6 +980,38 @@ class GameManager {
         board[to.row][to.col].piece = null;
       }
     }
+    
+    const enemyColor = color === 'white' ? 'black' : 'white';
+    state.currentTurn = enemyColor;
+  }
+  
+  private executeCvCBombAttack(state: GameState, from: Position, to: Position): void {
+    const board = state.board;
+    const piece = board[from.row][from.col].piece!;
+    const color = piece.color;
+    
+    // Roll 1d10, need <= bombSuccessRoll (default 1)
+    const roll = Math.floor(Math.random() * 10) + 1;
+    const threshold = state.attackSettings?.bombSuccessRoll ?? 1;
+    const success = roll <= threshold;
+    
+    if (success && board[to.row][to.col].isWall) {
+      board[to.row][to.col].isWall = false;
+    }
+    
+    // Record the move
+    state.moveHistory.push({
+      from,
+      to,
+      piece,
+      isBombAttack: true,
+      diceRoll: roll,
+      diceRequired: threshold,
+      success,
+      notation: `R💣${String.fromCharCode(97 + to.col)}${BOARD_SIZE - to.row}(${roll}${success ? '✓' : '✗'})`,
+    });
+    
+    state.lastDiceRoll = { value: roll, type: 'd10', success };
     
     const enemyColor = color === 'white' ? 'black' : 'white';
     state.currentTurn = enemyColor;
@@ -1865,13 +1971,41 @@ class GameManager {
           }
           
           // Add bomb attacks for rooks - destroy adjacent walls
+          // Prioritize bombs heavily when paths are blocked through walled areas
           if (piece.type === 'rook' && !inCheck) {
             const bombTargets = this.getBombTargets(board, from);
             const enemyColor = aiColor === 'white' ? 'black' : 'white';
             const enemyKingPos = findKingPosition(board, enemyColor);
             
+            // Count total walls to determine if board is heavily walled
+            let totalWalls = 0;
+            for (let r = 0; r < BOARD_SIZE; r++) {
+              for (let c = 0; c < BOARD_SIZE; c++) {
+                if (board[r][c].isWall) totalWalls++;
+              }
+            }
+            const isHeavilyWalled = totalWalls > 15;
+            
+            // Count how many friendly pieces have blocked paths
+            let blockedPieces = 0;
+            if (enemyKingPos) {
+              for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                  const p = board[r][c].piece;
+                  if (p && p.color === aiColor && p.type !== 'king') {
+                    if (aStarPathfind(board, { row: r, col: c }, enemyKingPos) === Infinity) {
+                      blockedPieces++;
+                    }
+                  }
+                }
+              }
+            }
+            
             for (const to of bombTargets) {
+              // Higher base score when board is heavily walled or pieces are blocked
               let score = 350 + Math.random() * 0.5;
+              if (isHeavilyWalled) score += 150;
+              if (blockedPieces >= 3) score += 200; // Many pieces blocked, prioritize clearing
               
               // Use A* to determine if bombing this wall opens up a path
               if (enemyKingPos) {
@@ -1883,14 +2017,15 @@ class GameManager {
                 tempBoard[to.row][to.col].isWall = false;
                 const newPathDist = aStarPathfind(tempBoard, from, enemyKingPos);
                 
-                // Big bonus if bombing opens a path or significantly shortens it
+                // HUGE bonus if bombing opens a previously blocked path
                 if (currentPathDist === Infinity && newPathDist !== Infinity) {
-                  score += 200; // Opens a previously blocked path
+                  score += 500; // Critical: opens a blocked path for this rook
                 } else if (newPathDist < currentPathDist) {
-                  score += (currentPathDist - newPathDist) * 15; // Shortens existing path
+                  score += (currentPathDist - newPathDist) * 25; // Significantly shortens path
                 }
                 
-                // Also check if any friendly piece benefits from this wall removal
+                // Check how many friendly pieces this bomb would help
+                let piecesHelped = 0;
                 for (let r = 0; r < BOARD_SIZE; r++) {
                   for (let c = 0; c < BOARD_SIZE; c++) {
                     const otherPiece = board[r][c].piece;
@@ -1900,12 +2035,19 @@ class GameManager {
                       const otherNewDist = aStarPathfind(tempBoard, otherFrom, enemyKingPos);
                       
                       if (otherCurrentDist === Infinity && otherNewDist !== Infinity) {
-                        score += 100; // Opens path for another piece
+                        score += 150; // Opens path for another blocked piece
+                        piecesHelped++;
                       } else if (otherNewDist < otherCurrentDist - 2) {
-                        score += 30; // Significantly helps another piece
+                        score += 40; // Significantly helps another piece
+                        piecesHelped++;
                       }
                     }
                   }
+                }
+                
+                // Bonus for bombs that help multiple pieces (bottleneck walls)
+                if (piecesHelped >= 3) {
+                  score += 100; // This wall is a bottleneck blocking many pieces
                 }
               }
               
