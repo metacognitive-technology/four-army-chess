@@ -1,4 +1,4 @@
-type AttackSoundType = 'arrow' | 'axe' | 'bomb' | 'pawn';
+type AttackSoundType = 'arrow' | 'axe' | 'bomb' | 'pawn' | 'wallbuild';
 
 let audioContext: AudioContext | null = null;
 
@@ -86,6 +86,19 @@ export function playPawnSound() {
   setTimeout(() => playTone(500, 0.08, 'square', 0.15, 300), 50);
 }
 
+export function playWallBuildSound() {
+  // 3 "kerchunk" sounds for wall building
+  const kerchunk = (delay: number) => {
+    setTimeout(() => {
+      playTone(120, 0.08, 'square', 0.3, 80);
+      playNoise(0.06, 0.15);
+    }, delay);
+  };
+  kerchunk(0);
+  kerchunk(120);
+  kerchunk(240);
+}
+
 export function playAttackSound(type: AttackSoundType) {
   switch (type) {
     case 'arrow':
@@ -99,6 +112,9 @@ export function playAttackSound(type: AttackSoundType) {
       break;
     case 'pawn':
       playPawnSound();
+      break;
+    case 'wallbuild':
+      playWallBuildSound();
       break;
   }
 }

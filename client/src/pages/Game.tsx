@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.10.5";
+const GAME_VERSION = "1.10.6";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -229,11 +229,13 @@ export default function Game() {
         );
         const pieceType = lastMove.piece?.type || 'pawn';
         
-        // Determine animation type based on piece
+        // Determine animation type based on piece and attack type
         let animType: AttackAnimationType = 'pawn';
         if (pieceType === 'bishop') animType = 'arrow';
         else if (pieceType === 'knight') animType = 'axe';
-        else if (pieceType === 'rook') animType = 'bomb';
+        else if (pieceType === 'rook') {
+          animType = lastMove.isWallBuild ? 'wallbuild' : 'bomb';
+        }
         
         // Trigger attack animation and sound
         setAttackAnimation({

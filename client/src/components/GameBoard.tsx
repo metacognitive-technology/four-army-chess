@@ -273,6 +273,8 @@ export function GameBoard({
                     )}
                     style={{
                       fontSize: 'min(calc(560px / 12 * 0.85), calc((min(90vw, calc(100vh - 280px)) / 12) * 0.85))',
+                      WebkitTextStroke: piece.color === 'white' ? '1px black' : '1px white',
+                      paintOrder: 'stroke fill',
                     }}
                   >
                     {PIECE_SYMBOLS[piece.type][piece.color]}
@@ -400,6 +402,7 @@ function AttackAnimationOverlay({
       case 'axe': return '🪓';
       case 'bomb': return '💣';
       case 'pawn': return '⚔️';
+      case 'wallbuild': return '🧱';
       default: return '💥';
     }
   };
@@ -410,6 +413,7 @@ function AttackAnimationOverlay({
       case 'axe': return 'drop-shadow(0 0 8px rgb(168 85 247))';
       case 'bomb': return 'drop-shadow(0 0 8px rgb(239 68 68))';
       case 'pawn': return 'drop-shadow(0 0 8px rgb(234 179 8))';
+      case 'wallbuild': return 'drop-shadow(0 0 8px rgb(6 182 212))';
       default: return 'drop-shadow(0 0 8px white)';
     }
   };

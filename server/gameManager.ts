@@ -1854,6 +1854,7 @@ class GameManager {
       piece,
       captured: undefined,
       isArrowAttack: false,
+      isWallBuild: true,
       diceRoll: roll,
       diceRequired: 10,
       success,
