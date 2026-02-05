@@ -9,6 +9,182 @@ const BOARD_SIZE = 12;
 const MAX_MOVE_DISTANCE = 8;
 const AI_PLAYER_ID = 'ai-player';
 
+// A* pathfinding for AI to navigate around walls
+// Uses Chebyshev distance (8-directional with uniform cost)
+interface AStarNode {
+  row: number;
+  col: number;
+  g: number; // Cost from start
+  h: number; // Heuristic (Chebyshev distance to goal)
+  f: number; // Total cost (g + h)
+}
+
+// Cache for A* path distances to reduce redundant calculations per AI turn
+let aStarCache: Map<string, number> = new Map();
+let aStarCacheBoard: string = '';
+
+function clearAStarCache(): void {
+  aStarCache.clear();
+  aStarCacheBoard = '';
+}
+
+function getBoardHash(board: Board): string {
+  // Simple hash based on wall positions (pieces move, so we only cache per wall config)
+  let hash = '';
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (board[r][c].isWall) hash += `${r},${c};`;
+    }
+  }
+  return hash;
+}
+
+function aStarPathfind(board: Board, start: Position, goal: Position): number {
+  // Returns the path length or Infinity if no path exists
+  // Uses Chebyshev distance heuristic for 8-directional movement
+  
+  const cacheKey = `${start.row},${start.col}-${goal.row},${goal.col}`;
+  const boardHash = getBoardHash(board);
+  
+  // Clear cache if board walls have changed
+  if (boardHash !== aStarCacheBoard) {
+    aStarCache.clear();
+    aStarCacheBoard = boardHash;
+  }
+  
+  // Check cache first
+  if (aStarCache.has(cacheKey)) {
+    return aStarCache.get(cacheKey)!;
+  }
+  
+  const openSet: AStarNode[] = [];
+  const closedSet = new Set<string>();
+  const gScores = new Map<string, number>();
+  
+  // Chebyshev distance (max of absolute differences) - admissible for 8-direction
+  const heuristic = (pos: Position): number => {
+    return Math.max(Math.abs(pos.row - goal.row), Math.abs(pos.col - goal.col));
+  };
+  
+  const posKey = (row: number, col: number): string => `${row},${col}`;
+  
+  const startNode: AStarNode = {
+    row: start.row,
+    col: start.col,
+    g: 0,
+    h: heuristic(start),
+    f: heuristic(start),
+  };
+  
+  openSet.push(startNode);
+  gScores.set(posKey(start.row, start.col), 0);
+  
+  // 8-directional movement (king-like for general pathfinding)
+  const directions = [
+    [-1, -1], [-1, 0], [-1, 1],
+    [0, -1],          [0, 1],
+    [1, -1], [1, 0], [1, 1],
+  ];
+  
+  let iterations = 0;
+  const maxIterations = BOARD_SIZE * BOARD_SIZE * 2;
+  
+  while (openSet.length > 0 && iterations < maxIterations) {
+    iterations++;
+    
+    // Find node with lowest f score (use priority extraction)
+    let lowestIdx = 0;
+    for (let i = 1; i < openSet.length; i++) {
+      if (openSet[i].f < openSet[lowestIdx].f) {
+        lowestIdx = i;
+      }
+    }
+    const current = openSet.splice(lowestIdx, 1)[0];
+    
+    // Reached goal
+    if (current.row === goal.row && current.col === goal.col) {
+      aStarCache.set(cacheKey, current.g);
+      return current.g;
+    }
+    
+    const currentKey = posKey(current.row, current.col);
+    closedSet.add(currentKey);
+    
+    // Explore neighbors
+    for (const [dr, dc] of directions) {
+      const newRow = current.row + dr;
+      const newCol = current.col + dc;
+      
+      // Check bounds
+      if (newRow < 0 || newRow >= BOARD_SIZE || newCol < 0 || newCol >= BOARD_SIZE) {
+        continue;
+      }
+      
+      const neighborKey = posKey(newRow, newCol);
+      
+      // Skip if already in closed set
+      if (closedSet.has(neighborKey)) {
+        continue;
+      }
+      
+      // Skip walls
+      const square = board[newRow][newCol];
+      if (square.isWall) {
+        continue;
+      }
+      
+      // Allow goal position even if occupied (for approaching enemy)
+      const isGoal = newRow === goal.row && newCol === goal.col;
+      if (square.piece && !isGoal) {
+        continue;
+      }
+      
+      const tentativeG = current.g + 1;
+      const existingG = gScores.get(neighborKey);
+      
+      if (existingG !== undefined && tentativeG >= existingG) {
+        continue;
+      }
+      
+      gScores.set(neighborKey, tentativeG);
+      
+      const h = heuristic({ row: newRow, col: newCol });
+      const newNode: AStarNode = {
+        row: newRow,
+        col: newCol,
+        g: tentativeG,
+        h,
+        f: tentativeG + h,
+      };
+      
+      // Remove if already in open set with worse score
+      const existingIdx = openSet.findIndex(n => n.row === newRow && n.col === newCol);
+      if (existingIdx !== -1) {
+        openSet.splice(existingIdx, 1);
+      }
+      
+      openSet.push(newNode);
+    }
+  }
+  
+  // No path found
+  aStarCache.set(cacheKey, Infinity);
+  return Infinity;
+}
+
+// Find the enemy king position
+function findKingPosition(board: Board, color: PlayerColor): Position | null {
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      const piece = board[row][col].piece;
+      if (piece && piece.type === 'king' && piece.color === color) {
+        return { row, col };
+      }
+    }
+  }
+  return null;
+}
+
 // Get the directory for saving game files - handle both ESM and CJS
 // Use a function to safely get __dirname in both environments
 function getCurrentDir(): string {
@@ -541,6 +717,31 @@ class GameManager {
             
             const centerDist = Math.abs(to.row - BOARD_SIZE / 2) + Math.abs(to.col - BOARD_SIZE / 2);
             score += (BOARD_SIZE - centerDist) * 0.05;
+            
+            // A* pathfinding: bonus for moves that get closer to enemy king
+            const enemyColor = color === 'white' ? 'black' : 'white';
+            const enemyKingPos = findKingPosition(board, enemyColor);
+            if (enemyKingPos && !targetPiece) {
+              const currentPathDist = aStarPathfind(board, from, enemyKingPos);
+              
+              // Simulate moving the piece
+              const tempBoard: Board = JSON.parse(JSON.stringify(board));
+              tempBoard[to.row][to.col].piece = piece;
+              tempBoard[from.row][from.col].piece = null;
+              const newPathDist = aStarPathfind(tempBoard, to, enemyKingPos);
+              
+              if (newPathDist < currentPathDist && newPathDist !== Infinity) {
+                const improvement = currentPathDist - newPathDist;
+                score += improvement * 2;
+                if (newPathDist <= 4) {
+                  score += (5 - newPathDist) * 3;
+                }
+              }
+              
+              if (newPathDist > currentPathDist && currentPathDist !== Infinity) {
+                score -= 1;
+              }
+            }
             
             possibleMoves.push({ from, to, score, escapesCheck });
           }
@@ -1425,6 +1626,36 @@ class GameManager {
             const centerDist = Math.abs(to.row - BOARD_SIZE / 2) + Math.abs(to.col - BOARD_SIZE / 2);
             score += (BOARD_SIZE - centerDist) * 0.05;
             
+            // A* pathfinding: bonus for moves that get closer to enemy king
+            const enemyColor = aiColor === 'white' ? 'black' : 'white';
+            const enemyKingPos = findKingPosition(board, enemyColor);
+            if (enemyKingPos && !targetPiece) {
+              // For non-capture moves, prefer moves that reduce path distance to enemy king
+              const currentPathDist = aStarPathfind(board, from, enemyKingPos);
+              
+              // Simulate moving the piece and check new path distance
+              const tempBoard: Board = JSON.parse(JSON.stringify(board));
+              tempBoard[to.row][to.col].piece = piece;
+              tempBoard[from.row][from.col].piece = null;
+              const newPathDist = aStarPathfind(tempBoard, to, enemyKingPos);
+              
+              if (newPathDist < currentPathDist && newPathDist !== Infinity) {
+                // Bonus for getting closer to enemy king
+                const improvement = currentPathDist - newPathDist;
+                score += improvement * 2;
+                
+                // Extra bonus for pieces that are approaching attack range
+                if (newPathDist <= 4) {
+                  score += (5 - newPathDist) * 3;
+                }
+              }
+              
+              // Penalty for moves that make path worse or impossible
+              if (newPathDist > currentPathDist && currentPathDist !== Infinity) {
+                score -= 1;
+              }
+            }
+            
             possibleMoves.push({ from, to, score, escapesCheck });
           }
           
@@ -1463,9 +1694,48 @@ class GameManager {
           // Add bomb attacks for rooks - destroy adjacent walls
           if (piece.type === 'rook' && !inCheck) {
             const bombTargets = this.getBombTargets(board, from);
+            const enemyColor = aiColor === 'white' ? 'black' : 'white';
+            const enemyKingPos = findKingPosition(board, enemyColor);
+            
             for (const to of bombTargets) {
-              // Prioritize bombing walls that block key squares
-              const score = 450 + Math.random() * 0.5;
+              let score = 350 + Math.random() * 0.5;
+              
+              // Use A* to determine if bombing this wall opens up a path
+              if (enemyKingPos) {
+                // Check current path distance (may be blocked)
+                const currentPathDist = aStarPathfind(board, from, enemyKingPos);
+                
+                // Simulate removing the wall
+                const tempBoard: Board = JSON.parse(JSON.stringify(board));
+                tempBoard[to.row][to.col].isWall = false;
+                const newPathDist = aStarPathfind(tempBoard, from, enemyKingPos);
+                
+                // Big bonus if bombing opens a path or significantly shortens it
+                if (currentPathDist === Infinity && newPathDist !== Infinity) {
+                  score += 200; // Opens a previously blocked path
+                } else if (newPathDist < currentPathDist) {
+                  score += (currentPathDist - newPathDist) * 15; // Shortens existing path
+                }
+                
+                // Also check if any friendly piece benefits from this wall removal
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                  for (let c = 0; c < BOARD_SIZE; c++) {
+                    const otherPiece = board[r][c].piece;
+                    if (otherPiece && otherPiece.color === aiColor && (r !== from.row || c !== from.col)) {
+                      const otherFrom = { row: r, col: c };
+                      const otherCurrentDist = aStarPathfind(board, otherFrom, enemyKingPos);
+                      const otherNewDist = aStarPathfind(tempBoard, otherFrom, enemyKingPos);
+                      
+                      if (otherCurrentDist === Infinity && otherNewDist !== Infinity) {
+                        score += 100; // Opens path for another piece
+                      } else if (otherNewDist < otherCurrentDist - 2) {
+                        score += 30; // Significantly helps another piece
+                      }
+                    }
+                  }
+                }
+              }
+              
               possibleMoves.push({ from, to, score, isBomb: true });
             }
           }
