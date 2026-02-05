@@ -904,6 +904,58 @@ class GameManager {
     
     return room.state;
   }
+  
+  handleRandomWalls(playerId: string): GameState | null {
+    const gameId = this.playerToGame.get(playerId);
+    if (!gameId) return null;
+    
+    const room = this.games.get(gameId);
+    if (!room || room.state.phase !== 'setup') return null;
+    
+    const player = room.players.get(playerId);
+    if (!player) return null;
+    
+    const color = player.color;
+    const remaining = room.state.setupWallsRemaining[color];
+    if (remaining <= 0) return room.state;
+    
+    // Determine the player's half of the board
+    const isWhite = color === 'white';
+    const startRow = isWhite ? BOARD_SIZE / 2 : 0;
+    const endRow = isWhite ? BOARD_SIZE : BOARD_SIZE / 2;
+    
+    // Collect valid positions (empty squares without walls or pieces)
+    const validPositions: Position[] = [];
+    for (let row = startRow; row < endRow; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        const square = room.state.board[row][col];
+        if (!square.piece && !square.isWall) {
+          validPositions.push({ row, col });
+        }
+      }
+    }
+    
+    // Shuffle positions
+    for (let i = validPositions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [validPositions[i], validPositions[j]] = [validPositions[j], validPositions[i]];
+    }
+    
+    // Place walls randomly
+    let placed = 0;
+    for (const pos of validPositions) {
+      if (placed >= remaining) break;
+      room.state.board[pos.row][pos.col].isWall = true;
+      placed++;
+    }
+    
+    room.state.setupWallsRemaining[color] = remaining - placed;
+    
+    // Save game to file
+    this.saveGame(room.state);
+    
+    return room.state;
+  }
 
   handleReady(playerId: string): GameState | null {
     const gameId = this.playerToGame.get(playerId);

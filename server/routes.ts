@@ -266,6 +266,24 @@ export async function registerRoutes(
             }
             break;
           }
+          
+          case 'setup_random_walls': {
+            if (message.playerId || currentPlayerId) {
+              const state = gameManager.handleRandomWalls(
+                message.playerId || currentPlayerId!
+              );
+              if (state && currentGameId) {
+                const room = gameManager.getRoom(currentGameId);
+                if (room) {
+                  broadcastToRoom(room, {
+                    type: 'state',
+                    payload: { state },
+                  });
+                }
+              }
+            }
+            break;
+          }
 
           case 'ready': {
             if (message.playerId || currentPlayerId) {
