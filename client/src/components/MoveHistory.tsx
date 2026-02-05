@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import type { Move } from "@shared/schema";
 import { getMoveNotation } from "@/lib/gameUtils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +10,8 @@ interface MoveHistoryProps {
 }
 
 export function MoveHistory({ moves }: MoveHistoryProps) {
+  const scrollEndRef = useRef<HTMLDivElement>(null);
+  
   // Group moves into pairs (white, black)
   const movePairs: { white: Move | null; black: Move | null; moveNumber: number }[] = [];
   
@@ -19,6 +22,13 @@ export function MoveHistory({ moves }: MoveHistoryProps) {
       black: moves[i + 1] || null,
     });
   }
+  
+  // Auto-scroll to latest move when moves change
+  useEffect(() => {
+    if (scrollEndRef.current) {
+      scrollEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [moves.length]);
   
   return (
     <Card className="h-full">
@@ -57,6 +67,7 @@ export function MoveHistory({ moves }: MoveHistoryProps) {
                   </span>
                 </div>
               ))}
+              <div ref={scrollEndRef} />
             </div>
           )}
         </ScrollArea>
