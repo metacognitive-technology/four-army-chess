@@ -74,7 +74,7 @@ export function PlayerPanel({
           <div 
             className={cn(
               "flex flex-wrap gap-0.5 min-h-[2rem] p-1 rounded",
-              capturedPieces.some(p => p.color === 'white') && "bg-gray-700"
+              capturedPieces.some(p => p.color === 'white') && "bg-gray-600 dark:bg-gray-700"
             )} 
             data-testid={`captured-${color}`}
           >
@@ -87,8 +87,8 @@ export function PlayerPanel({
                   className={cn(
                     "text-lg",
                     piece.color === 'white' 
-                      ? "text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.8)]" 
-                      : "text-gray-700"
+                      ? "text-amber-50 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] [text-shadow:_0_0_3px_rgba(0,0,0,0.8)]" 
+                      : "text-gray-800 dark:text-gray-700"
                   )}
                 >
                   {PIECE_SYMBOLS[piece.type][piece.color]}
