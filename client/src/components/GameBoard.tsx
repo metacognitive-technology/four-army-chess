@@ -5,6 +5,25 @@ import { cn } from "@/lib/utils";
 import { Target, ZoomIn, ZoomOut, RotateCcw, Axe, Bomb, Blocks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+function PawnIcon({ color, size }: { color: 'white' | 'black'; size: string }) {
+  const fill = color === 'white' ? '#ffffff' : '#000000';
+  const stroke = color === 'white' ? '#000000' : '#ffffff';
+  return (
+    <svg 
+      viewBox="0 0 45 45" 
+      style={{ width: size, height: size }}
+    >
+      <path
+        d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z"
+        fill={fill}
+        stroke={stroke}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export type AttackAnimationType = 'arrow' | 'axe' | 'bomb' | 'pawn' | 'wallbuild';
 
 export interface AttackAnimation {
@@ -265,20 +284,34 @@ export function GameBoard({
                 data-testid={`square-${rowIndex}-${colIndex}`}
               >
                 {piece && (
-                  <span 
-                    className={cn(
-                      "select-none transition-transform duration-200 leading-none",
-                      piece.color === 'white' ? "text-white" : "text-black",
-                      showSelected && "scale-105",
-                    )}
-                    style={{
-                      fontSize: 'min(calc(560px / 12 * 0.85), calc((min(90vw, calc(100vh - 280px)) / 12) * 0.85))',
-                      WebkitTextStroke: piece.color === 'white' ? '1px black' : '1px white',
-                      paintOrder: 'stroke fill',
-                    }}
-                  >
-                    {PIECE_SYMBOLS[piece.type][piece.color]}
-                  </span>
+                  piece.type === 'pawn' ? (
+                    <div 
+                      className={cn(
+                        "select-none transition-transform duration-200 flex items-center justify-center",
+                        showSelected && "scale-105",
+                      )}
+                    >
+                      <PawnIcon 
+                        color={piece.color} 
+                        size="min(calc(560px / 12 * 0.85), calc((min(90vw, calc(100vh - 280px)) / 12) * 0.85))" 
+                      />
+                    </div>
+                  ) : (
+                    <span 
+                      className={cn(
+                        "select-none transition-transform duration-200 leading-none",
+                        piece.color === 'white' ? "text-white" : "text-black",
+                        showSelected && "scale-105",
+                      )}
+                      style={{
+                        fontSize: 'min(calc(560px / 12 * 0.85), calc((min(90vw, calc(100vh - 280px)) / 12) * 0.85))',
+                        WebkitTextStroke: piece.color === 'white' ? '1px black' : '1px white',
+                        paintOrder: 'stroke fill',
+                      }}
+                    >
+                      {PIECE_SYMBOLS[piece.type][piece.color]}
+                    </span>
+                  )
                 )}
                 
                 {isBishop && showSelected && !isArrowMode && !isAxeMode && !isBombMode && (
