@@ -30,6 +30,13 @@ Always update `GAME_VERSION` in `client/src/pages/Game.tsx` whenever code is mod
 - **State Flow**: Client sends actions via WebSocket → Server validates and updates state → Server broadcasts to all players in room
 - **Reconnection**: Players can reconnect to games using their player ID and game ID
 
+### AI System
+- **A* Pathfinding**: AI uses A* algorithm with Chebyshev distance heuristic for 8-directional movement
+- **Caching**: Path distances are cached per board wall configuration to reduce compute cost
+- **Move Scoring**: AI prioritizes moves that reduce path distance to enemy king
+- **Bomb Strategy**: Rook bomb attacks are scored based on whether they open paths to the enemy king
+- **Applied to both PvC and CvC modes** for consistent AI behavior
+
 ### Data Layer
 - **ORM**: Drizzle ORM with PostgreSQL dialect
 - **Schema Location**: `shared/schema.ts` - shared between client and server
