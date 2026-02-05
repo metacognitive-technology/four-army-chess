@@ -9,24 +9,33 @@ interface PendingPromotion {
   to: Position;
 }
 
+interface UseWebSocketOptions {
+  onDrawOffered?: () => void;
+  onDrawResponse?: (accepted: boolean) => void;
+}
+
 interface UseWebSocketReturn {
   gameState: GameState | null;
   playerId: string | null;
   playerColor: 'white' | 'black' | null;
   connectionStatus: ConnectionStatus;
   sendMessage: (message: GameMessage) => void;
-  createGame: (maxWalls: number, gameMode?: GameMode, attackSettings?: { pawnSuccessRoll: number; bishopMinRoll: number; knightMinRoll: number }) => void;
+  createGame: (maxWalls: number, gameMode?: GameMode, attackSettings?: { pawnSuccessRoll: number; bishopMinRoll: number; knightMinRoll: number; bombSuccessRoll: number }) => void;
   joinGame: (gameId: string) => void;
   reconnectGame: (gameId: string, storedPlayerId: string | null) => void;
   takeoverGame: (gameId: string, color: 'white' | 'black') => void;
   watchCvCGame: (gameId: string) => void;
+  pauseCvCGame: (paused: boolean) => void;
+  offerDraw: () => void;
+  respondToDraw: (accept: boolean) => void;
   isObserver: boolean;
   lastError: string | null;
   pendingPromotion: PendingPromotion | null;
   clearPendingPromotion: () => void;
 }
 
-export function useWebSocket(): UseWebSocketReturn {
+export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketReturn {
+  const { onDrawOffered, onDrawResponse } = options;
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [playerColor, setPlayerColor] = useState<'white' | 'black' | null>(null);
@@ -124,6 +133,20 @@ export function useWebSocket(): UseWebSocketReturn {
           case 'games_updated':
             // Refresh the saved games list when another player deletes a game
             queryClient.invalidateQueries({ queryKey: ['/api/games'] });
+            break;
+            
+          case 'draw_offered':
+            // Opponent offered a draw
+            if (onDrawOffered) {
+              onDrawOffered();
+            }
+            break;
+            
+          case 'draw_response':
+            // Opponent responded to our draw offer
+            if (onDrawResponse) {
+              onDrawResponse(message.payload.accepted);
+            }
             break;
         }
       } catch (e) {
@@ -263,6 +286,35 @@ export function useWebSocket(): UseWebSocketReturn {
     checkAndSend();
   }, [connect]);
   
+  const pauseCvCGame = useCallback((paused: boolean) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        type: 'pause_cvc',
+        payload: { paused },
+      }));
+    }
+  }, []);
+  
+  const offerDraw = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN && playerIdRef.current) {
+      wsRef.current.send(JSON.stringify({
+        type: 'offer_draw',
+        payload: {},
+        playerId: playerIdRef.current,
+      }));
+    }
+  }, []);
+  
+  const respondToDraw = useCallback((accept: boolean) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN && playerIdRef.current) {
+      wsRef.current.send(JSON.stringify({
+        type: 'respond_draw',
+        payload: { accept },
+        playerId: playerIdRef.current,
+      }));
+    }
+  }, []);
+  
   return {
     gameState,
     playerId,
@@ -274,6 +326,9 @@ export function useWebSocket(): UseWebSocketReturn {
     reconnectGame,
     takeoverGame,
     watchCvCGame,
+    pauseCvCGame,
+    offerDraw,
+    respondToDraw,
     isObserver,
     lastError,
     pendingPromotion,

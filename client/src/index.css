@@ -286,3 +286,14 @@
     inset: -1px;
   }
 }
+
+/* Move flash animation - 3 flashes, 0.5s each = 1.5s total */
+@keyframes moveFlash {
+  0%, 100% { background-color: inherit; }
+  10%, 30%, 50% { background-color: rgb(59, 130, 246); } /* blue-500 */
+  20%, 40%, 60% { background-color: inherit; }
+}
+
+.move-flash-animation {
+  animation: moveFlash 1.5s ease-in-out;
+}

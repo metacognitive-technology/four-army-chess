@@ -404,6 +404,25 @@ class GameManager {
     
     return room.state;
   }
+  
+  pauseCvCGame(gameId: string, paused: boolean): void {
+    const room = this.games.get(gameId);
+    if (!room || room.state.gameMode !== 'cvc') return;
+    
+    if (paused) {
+      // Pause - stop the game loop
+      const interval = this.cvcIntervals.get(gameId);
+      if (interval) {
+        clearInterval(interval);
+        this.cvcIntervals.delete(gameId);
+      }
+    } else {
+      // Resume - restart the game loop if game is still playing
+      if (room.state.phase === 'playing' && !this.cvcIntervals.has(gameId)) {
+        this.startCvCGameLoop(gameId);
+      }
+    }
+  }
 
   joinCvCAsObserver(ws: WebSocket, gameId: string): { state: GameState } | null {
     let room = this.games.get(gameId);

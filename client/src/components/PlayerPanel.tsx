@@ -59,13 +59,6 @@ export function PlayerPanel({
             </div>
           </div>
         </div>
-        
-        {isCurrentTurn && (
-          <div className="flex items-center gap-1 text-primary">
-            <Crown className="w-4 h-4" />
-            <span className="text-xs font-medium">Turn</span>
-          </div>
-        )}
       </CardHeader>
       
       <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-6 pt-0">
@@ -78,7 +71,13 @@ export function PlayerPanel({
         
         <div>
           <span className="text-sm text-muted-foreground block mb-1">Captured</span>
-          <div className="flex flex-wrap gap-0.5 min-h-[2rem]" data-testid={`captured-${color}`}>
+          <div 
+            className={cn(
+              "flex flex-wrap gap-0.5 min-h-[2rem] p-1 rounded",
+              capturedPieces.some(p => p.color === 'white') && "bg-gray-700"
+            )} 
+            data-testid={`captured-${color}`}
+          >
             {capturedPieces.length === 0 ? (
               <span className="text-xs text-muted-foreground italic">None yet</span>
             ) : (
@@ -88,7 +87,7 @@ export function PlayerPanel({
                   className={cn(
                     "text-lg",
                     piece.color === 'white' 
-                      ? "text-gray-300 drop-shadow-[0_0_1px_rgba(0,0,0,0.5)]" 
+                      ? "text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.8)]" 
                       : "text-gray-700"
                   )}
                 >
@@ -98,6 +97,13 @@ export function PlayerPanel({
             )}
           </div>
         </div>
+        
+        {isCurrentTurn && (
+          <div className="flex items-center justify-center gap-1 text-primary pt-2 border-t">
+            <Crown className="w-4 h-4" />
+            <span className="text-sm font-medium">Current Turn</span>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

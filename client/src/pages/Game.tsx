@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.8.8";
+const GAME_VERSION = "1.8.9";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -43,6 +43,9 @@ export default function Game() {
   const gameIdFromUrl = searchParams.get('game');
   
   const { toast } = useToast();
+  const [drawOffered, setDrawOffered] = useState(false);
+  const [drawOfferPending, setDrawOfferPending] = useState(false);
+  
   const {
     gameState,
     playerId,
@@ -54,11 +57,31 @@ export default function Game() {
     reconnectGame,
     takeoverGame,
     watchCvCGame,
+    pauseCvCGame,
+    offerDraw,
+    respondToDraw,
     isObserver,
     lastError,
     pendingPromotion,
     clearPendingPromotion,
-  } = useWebSocket();
+  } = useWebSocket({
+    onDrawOffered: () => {
+      setDrawOffered(true);
+      toast({
+        title: "Draw Offered",
+        description: "Your opponent has offered a draw.",
+      });
+    },
+    onDrawResponse: (accepted: boolean) => {
+      setDrawOfferPending(false);
+      if (!accepted) {
+        toast({
+          title: "Draw Declined",
+          description: "Your opponent declined the draw offer.",
+        });
+      }
+    },
+  });
   
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [isArrowMode, setIsArrowMode] = useState(false);
@@ -71,8 +94,11 @@ export default function Game() {
   const [attackAnimation, setAttackAnimation] = useState<AttackAnimation | null>(null);
   const [flashColor, setFlashColor] = useState<'red' | 'yellow'>('red');
   const [isCreatingCvC, setIsCreatingCvC] = useState(false);
+  const [moveFlashSquares, setMoveFlashSquares] = useState<Position[]>([]);
+  const [isCvCPaused, setIsCvCPaused] = useState(false);
   const lastDiceRollRef = useRef<string | null>(null);
   const lastPhaseRef = useRef<string | null>(null);
+  const lastMoveCountRef = useRef<number>(0);
   
   // Attack probability settings
   const [pawnSuccessRoll, setPawnSuccessRoll] = useState(1);  // Roll this or lower on d6
@@ -293,6 +319,26 @@ export default function Game() {
     lastPhaseRef.current = currentPhase;
   }, [gameState?.phase, gameState?.winner, playerColor]);
   
+  // Flash origin and destination squares when a move is made
+  useEffect(() => {
+    if (!gameState || !gameState.moveHistory.length) return;
+    
+    const currentMoveCount = gameState.moveHistory.length;
+    if (currentMoveCount > lastMoveCountRef.current) {
+      const lastMove = gameState.moveHistory[currentMoveCount - 1];
+      
+      // Set the squares to flash
+      setMoveFlashSquares([lastMove.from, lastMove.to]);
+      
+      // Clear flash after animation (1.5s for 3 flashes at 0.5s each)
+      setTimeout(() => {
+        setMoveFlashSquares([]);
+      }, 1500);
+    }
+    
+    lastMoveCountRef.current = currentMoveCount;
+  }, [gameState?.moveHistory]);
+  
   const board = gameState?.board || createInitialBoard();
   const phase = gameState?.phase || 'waiting';
   const currentTurn = gameState?.currentTurn || 'white';
@@ -471,6 +517,35 @@ export default function Game() {
       sendMessage({ type: 'move', payload: { resign: true } });
     }
   }, [sendMessage, gameState?.gameMode]);
+  
+  const handleOfferDraw = useCallback(() => {
+    setDrawOfferPending(true);
+    offerDraw();
+    toast({
+      title: "Draw Offered",
+      description: "Waiting for opponent's response...",
+    });
+  }, [offerDraw, toast]);
+  
+  const handleAcceptDraw = useCallback(() => {
+    respondToDraw(true);
+    setDrawOffered(false);
+  }, [respondToDraw]);
+  
+  const handleDeclineDraw = useCallback(() => {
+    respondToDraw(false);
+    setDrawOffered(false);
+    toast({
+      title: "Draw Declined",
+      description: "The game continues.",
+    });
+  }, [respondToDraw, toast]);
+  
+  const handleTogglePause = useCallback(() => {
+    const newPaused = !isCvCPaused;
+    setIsCvCPaused(newPaused);
+    pauseCvCGame(newPaused);
+  }, [isCvCPaused, pauseCvCGame]);
   
   const handlePromotion = useCallback((pieceType: PromotionPieceType) => {
     if (pendingPromotion) {
@@ -852,6 +927,8 @@ export default function Game() {
               flashingSquare={flashingSquare}
               flashColor={flashColor}
               attackAnimation={attackAnimation}
+              moveFlashSquares={moveFlashSquares}
+              gameMode={gameState.gameMode}
             />
             
             {pendingPromotion && (
@@ -910,6 +987,14 @@ export default function Game() {
               onNewGame={handleNewGame}
               onResign={handleResign}
               isReady={isReady}
+              isCvCGame={gameState.gameMode === 'cvc'}
+              isCvCPaused={isCvCPaused}
+              onPauseCvC={handleTogglePause}
+              onOfferDraw={handleOfferDraw}
+              drawOffered={drawOffered}
+              drawOfferPending={drawOfferPending}
+              onAcceptDraw={handleAcceptDraw}
+              onDeclineDraw={handleDeclineDraw}
             />
             
             <MoveHistory moves={gameState.moveHistory} />

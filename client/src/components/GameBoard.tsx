@@ -36,6 +36,8 @@ interface GameBoardProps {
   flashingSquare: Position | null;
   flashColor?: 'red' | 'yellow';
   attackAnimation?: AttackAnimation | null;
+  moveFlashSquares?: Position[];
+  gameMode?: 'pvp' | 'pvc' | 'cvc';
 }
 
 export function GameBoard({
@@ -60,10 +62,15 @@ export function GameBoard({
   flashingSquare,
   flashColor = 'red',
   attackAnimation,
+  moveFlashSquares = [],
+  gameMode = 'pvc',
 }: GameBoardProps) {
   const isMyTurn = playerColor === currentTurn;
   const [zoom, setZoom] = useState(1);
   const boardRef = useRef<HTMLDivElement>(null);
+  
+  // Flip board for black player in multiplayer mode
+  const shouldFlipBoard = gameMode === 'pvp' && playerColor === 'black';
   
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.2, 2));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.2, 0.6));
@@ -96,6 +103,23 @@ export function GameBoard({
   const isFlashing = useCallback((row: number, col: number) => {
     return flashingSquare?.row === row && flashingSquare?.col === col;
   }, [flashingSquare]);
+  
+  const isMoveFlashing = useCallback((row: number, col: number) => {
+    return moveFlashSquares.some(s => s.row === row && s.col === col);
+  }, [moveFlashSquares]);
+  
+  // Check if square is available for wall placement in setup mode
+  const isWallPlacementAvailable = useCallback((row: number, col: number) => {
+    if (phase !== 'setup') return false;
+    const square = board[row][col];
+    // Can only place walls on empty squares in own half
+    if (square.piece || square.isWall) return false;
+    if (playerColor === 'white') {
+      return row >= BOARD_SIZE / 2;
+    } else {
+      return row < BOARD_SIZE / 2;
+    }
+  }, [phase, board, playerColor]);
 
   const canInteract = (row: number, col: number) => {
     if (phase === 'setup') {
@@ -169,8 +193,10 @@ export function GameBoard({
           }}
           data-testid="game-board"
         >
-        {board.map((row, rowIndex) =>
-          row.map((square, colIndex) => {
+        {(shouldFlipBoard ? [...board].reverse() : board).map((row, displayRowIndex) => {
+          const rowIndex = shouldFlipBoard ? BOARD_SIZE - 1 - displayRowIndex : displayRowIndex;
+          return (shouldFlipBoard ? [...row].reverse() : row).map((square, displayColIndex) => {
+            const colIndex = shouldFlipBoard ? BOARD_SIZE - 1 - displayColIndex : displayColIndex;
             const isDark = (rowIndex + colIndex) % 2 === 1;
             const piece = square.piece;
             const canClick = canInteract(rowIndex, colIndex);
@@ -179,6 +205,8 @@ export function GameBoard({
             const showHanging = isHanging(rowIndex, colIndex) && piece?.color === playerColor;
             const showSelected = isSelected(rowIndex, colIndex);
             const showFlashing = isFlashing(rowIndex, colIndex);
+            const showMoveFlash = isMoveFlashing(rowIndex, colIndex);
+            const showWallAvailable = isWallPlacementAvailable(rowIndex, colIndex);
             const isBishop = piece?.type === 'bishop' && piece?.color === playerColor && phase === 'playing' && isMyTurn;
             const isKnight = piece?.type === 'knight' && piece?.color === playerColor && phase === 'playing' && isMyTurn;
             const isRook = piece?.type === 'rook' && piece?.color === playerColor && phase === 'playing' && isMyTurn;
@@ -201,6 +229,8 @@ export function GameBoard({
                       : "bg-green-400 dark:bg-green-500"),
                   showFlashing && flashColor === 'red' && "animate-pulse bg-red-500",
                   showFlashing && flashColor === 'yellow' && "animate-pulse bg-yellow-400",
+                  showMoveFlash && "move-flash-animation",
+                  showWallAvailable && "ring-2 ring-inset ring-blue-400/50 bg-blue-400/20",
                   showSelected && "ring-2 ring-inset ring-blue-500",
                   showValidMove && !square.piece && "after:absolute after:w-1/3 after:h-1/3 after:rounded-full after:bg-black/20",
                   showValidMove && square.piece && "ring-2 ring-inset ring-red-500",
@@ -289,8 +319,8 @@ export function GameBoard({
                 )}
               </div>
             );
-          })
-        )}
+          });
+        })}
         </div>
       </div>
       

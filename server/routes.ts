@@ -315,6 +315,63 @@ export async function registerRoutes(
             }
             break;
           }
+          
+          case 'pause_cvc': {
+            // Handle pausing/resuming a CvC game
+            if (currentGameId) {
+              gameManager.pauseCvCGame(currentGameId, message.payload.paused);
+            }
+            break;
+          }
+          
+          case 'offer_draw': {
+            // Handle draw offer
+            if (currentPlayerId && currentGameId) {
+              const room = gameManager.getRoom(currentGameId);
+              if (room) {
+                // Send draw offer to opponent
+                room.players.forEach((player, id) => {
+                  if (id !== currentPlayerId) {
+                    player.ws.send(JSON.stringify({
+                      type: 'draw_offered',
+                      payload: { offeredBy: currentPlayerId },
+                    }));
+                  }
+                });
+              }
+            }
+            break;
+          }
+          
+          case 'respond_draw': {
+            // Handle draw response
+            if (currentPlayerId && currentGameId) {
+              const room = gameManager.getRoom(currentGameId);
+              if (room) {
+                if (message.payload.accept) {
+                  // Draw accepted - end the game
+                  room.state.phase = 'finished';
+                  room.state.winner = 'draw';
+                  gameManager.saveGame(room.state);
+                  broadcastToRoom(room, {
+                    type: 'state',
+                    payload: { state: room.state },
+                  });
+                } else {
+                  // Draw declined - notify the opponent
+                  room.players.forEach((player, id) => {
+                    if (id !== currentPlayerId) {
+                      player.ws.send(JSON.stringify({
+                        type: 'draw_response',
+                        payload: { accepted: false },
+                      }));
+                    }
+                  });
+                }
+              }
+            }
+            break;
+          }
 
           case 'move': {
             if (message.playerId || currentPlayerId) {

@@ -88,7 +88,7 @@ export interface GameState {
 }
 
 export interface GameMessage {
-  type: 'join' | 'setup_wall' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'bomb_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover' | 'games_updated' | 'watch_cvc' | 'stop_cvc';
+  type: 'join' | 'setup_wall' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'bomb_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover' | 'games_updated' | 'watch_cvc' | 'stop_cvc' | 'pause_cvc' | 'offer_draw' | 'respond_draw' | 'draw_offered' | 'draw_response';
   payload: any;
   playerId?: string;
 }
@@ -99,6 +99,7 @@ export const gameConfigSchema = z.object({
     pawnSuccessRoll: z.number().min(1).max(6).default(1),
     bishopMinRoll: z.number().min(2).max(12).default(0), // 0 means use distance
     knightMinRoll: z.number().min(1).max(6).default(4),
+    bombSuccessRoll: z.number().min(1).max(10).default(1), // Roll this or lower on d10
   }).optional(),
 });
 

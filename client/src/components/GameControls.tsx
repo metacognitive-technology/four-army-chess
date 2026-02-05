@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Play, RotateCcw, Flag, CheckCircle, Copy, Share2 } from "lucide-react";
+import { Play, RotateCcw, Flag, CheckCircle, Copy, Share2, Pause, Handshake } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface GameControlsProps {
@@ -15,6 +15,14 @@ interface GameControlsProps {
   onNewGame: () => void;
   onResign: () => void;
   isReady: boolean;
+  isCvCGame?: boolean;
+  isCvCPaused?: boolean;
+  onPauseCvC?: () => void;
+  onOfferDraw?: () => void;
+  drawOffered?: boolean;
+  drawOfferPending?: boolean;
+  onAcceptDraw?: () => void;
+  onDeclineDraw?: () => void;
 }
 
 export function GameControls({
@@ -27,6 +35,14 @@ export function GameControls({
   onNewGame,
   onResign,
   isReady,
+  isCvCGame = false,
+  isCvCPaused = false,
+  onPauseCvC,
+  onOfferDraw,
+  drawOffered = false,
+  drawOfferPending = false,
+  onAcceptDraw,
+  onDeclineDraw,
 }: GameControlsProps) {
   const { toast } = useToast();
   
@@ -47,6 +63,27 @@ export function GameControls({
         <CardTitle className="text-sm font-medium">Game Controls</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-6 pt-0">
+        {isCvCGame && phase === 'playing' && onPauseCvC && (
+          <Button 
+            variant={isCvCPaused ? "default" : "secondary"}
+            className="w-full gap-2" 
+            onClick={onPauseCvC}
+            data-testid="button-pause-cvc"
+          >
+            {isCvCPaused ? (
+              <>
+                <Play className="w-4 h-4" />
+                Resume
+              </>
+            ) : (
+              <>
+                <Pause className="w-4 h-4" />
+                Pause
+              </>
+            )}
+          </Button>
+        )}
+        
         {gameId && (
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground">Game ID</Label>
@@ -105,15 +142,56 @@ export function GameControls({
         )}
         
         {phase === 'playing' && (
-          <Button 
-            variant="destructive" 
-            className="w-full gap-2" 
-            onClick={onResign}
-            data-testid="button-resign"
-          >
-            <Flag className="w-4 h-4" />
-            Resign
-          </Button>
+          <div className="space-y-2">
+            {drawOfferPending && onAcceptDraw && onDeclineDraw ? (
+              <div className="p-2 bg-muted rounded-md">
+                <p className="text-sm text-center mb-2">Opponent offers a draw</p>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="default" 
+                    className="flex-1 gap-1" 
+                    size="sm"
+                    onClick={onAcceptDraw}
+                    data-testid="button-accept-draw"
+                  >
+                    Accept
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex-1 gap-1" 
+                    size="sm"
+                    onClick={onDeclineDraw}
+                    data-testid="button-decline-draw"
+                  >
+                    Decline
+                  </Button>
+                </div>
+              </div>
+            ) : onOfferDraw && !isCvCGame && (
+              <Button 
+                variant="outline" 
+                className="w-full gap-2" 
+                onClick={onOfferDraw}
+                disabled={drawOffered}
+                data-testid="button-offer-draw"
+              >
+                <Handshake className="w-4 h-4" />
+                {drawOffered ? 'Draw Offered' : 'Offer Draw'}
+              </Button>
+            )}
+            
+            {!isCvCGame && (
+              <Button 
+                variant="destructive" 
+                className="w-full gap-2" 
+                onClick={onResign}
+                data-testid="button-resign"
+              >
+                <Flag className="w-4 h-4" />
+                Resign
+              </Button>
+            )}
+          </div>
         )}
         
         {phase === 'finished' && (
