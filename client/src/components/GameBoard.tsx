@@ -37,7 +37,7 @@ interface GameBoardProps {
   board: Board;
   currentTurn: PlayerColor;
   playerColor: PlayerColor | null;
-  phase: 'waiting' | 'setup' | 'playing' | 'finished';
+  phase: 'waiting' | 'budget_setup' | 'setup' | 'playing' | 'finished';
   selectedPosition: Position | null;
   validMoves: Position[];
   arrowTargets: Position[];

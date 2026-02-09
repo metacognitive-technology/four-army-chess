@@ -51,6 +51,17 @@ Always update `GAME_VERSION` in `client/src/pages/Game.tsx` whenever code is mod
 - **Game Persistence**: JSON files in `server/data/games/` directory for game state persistence
 - **Current Storage**: In-memory storage (MemStorage class), with file-based persistence for games
 
+### Per-Player Budget Assignment System
+- **Budget Modes**: `shared` (creator sets all attack percentages for both players) or `individual` (each player assigns their own)
+- **Budget Setup Phase**: In individual mode, game transitions through `budget_setup` phase after both players join, where each player configures attack percentages within the total budget
+- **Phase Flow**: waiting → budget_setup (individual mode) → setup (if walls > 0) → playing
+- **Server State**: Per-player settings stored in `whiteAttackSettings` / `blackAttackSettings` on game state
+- **Attack Resolution**: `getAttackSettingsForColor()` selects the attacking piece's player's settings
+- **State Filtering**: `filterStateForPlayer()` hides opponent's settings in individual mode, merges own settings into `attackSettings`
+- **AI Auto-Assignment**: `generateAIBudgetSettings()` creates weighted random distributions for AI players in PvC/CvC individual mode
+- **Client UI**: Budget mode toggle in lobby, budget_setup phase with sliders and submit, attack chances panel during gameplay
+- **WebSocket Messages**: `budget_submit` message type for player budget submissions
+
 ### Game Persistence System
 - **File Storage**: Games are saved as JSON files in `server/data/games/{gameId}.json`
 - **Auto-Save**: Game state is saved after every mutation (create, join, move, wall, ready, resign)

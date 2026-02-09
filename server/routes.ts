@@ -107,7 +107,7 @@ export async function registerRoutes(
         switch (message.type) {
           case 'join': {
             if (message.payload.action === 'create') {
-              const result = gameManager.createGame(ws, message.payload.maxWalls || 8, message.payload.gameMode || 'pvp', message.payload.attackSettings);
+              const result = gameManager.createGame(ws, message.payload.maxWalls || 8, message.payload.gameMode || 'pvp', message.payload.attackSettings, message.payload.budgetMode);
               currentPlayerId = result.playerId;
               currentGameId = result.gameId;
 
@@ -116,7 +116,7 @@ export async function registerRoutes(
                 ws.send(JSON.stringify({
                   type: 'state',
                   payload: {
-                    state: room.state,
+                    state: filterStateForPlayer(room.state, result.color),
                     playerId: result.playerId,
                     color: result.color,
                   },
@@ -130,11 +130,10 @@ export async function registerRoutes(
 
                 const room = gameManager.getRoom(message.payload.gameId);
                 if (room) {
-                  // Send state to joining player
                   ws.send(JSON.stringify({
                     type: 'state',
                     payload: {
-                      state: room.state,
+                      state: filterStateForPlayer(room.state, result.color),
                       playerId: result.playerId,
                       color: result.color,
                     },
@@ -169,7 +168,7 @@ export async function registerRoutes(
                   ws.send(JSON.stringify({
                     type: 'state',
                     payload: {
-                      state: room.state,
+                      state: filterStateForPlayer(room.state, player?.color || 'white'),
                       playerId: message.playerId,
                       color: player?.color,
                     },
@@ -199,20 +198,19 @@ export async function registerRoutes(
                 ws.send(JSON.stringify({
                   type: 'state',
                   payload: {
-                    state: result.state,
+                    state: filterStateForPlayer(result.state, message.payload.color),
                     playerId: result.playerId,
                     color: message.payload.color,
                   },
                 }));
 
-                // Notify other players in the room
                 const room = gameManager.getRoom(message.payload.gameId);
                 if (room) {
                   room.players.forEach((player, id) => {
                     if (id !== result.playerId) {
                       player.ws.send(JSON.stringify({
                         type: 'player_joined',
-                        payload: { state: result.state },
+                        payload: { state: filterStateForPlayer(result.state, player.color) },
                       }));
                     }
                   });
@@ -290,6 +288,25 @@ export async function registerRoutes(
             if (message.playerId || currentPlayerId) {
               const state = gameManager.handleMazeWalls(
                 message.playerId || currentPlayerId!
+              );
+              if (state && currentGameId) {
+                const room = gameManager.getRoom(currentGameId);
+                if (room) {
+                  broadcastToRoom(room, {
+                    type: 'state',
+                    payload: { state },
+                  });
+                }
+              }
+            }
+            break;
+          }
+
+          case 'budget_submit': {
+            if (message.playerId || currentPlayerId) {
+              const state = gameManager.handleBudgetSubmit(
+                message.playerId || currentPlayerId!,
+                message.payload
               );
               if (state && currentGameId) {
                 const room = gameManager.getRoom(currentGameId);
@@ -698,15 +715,32 @@ export async function registerRoutes(
     });
   });
 
+  function filterStateForPlayer(state: any, playerColor: 'white' | 'black'): any {
+    if (state?.budgetMode !== 'individual') return state;
+    const filtered = { ...state };
+    if (playerColor === 'white') {
+      filtered.blackAttackSettings = filtered.blackAttackSettings ? { hidden: true } : undefined;
+      if (filtered.whiteAttackSettings && !filtered.whiteAttackSettings.hidden) {
+        filtered.attackSettings = { ...filtered.attackSettings, ...filtered.whiteAttackSettings };
+      }
+    } else {
+      filtered.whiteAttackSettings = filtered.whiteAttackSettings ? { hidden: true } : undefined;
+      if (filtered.blackAttackSettings && !filtered.blackAttackSettings.hidden) {
+        filtered.attackSettings = { ...filtered.attackSettings, ...filtered.blackAttackSettings };
+      }
+    }
+    return filtered;
+  }
+
   function broadcastToRoom(room: { players: Map<string, { ws: WebSocket; color: 'white' | 'black' }> }, message: GameMessage, excludePlayerId?: string) {
     room.players.forEach((player, playerId) => {
       if (playerId !== excludePlayerId && player.ws.readyState === WebSocket.OPEN) {
-        // Always include player's color in state messages to prevent color loss
         const personalizedMessage = message.type === 'state' || message.type === 'player_joined' || message.type === 'player_left'
           ? {
               ...message,
               payload: {
                 ...message.payload,
+                state: message.payload.state ? filterStateForPlayer(message.payload.state, player.color) : message.payload.state,
                 playerId,
                 color: player.color,
               },

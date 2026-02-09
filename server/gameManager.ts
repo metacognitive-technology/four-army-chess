@@ -241,6 +241,14 @@ class GameManager {
   private games: Map<string, GameRoom> = new Map();
   private playerToGame: Map<string, string> = new Map();
 
+  getAttackSettingsForColor(state: GameState, color: PlayerColor): AttackSettings {
+    if (state.budgetMode === 'individual') {
+      const perPlayer = color === 'white' ? state.whiteAttackSettings : state.blackAttackSettings;
+      if (perPlayer) return perPlayer;
+    }
+    return state.attackSettings;
+  }
+
   private checkAttackSuccess(settings: AttackSettings, attackType: 'pawn' | 'bishop' | 'knight' | 'bomb' | 'wallBuild', distance?: number): boolean {
     const percentMap: Record<string, number | undefined> = {
       pawn: settings.pawnAttackPercent,
@@ -425,7 +433,7 @@ class GameManager {
     return state;
   }
 
-  createGame(ws: WebSocket, maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings): { gameId: string; playerId: string; color: PlayerColor } {
+  createGame(ws: WebSocket, maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual'): { gameId: string; playerId: string; color: PlayerColor } {
     const gameId = randomUUID().slice(0, 8);
     const playerId = randomUUID();
     
@@ -438,6 +446,9 @@ class GameManager {
       bombSuccessRoll: 1,
       wallBuildRoll: 5,
     };
+    
+    const finalAttackSettings = attackSettings || defaultAttackSettings;
+    const effectiveBudgetMode = budgetMode || 'shared';
     
     const state: GameState = {
       id: gameId,
@@ -453,8 +464,23 @@ class GameManager {
       capturedPieces: { white: [], black: [] },
       players: { white: playerId, black: isVsComputer ? AI_PLAYER_ID : null },
       winner: null,
-      attackSettings: attackSettings || defaultAttackSettings,
+      attackSettings: finalAttackSettings,
+      budgetMode: effectiveBudgetMode,
+      budgetReadyPlayers: [],
     };
+    
+    if (effectiveBudgetMode === 'individual') {
+      state.whiteAttackSettings = undefined;
+      state.blackAttackSettings = undefined;
+    } else {
+      state.whiteAttackSettings = { ...finalAttackSettings };
+      state.blackAttackSettings = { ...finalAttackSettings };
+    }
+    
+    if (isVsComputer && effectiveBudgetMode === 'individual') {
+      state.blackAttackSettings = this.generateAIBudgetSettings(finalAttackSettings.totalAttackBudget || 250);
+      state.budgetReadyPlayers = [AI_PLAYER_ID];
+    }
     
     const room: GameRoom = {
       state,
@@ -985,7 +1011,8 @@ class GameManager {
     
     if (targetPiece) {
       const distance = Math.abs(to.row - from.row);
-      const success = this.checkAttackSuccess(state.attackSettings, 'bishop', distance);
+      const settings = this.getAttackSettingsForColor(state, color);
+      const success = this.checkAttackSuccess(settings, 'bishop', distance);
       
       if (success) {
         state.capturedPieces[color].push(targetPiece);
@@ -1004,7 +1031,8 @@ class GameManager {
     const color = piece.color;
     
     if (targetPiece) {
-      const success = this.checkAttackSuccess(state.attackSettings, 'knight');
+      const settings = this.getAttackSettingsForColor(state, color);
+      const success = this.checkAttackSuccess(settings, 'knight');
       if (success) {
         state.capturedPieces[color].push(targetPiece);
         board[to.row][to.col].piece = null;
@@ -1022,7 +1050,8 @@ class GameManager {
     
     // Roll 1d10, need <= bombSuccessRoll (default 1)
     const roll = Math.floor(Math.random() * 10) + 1;
-    const success = this.checkAttackSuccess(state.attackSettings, 'bomb');
+    const bombSettings = this.getAttackSettingsForColor(state, color);
+    const success = this.checkAttackSuccess(bombSettings, 'bomb');
     
     if (success && board[to.row][to.col].isWall) {
       board[to.row][to.col].isWall = false;
@@ -1035,7 +1064,7 @@ class GameManager {
       piece,
       isBombAttack: true,
       diceRoll: roll,
-      diceRequired: state.attackSettings?.bombSuccessRoll ?? 1,
+      diceRequired: bombSettings?.bombSuccessRoll ?? 1,
       success,
       notation: `R💣${String.fromCharCode(97 + to.col)}${BOARD_SIZE - to.row}(${roll}${success ? '✓' : '✗'})`,
     });
@@ -1133,7 +1162,6 @@ class GameManager {
   }
 
   joinGame(ws: WebSocket, gameId: string): { playerId: string; color: PlayerColor } | null {
-    // Try to load from file if not in memory
     let room = this.games.get(gameId);
     if (!room) {
       const state = this.loadGame(gameId);
@@ -1149,7 +1177,6 @@ class GameManager {
       }
     }
     
-    // Check if game is full
     if (room.state.players.black) {
       return null;
     }
@@ -1159,17 +1186,104 @@ class GameManager {
     room.players.set(playerId, { ws, id: playerId, color: 'black' });
     this.playerToGame.set(playerId, gameId);
     
-    // Move to setup phase when both players join
-    if (room.state.maxWallsPerPlayer > 0) {
+    if (room.state.budgetMode === 'individual') {
+      room.state.phase = 'budget_setup';
+    } else if (room.state.maxWallsPerPlayer > 0) {
       room.state.phase = 'setup';
     } else {
       room.state.phase = 'playing';
     }
     
-    // Save game to file
     this.saveGame(room.state);
     
     return { playerId, color: 'black' };
+  }
+  
+  private generateAIBudgetSettings(totalBudget: number): AttackSettings {
+    const weights = [1, 3, 3, 1, 2];
+    const totalWeight = weights.reduce((s, w) => s + w, 0);
+    const pawnPct = Math.min(100, Math.round((weights[0] / totalWeight) * totalBudget));
+    const bishopPct = Math.min(100, Math.round((weights[1] / totalWeight) * totalBudget));
+    const knightPct = Math.min(100, Math.round((weights[2] / totalWeight) * totalBudget));
+    const bombPct = Math.min(100, Math.round((weights[3] / totalWeight) * totalBudget));
+    const wallPct = Math.min(100, Math.round((weights[4] / totalWeight) * totalBudget));
+    return {
+      pawnSuccessRoll: Math.round(pawnPct / 100 * 6),
+      bishopMinRoll: 0,
+      knightMinRoll: 6 + 1 - Math.round(knightPct / 100 * 6),
+      bombSuccessRoll: Math.round(bombPct / 100 * 10),
+      wallBuildRoll: Math.round(wallPct / 100 * 10),
+      totalAttackBudget: totalBudget,
+      pawnAttackPercent: pawnPct,
+      bishopAttackPercent: bishopPct,
+      knightAttackPercent: knightPct,
+      bombAttackPercent: bombPct,
+      wallBuildPercent: wallPct,
+    };
+  }
+  
+  handleBudgetSubmit(playerId: string, settings: AttackSettings): GameState | null {
+    const gameId = this.playerToGame.get(playerId);
+    if (!gameId) return null;
+    
+    const room = this.games.get(gameId);
+    if (!room || room.state.phase !== 'budget_setup') return null;
+    
+    const player = room.players.get(playerId);
+    if (!player) return null;
+    
+    const budget = room.state.attackSettings.totalAttackBudget || 250;
+    const total = (settings.pawnAttackPercent || 0) + (settings.bishopAttackPercent || 0) + 
+      (settings.knightAttackPercent || 0) + (settings.bombAttackPercent || 0) + (settings.wallBuildPercent || 0);
+    
+    if (total > budget) return null;
+    
+    const pawnPct = settings.pawnAttackPercent || 0;
+    const bishopPct = settings.bishopAttackPercent || 0;
+    const knightPct = settings.knightAttackPercent || 0;
+    const bombPct = settings.bombAttackPercent || 0;
+    const wallPct = settings.wallBuildPercent || 0;
+    
+    const playerSettings: AttackSettings = {
+      pawnSuccessRoll: Math.round(pawnPct / 100 * 6),
+      bishopMinRoll: 0,
+      knightMinRoll: 6 + 1 - Math.round(knightPct / 100 * 6),
+      bombSuccessRoll: Math.round(bombPct / 100 * 10),
+      wallBuildRoll: Math.round(wallPct / 100 * 10),
+      totalAttackBudget: budget,
+      pawnAttackPercent: pawnPct,
+      bishopAttackPercent: bishopPct,
+      knightAttackPercent: knightPct,
+      bombAttackPercent: bombPct,
+      wallBuildPercent: wallPct,
+    };
+    
+    if (player.color === 'white') {
+      room.state.whiteAttackSettings = playerSettings;
+    } else {
+      room.state.blackAttackSettings = playerSettings;
+    }
+    
+    if (!room.state.budgetReadyPlayers) room.state.budgetReadyPlayers = [];
+    if (!room.state.budgetReadyPlayers.includes(playerId)) {
+      room.state.budgetReadyPlayers.push(playerId);
+    }
+    
+    const neededCount = room.state.gameMode === 'pvc' ? 1 : 2;
+    const humanReady = room.state.budgetReadyPlayers.filter(id => id !== AI_PLAYER_ID).length;
+    const aiReady = room.state.budgetReadyPlayers.includes(AI_PLAYER_ID) ? 1 : 0;
+    const totalReady = humanReady + aiReady;
+    
+    if (totalReady >= neededCount) {
+      if (room.state.maxWallsPerPlayer > 0) {
+        room.state.phase = 'setup';
+      } else {
+        room.state.phase = 'playing';
+      }
+    }
+    
+    this.saveGame(room.state);
+    return room.state;
   }
 
   reconnectPlayer(ws: WebSocket, playerId: string, gameId: string): boolean {
@@ -1524,7 +1638,8 @@ class GameManager {
     // Pawn attack requires dice roll
     if (piece.type === 'pawn' && targetPiece) {
       const roll = Math.floor(Math.random() * 6) + 1;
-      const success = this.checkAttackSuccess(room.state.attackSettings, 'pawn');
+      const pawnSettings = this.getAttackSettingsForColor(room.state, player.color);
+      const success = this.checkAttackSuccess(pawnSettings, 'pawn');
       diceRoll = { value: roll, type: 'd6', success };
       room.state.lastDiceRoll = diceRoll;
       
@@ -1662,7 +1777,8 @@ class GameManager {
     const die1 = Math.floor(Math.random() * 6) + 1;
     const die2 = Math.floor(Math.random() * 6) + 1;
     const roll = die1 + die2;
-    const success = this.checkAttackSuccess(room.state.attackSettings, 'bishop', distance);
+    const arrowSettings = this.getAttackSettingsForColor(room.state, player.color);
+    const success = this.checkAttackSuccess(arrowSettings, 'bishop', distance);
     
     const diceRoll = { value: roll, type: '2d6' as const, success };
     room.state.lastDiceRoll = diceRoll;
@@ -1734,7 +1850,8 @@ class GameManager {
     
     // Roll 1d6 for axe - need to roll >= threshold to hit
     const roll = Math.floor(Math.random() * 6) + 1;
-    const success = this.checkAttackSuccess(room.state.attackSettings, 'knight');
+    const axeSettings = this.getAttackSettingsForColor(room.state, player.color);
+    const success = this.checkAttackSuccess(axeSettings, 'knight');
     
     const diceRoll = { value: roll, type: 'd6' as const, success };
     room.state.lastDiceRoll = diceRoll;
@@ -1803,7 +1920,8 @@ class GameManager {
     
     // Roll 1d10 for bomb attack - configurable success rate
     const roll = Math.floor(Math.random() * 10) + 1;
-    const success = this.checkAttackSuccess(room.state.attackSettings, 'bomb');
+    const bombHandlerSettings = this.getAttackSettingsForColor(room.state, player.color);
+    const success = this.checkAttackSuccess(bombHandlerSettings, 'bomb');
     
     const diceRoll = { value: roll, type: 'd10' as const, success };
     room.state.lastDiceRoll = diceRoll;
@@ -1861,7 +1979,8 @@ class GameManager {
     
     // Roll 1d10 for wall build - configurable success rate (default 50%)
     const roll = Math.floor(Math.random() * 10) + 1;
-    const success = this.checkAttackSuccess(room.state.attackSettings, 'wallBuild');
+    const wallSettings = this.getAttackSettingsForColor(room.state, player.color);
+    const success = this.checkAttackSuccess(wallSettings, 'wallBuild');
     
     const diceRoll = { value: roll, type: 'd10' as const, success };
     room.state.lastDiceRoll = diceRoll;
@@ -2350,7 +2469,8 @@ class GameManager {
     // Pawn attack requires dice roll
     if (piece.type === 'pawn' && targetPiece) {
       const roll = Math.floor(Math.random() * 6) + 1;
-      const success = this.checkAttackSuccess(state.attackSettings, 'pawn');
+      const aiPawnSettings = this.getAttackSettingsForColor(state, aiColor);
+      const success = this.checkAttackSuccess(aiPawnSettings, 'pawn');
       diceRoll = { value: roll, type: 'd6', success };
       state.lastDiceRoll = diceRoll;
 
@@ -2413,7 +2533,8 @@ class GameManager {
 
     const distance = Math.abs(to.row - from.row);
     const roll = Math.floor(Math.random() * 4) + 1;
-    const success = this.checkAttackSuccess(state.attackSettings, 'bishop', distance);
+    const aiArrowSettings = this.getAttackSettingsForColor(state, aiColor);
+    const success = this.checkAttackSuccess(aiArrowSettings, 'bishop', distance);
 
     const diceRoll = { value: roll, type: 'd4' as const, success };
     state.lastDiceRoll = diceRoll;
@@ -2469,7 +2590,8 @@ class GameManager {
 
     // Knight axe attack: roll d6, need >= knightMinRoll (default 4)
     const roll = Math.floor(Math.random() * 6) + 1;
-    const success = this.checkAttackSuccess(state.attackSettings, 'knight');
+    const aiAxeSettings = this.getAttackSettingsForColor(state, aiColor);
+    const success = this.checkAttackSuccess(aiAxeSettings, 'knight');
 
     const diceRoll = { value: roll, type: 'd6' as const, success };
     state.lastDiceRoll = diceRoll;
@@ -2522,7 +2644,8 @@ class GameManager {
 
     // Rook bomb attack: roll d10, need <= bombSuccessRoll (default 1)
     const roll = Math.floor(Math.random() * 10) + 1;
-    const success = this.checkAttackSuccess(state.attackSettings, 'bomb');
+    const aiBombSettings = this.getAttackSettingsForColor(state, aiColor);
+    const success = this.checkAttackSuccess(aiBombSettings, 'bomb');
 
     const diceRoll = { value: roll, type: 'd10' as const, success };
     state.lastDiceRoll = diceRoll;

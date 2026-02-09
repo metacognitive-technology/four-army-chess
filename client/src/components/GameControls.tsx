@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface GameControlsProps {
   gameId: string | null;
-  phase: 'waiting' | 'setup' | 'playing' | 'finished';
+  phase: 'waiting' | 'budget_setup' | 'setup' | 'playing' | 'finished';
   isHost: boolean;
   maxWalls: number;
   onMaxWallsChange: (value: number) => void;

@@ -59,8 +59,9 @@ export interface Move {
 
 export type PromotionPieceType = 'queen' | 'rook' | 'bishop' | 'knight';
 
-export type GamePhase = 'waiting' | 'setup' | 'playing' | 'finished';
+export type GamePhase = 'waiting' | 'budget_setup' | 'setup' | 'playing' | 'finished';
 export type GameMode = 'pvp' | 'pvc' | 'cvc';
+export type BudgetMode = 'shared' | 'individual';
 
 export interface AttackSettings {
   pawnSuccessRoll: number;
@@ -94,10 +95,14 @@ export interface GameState {
   pendingArrowTarget?: Position;
   selectedPiece?: Position;
   attackSettings: AttackSettings;
+  budgetMode?: BudgetMode;
+  whiteAttackSettings?: AttackSettings;
+  blackAttackSettings?: AttackSettings;
+  budgetReadyPlayers?: string[];
 }
 
 export interface GameMessage {
-  type: 'join' | 'setup_wall' | 'setup_random_walls' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'bomb_attack' | 'wall_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover' | 'games_updated' | 'watch_cvc' | 'stop_cvc' | 'pause_cvc' | 'offer_draw' | 'respond_draw' | 'draw_offered' | 'draw_response' | 'handoff' | 'take_control';
+  type: 'join' | 'setup_wall' | 'setup_random_walls' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'bomb_attack' | 'wall_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover' | 'games_updated' | 'watch_cvc' | 'stop_cvc' | 'pause_cvc' | 'offer_draw' | 'respond_draw' | 'draw_offered' | 'draw_response' | 'handoff' | 'take_control' | 'budget_submit';
   payload: any;
   playerId?: string;
 }

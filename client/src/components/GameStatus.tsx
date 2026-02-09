@@ -4,7 +4,7 @@ import { AlertTriangle, CheckCircle2, XCircle, Swords, Target } from "lucide-rea
 import type { PlayerColor } from "@shared/schema";
 
 interface GameStatusProps {
-  phase: 'waiting' | 'setup' | 'playing' | 'finished';
+  phase: 'waiting' | 'budget_setup' | 'setup' | 'playing' | 'finished';
   currentTurn: PlayerColor;
   playerColor: PlayerColor | null;
   isCheck: boolean;
@@ -29,6 +29,14 @@ export function GameStatus({
       return {
         icon: <Swords className="w-5 h-5" />,
         message: 'Waiting for opponent...',
+        variant: 'default' as const,
+      };
+    }
+    
+    if (phase === 'budget_setup') {
+      return {
+        icon: <Target className="w-5 h-5" />,
+        message: 'Assign your attack budget percentages',
         variant: 'default' as const,
       };
     }

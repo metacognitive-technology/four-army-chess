@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.11.0";
+const GAME_VERSION = "1.12.0";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -60,6 +60,7 @@ export default function Game() {
     pauseCvCGame,
     offerDraw,
     respondToDraw,
+    submitBudget,
     isObserver,
     lastError,
     pendingPromotion,
@@ -108,6 +109,8 @@ export default function Game() {
   const [knightAttackPercent, setKnightAttackPercent] = useState(50);
   const [bombAttackPercent, setBombAttackPercent] = useState(10);
   const [wallBuildPercent, setWallBuildPercent] = useState(50);
+  const [budgetMode, setBudgetMode] = useState<'shared' | 'individual'>('shared');
+  const [budgetSubmitted, setBudgetSubmitted] = useState(false);
 
   const totalUsed = pawnAttackPercent + bishopAttackPercent + knightAttackPercent + bombAttackPercent + wallBuildPercent;
   const budgetRemaining = totalAttackBudget - totalUsed;
@@ -221,6 +224,15 @@ export default function Game() {
       joinGame(gameIdFromUrl);
     }
   }, [gameIdFromUrl, gameState, joinGame]);
+  
+  useEffect(() => {
+    if (gameState?.attackSettings?.totalAttackBudget != null) {
+      setTotalAttackBudget(gameState.attackSettings.totalAttackBudget);
+    }
+    if (gameState?.phase && gameState.phase !== 'budget_setup') {
+      setBudgetSubmitted(false);
+    }
+  }, [gameState?.attackSettings?.totalAttackBudget, gameState?.phase]);
   
   // Show errors as toasts
   useEffect(() => {
@@ -693,8 +705,29 @@ export default function Game() {
               </Select>
             </div>
             
+            <div className="space-y-2">
+              <Label>Budget Assignment</Label>
+              <Select
+                value={budgetMode}
+                onValueChange={(v) => setBudgetMode(v as 'shared' | 'individual')}
+              >
+                <SelectTrigger data-testid="select-budget-mode">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="shared">Shared (same for both players)</SelectItem>
+                  <SelectItem value="individual">Individual (each player assigns their own)</SelectItem>
+                </SelectContent>
+              </Select>
+              {budgetMode === 'individual' && (
+                <p className="text-xs text-muted-foreground">Each player will assign their own attack percentages within the budget before play begins.</p>
+              )}
+            </div>
+
             <div className="space-y-3 pt-2 border-t">
-              <h4 className="text-sm font-medium text-muted-foreground">Special Attack Chances</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">
+                {budgetMode === 'individual' ? 'Attack Budget (max per player)' : 'Special Attack Chances'}
+              </h4>
               
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
@@ -731,104 +764,107 @@ export default function Game() {
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <Label>Pawn Attack</Label>
-                  <span className="text-muted-foreground">{pawnAttackPercent}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={pawnAttackPercent}
-                  onChange={(e) => setPawnAttackPercent(clampToAttackBudget(parseInt(e.target.value), pawnAttackPercent))}
-                  className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
-                  data-testid="slider-pawn-attack"
-                />
-              </div>
-              
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <Label>Bishop Arrow</Label>
-                  <span className="text-muted-foreground">{bishopAttackPercent}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={bishopAttackPercent}
-                  onChange={(e) => setBishopAttackPercent(clampToAttackBudget(parseInt(e.target.value), bishopAttackPercent))}
-                  className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
-                  data-testid="slider-bishop-attack"
-                />
-              </div>
-              
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <Label>Knight Axe</Label>
-                  <span className="text-muted-foreground">{knightAttackPercent}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={knightAttackPercent}
-                  onChange={(e) => setKnightAttackPercent(clampToAttackBudget(parseInt(e.target.value), knightAttackPercent))}
-                  className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
-                  data-testid="slider-knight-attack"
-                />
-              </div>
-              
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <Label>Rook Bomb</Label>
-                  <span className="text-muted-foreground">{bombAttackPercent}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={bombAttackPercent}
-                  onChange={(e) => setBombAttackPercent(clampToAttackBudget(parseInt(e.target.value), bombAttackPercent))}
-                  className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
-                  data-testid="slider-bomb-attack"
-                />
-              </div>
-              
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <Label>Rook Wall Build</Label>
-                  <span className="text-muted-foreground">{wallBuildPercent}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={wallBuildPercent}
-                  onChange={(e) => setWallBuildPercent(clampToAttackBudget(parseInt(e.target.value), wallBuildPercent))}
-                  className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
-                  data-testid="slider-wall-build"
-                />
-              </div>
+              {budgetMode === 'shared' && (
+                <>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <Label>Pawn Attack</Label>
+                      <span className="text-muted-foreground">{pawnAttackPercent}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={pawnAttackPercent}
+                      onChange={(e) => setPawnAttackPercent(clampToAttackBudget(parseInt(e.target.value), pawnAttackPercent))}
+                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                      data-testid="slider-pawn-attack"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <Label>Bishop Arrow</Label>
+                      <span className="text-muted-foreground">{bishopAttackPercent}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={bishopAttackPercent}
+                      onChange={(e) => setBishopAttackPercent(clampToAttackBudget(parseInt(e.target.value), bishopAttackPercent))}
+                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                      data-testid="slider-bishop-attack"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <Label>Knight Axe</Label>
+                      <span className="text-muted-foreground">{knightAttackPercent}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={knightAttackPercent}
+                      onChange={(e) => setKnightAttackPercent(clampToAttackBudget(parseInt(e.target.value), knightAttackPercent))}
+                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                      data-testid="slider-knight-attack"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <Label>Rook Bomb</Label>
+                      <span className="text-muted-foreground">{bombAttackPercent}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={bombAttackPercent}
+                      onChange={(e) => setBombAttackPercent(clampToAttackBudget(parseInt(e.target.value), bombAttackPercent))}
+                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                      data-testid="slider-bomb-attack"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <Label>Rook Wall Build</Label>
+                      <span className="text-muted-foreground">{wallBuildPercent}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={wallBuildPercent}
+                      onChange={(e) => setWallBuildPercent(clampToAttackBudget(parseInt(e.target.value), wallBuildPercent))}
+                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                      data-testid="slider-wall-build"
+                    />
+                  </div>
+                </>
+              )}
             </div>
             
             <div className="space-y-4">
               <Button 
                 className="w-full gap-2" 
                 size="lg"
-                onClick={() => createGame(maxWalls, 'pvc', {
+                onClick={() => {
+                  const as = {
                     pawnSuccessRoll: percentToThreshold(pawnAttackPercent, 6, true),
                     bishopMinRoll: 0,
                     knightMinRoll: percentToThreshold(knightAttackPercent, 6, false),
                     bombSuccessRoll: percentToThreshold(bombAttackPercent, 10, true),
                     wallBuildRoll: percentToThreshold(wallBuildPercent, 10, true),
                     totalAttackBudget,
-                    pawnAttackPercent,
-                    bishopAttackPercent,
-                    knightAttackPercent,
-                    bombAttackPercent,
-                    wallBuildPercent,
-                  })}
+                    ...(budgetMode === 'shared' ? { pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent } : {}),
+                  };
+                  createGame(maxWalls, 'pvc', as, budgetMode);
+                }}
                 data-testid="button-play-computer"
               >
                 <Bot className="w-5 h-5" />
@@ -839,19 +875,18 @@ export default function Game() {
                 className="w-full gap-2" 
                 size="lg"
                 variant="outline"
-                onClick={() => createGame(maxWalls, 'pvp', {
+                onClick={() => {
+                  const as = {
                     pawnSuccessRoll: percentToThreshold(pawnAttackPercent, 6, true),
                     bishopMinRoll: 0,
                     knightMinRoll: percentToThreshold(knightAttackPercent, 6, false),
                     bombSuccessRoll: percentToThreshold(bombAttackPercent, 10, true),
                     wallBuildRoll: percentToThreshold(wallBuildPercent, 10, true),
                     totalAttackBudget,
-                    pawnAttackPercent,
-                    bishopAttackPercent,
-                    knightAttackPercent,
-                    bombAttackPercent,
-                    wallBuildPercent,
-                  })}
+                    ...(budgetMode === 'shared' ? { pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent } : {}),
+                  };
+                  createGame(maxWalls, 'pvp', as, budgetMode);
+                }}
                 data-testid="button-create-game"
               >
                 <Users className="w-5 h-5" />
@@ -1063,34 +1098,117 @@ export default function Game() {
               isArrowMode={isArrowMode}
             />
             
-            <GameBoard
-              board={board}
-              currentTurn={currentTurn}
-              playerColor={playerColor}
-              phase={phase}
-              selectedPosition={selectedPosition}
-              validMoves={validMoves}
-              arrowTargets={arrowTargets}
-              axeTargets={axeTargets}
-              bombTargets={bombTargets}
-              wallBuildTargets={wallBuildTargets}
-              hangingPieces={hangingPieces}
-              isArrowMode={isArrowMode}
-              isAxeMode={isAxeMode}
-              isBombMode={isBombMode}
-              isWallBuildMode={isWallBuildMode}
-              onSquareClick={handleSquareClick}
-              onArrowModeToggle={handleArrowModeToggle}
-              onAxeModeToggle={handleAxeModeToggle}
-              onBombModeToggle={handleBombModeToggle}
-              onWallBuildModeToggle={handleWallBuildModeToggle}
-              setupWallsRemaining={playerColor ? gameState.setupWallsRemaining[playerColor] : 0}
-              flashingSquare={flashingSquare}
-              flashColor={flashColor}
-              attackAnimation={attackAnimation}
-              moveFlashSquares={moveFlashSquares}
-              gameMode={gameState.gameMode}
-            />
+            {phase === 'budget_setup' && !budgetSubmitted ? (
+              <Card className="w-full max-w-md p-4 space-y-4" data-testid="budget-setup-panel">
+                <h3 className="text-lg font-semibold text-center">Assign Your Attack Budget</h3>
+                <p className="text-sm text-muted-foreground text-center">
+                  Budget: {gameState.attackSettings?.totalAttackBudget ?? totalAttackBudget}% total. Distribute percentages across your attacks.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-xs">
+                    <span>Used: {totalUsed}%</span>
+                    <span className={budgetRemaining < 0 ? "text-destructive font-medium" : ""}>
+                      Remaining: {budgetRemaining}%
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <Label>Pawn Attack</Label>
+                      <span className="text-muted-foreground">{pawnAttackPercent}%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value={pawnAttackPercent}
+                      onChange={(e) => setPawnAttackPercent(clampToAttackBudget(parseInt(e.target.value), pawnAttackPercent))}
+                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                      data-testid="budget-slider-pawn" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <Label>Bishop Arrow</Label>
+                      <span className="text-muted-foreground">{bishopAttackPercent}%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value={bishopAttackPercent}
+                      onChange={(e) => setBishopAttackPercent(clampToAttackBudget(parseInt(e.target.value), bishopAttackPercent))}
+                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                      data-testid="budget-slider-bishop" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <Label>Knight Axe</Label>
+                      <span className="text-muted-foreground">{knightAttackPercent}%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value={knightAttackPercent}
+                      onChange={(e) => setKnightAttackPercent(clampToAttackBudget(parseInt(e.target.value), knightAttackPercent))}
+                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                      data-testid="budget-slider-knight" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <Label>Rook Bomb</Label>
+                      <span className="text-muted-foreground">{bombAttackPercent}%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value={bombAttackPercent}
+                      onChange={(e) => setBombAttackPercent(clampToAttackBudget(parseInt(e.target.value), bombAttackPercent))}
+                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                      data-testid="budget-slider-bomb" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <Label>Rook Wall Build</Label>
+                      <span className="text-muted-foreground">{wallBuildPercent}%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value={wallBuildPercent}
+                      onChange={(e) => setWallBuildPercent(clampToAttackBudget(parseInt(e.target.value), wallBuildPercent))}
+                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                      data-testid="budget-slider-wall" />
+                  </div>
+                </div>
+                <Button
+                  className="w-full"
+                  disabled={budgetRemaining < 0}
+                  onClick={() => {
+                    submitBudget({ pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent });
+                    setBudgetSubmitted(true);
+                  }}
+                  data-testid="button-submit-budget"
+                >
+                  Submit Budget
+                </Button>
+              </Card>
+            ) : phase === 'budget_setup' && budgetSubmitted ? (
+              <Card className="w-full max-w-md p-4 text-center" data-testid="budget-waiting-panel">
+                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Waiting for opponent to submit their budget...</p>
+              </Card>
+            ) : (
+              <GameBoard
+                board={board}
+                currentTurn={currentTurn}
+                playerColor={playerColor}
+                phase={phase}
+                selectedPosition={selectedPosition}
+                validMoves={validMoves}
+                arrowTargets={arrowTargets}
+                axeTargets={axeTargets}
+                bombTargets={bombTargets}
+                wallBuildTargets={wallBuildTargets}
+                hangingPieces={hangingPieces}
+                isArrowMode={isArrowMode}
+                isAxeMode={isAxeMode}
+                isBombMode={isBombMode}
+                isWallBuildMode={isWallBuildMode}
+                onSquareClick={handleSquareClick}
+                onArrowModeToggle={handleArrowModeToggle}
+                onAxeModeToggle={handleAxeModeToggle}
+                onBombModeToggle={handleBombModeToggle}
+                onWallBuildModeToggle={handleWallBuildModeToggle}
+                setupWallsRemaining={playerColor ? gameState.setupWallsRemaining[playerColor] : 0}
+                flashingSquare={flashingSquare}
+                flashColor={flashColor}
+                attackAnimation={attackAnimation}
+                moveFlashSquares={moveFlashSquares}
+                gameMode={gameState.gameMode}
+              />
+            )}
             
             {pendingPromotion && (
               <Card className="p-4" data-testid="promotion-dialog">
@@ -1163,6 +1281,31 @@ export default function Game() {
               onHandoff={handleHandoff}
               onTakeControl={handleTakeControl}
             />
+            
+            {(phase === 'playing' || phase === 'setup') && gameState.attackSettings && (
+              <Card>
+                <CardHeader className="p-3 pb-1">
+                  <CardTitle className="text-sm font-medium">Your Attack Chances</CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 pt-0">
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                    <span className="text-muted-foreground">Pawn</span>
+                    <span data-testid="text-own-pawn-percent">{gameState.attackSettings.pawnAttackPercent ?? '?'}%</span>
+                    <span className="text-muted-foreground">Bishop</span>
+                    <span data-testid="text-own-bishop-percent">{gameState.attackSettings.bishopAttackPercent ?? '?'}%</span>
+                    <span className="text-muted-foreground">Knight</span>
+                    <span data-testid="text-own-knight-percent">{gameState.attackSettings.knightAttackPercent ?? '?'}%</span>
+                    <span className="text-muted-foreground">Bomb</span>
+                    <span data-testid="text-own-bomb-percent">{gameState.attackSettings.bombAttackPercent ?? '?'}%</span>
+                    <span className="text-muted-foreground">Wall Build</span>
+                    <span data-testid="text-own-wall-percent">{gameState.attackSettings.wallBuildPercent ?? '?'}%</span>
+                  </div>
+                  {gameState.attackSettings.budgetMode === 'individual' && (
+                    <p className="text-xs text-muted-foreground mt-1 italic">Opponent's settings are hidden</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
             
             <MoveHistory moves={gameState.moveHistory} />
           </div>

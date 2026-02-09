@@ -191,15 +191,14 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     }
   }, [playerId]);
   
-  const createGame = useCallback((maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings) => {
+  const createGame = useCallback((maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual') => {
     connect();
     
-    // Wait for connection then send create message
     const checkAndSend = () => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({
           type: 'join',
-          payload: { action: 'create', maxWalls, gameMode, attackSettings },
+          payload: { action: 'create', maxWalls, gameMode, attackSettings, budgetMode },
         }));
       } else {
         setTimeout(checkAndSend, 100);
@@ -315,6 +314,16 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     }
   }, []);
   
+  const submitBudget = useCallback((attackSettings: { pawnAttackPercent: number; bishopAttackPercent: number; knightAttackPercent: number; bombAttackPercent: number; wallBuildPercent: number }) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN && playerIdRef.current) {
+      wsRef.current.send(JSON.stringify({
+        type: 'budget_submit',
+        payload: attackSettings,
+        playerId: playerIdRef.current,
+      }));
+    }
+  }, []);
+  
   return {
     gameState,
     playerId,
@@ -329,6 +338,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     pauseCvCGame,
     offerDraw,
     respondToDraw,
+    submitBudget,
     isObserver,
     lastError,
     pendingPromotion,
