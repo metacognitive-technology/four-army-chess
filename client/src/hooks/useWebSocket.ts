@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { GameMessage, GameState, GameMode, Position } from "@shared/schema";
+import type { GameMessage, GameState, GameMode, Position, AttackSettings } from "@shared/schema";
 import { queryClient } from "@/lib/queryClient";
 
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
@@ -20,7 +20,7 @@ interface UseWebSocketReturn {
   playerColor: 'white' | 'black' | null;
   connectionStatus: ConnectionStatus;
   sendMessage: (message: GameMessage) => void;
-  createGame: (maxWalls: number, gameMode?: GameMode, attackSettings?: { pawnSuccessRoll: number; bishopMinRoll: number; knightMinRoll: number; bombSuccessRoll: number }) => void;
+  createGame: (maxWalls: number, gameMode?: GameMode, attackSettings?: AttackSettings) => void;
   joinGame: (gameId: string) => void;
   reconnectGame: (gameId: string, storedPlayerId: string | null) => void;
   takeoverGame: (gameId: string, color: 'white' | 'black') => void;
@@ -191,7 +191,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     }
   }, [playerId]);
   
-  const createGame = useCallback((maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: { pawnSuccessRoll: number; bishopMinRoll: number; knightMinRoll: number }) => {
+  const createGame = useCallback((maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings) => {
     connect();
     
     // Wait for connection then send create message

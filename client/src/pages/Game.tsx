@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.10.9";
+const GAME_VERSION = "1.11.0";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -101,12 +101,27 @@ export default function Game() {
   const lastPhaseRef = useRef<string | null>(null);
   const lastMoveCountRef = useRef<number>(0);
   
-  // Attack probability settings
-  const [pawnSuccessRoll, setPawnSuccessRoll] = useState(1);  // Roll this or lower on d6
-  const [bishopMinRoll, setBishopMinRoll] = useState(0);      // 0 = use distance, else fixed threshold
-  const [knightMinRoll, setKnightMinRoll] = useState(4);      // Roll this or higher on d6
-  const [bombSuccessRoll, setBombSuccessRoll] = useState(1);  // Roll this or lower on d10
-  const [wallBuildRoll, setWallBuildRoll] = useState(5);      // Roll this or lower on d10
+  // Attack probability settings (percentage-based)
+  const [totalAttackBudget, setTotalAttackBudget] = useState(250);
+  const [pawnAttackPercent, setPawnAttackPercent] = useState(17);
+  const [bishopAttackPercent, setBishopAttackPercent] = useState(50);
+  const [knightAttackPercent, setKnightAttackPercent] = useState(50);
+  const [bombAttackPercent, setBombAttackPercent] = useState(10);
+  const [wallBuildPercent, setWallBuildPercent] = useState(50);
+
+  const totalUsed = pawnAttackPercent + bishopAttackPercent + knightAttackPercent + bombAttackPercent + wallBuildPercent;
+  const budgetRemaining = totalAttackBudget - totalUsed;
+
+  const clampToAttackBudget = (newValue: number, currentValue: number) => {
+    const otherTotal = totalUsed - currentValue;
+    const maxAllowed = Math.min(100, totalAttackBudget - otherTotal);
+    return Math.max(0, Math.min(newValue, maxAllowed));
+  };
+
+  const percentToThreshold = (percent: number, dieSize: number, rollUnder: boolean) => {
+    if (rollUnder) return Math.round(percent / 100 * dieSize);
+    return dieSize + 1 - Math.round(percent / 100 * dieSize);
+  };
   
   // Fetch saved games
   const { data: savedGames = [], isLoading: loadingSavedGames } = useQuery<SavedGameInfo[]>({
@@ -143,10 +158,22 @@ export default function Game() {
   const handleCreateCvCGame = useCallback(async () => {
     setIsCreatingCvC(true);
     try {
-      const response = await apiRequest('POST', '/api/games/cvc', { maxWalls });
+      const attackSettings = {
+        pawnSuccessRoll: percentToThreshold(pawnAttackPercent, 6, true),
+        bishopMinRoll: 0,
+        knightMinRoll: percentToThreshold(knightAttackPercent, 6, false),
+        bombSuccessRoll: percentToThreshold(bombAttackPercent, 10, true),
+        wallBuildRoll: percentToThreshold(wallBuildPercent, 10, true),
+        totalAttackBudget,
+        pawnAttackPercent,
+        bishopAttackPercent,
+        knightAttackPercent,
+        bombAttackPercent,
+        wallBuildPercent,
+      };
+      const response = await apiRequest('POST', '/api/games/cvc', { maxWalls, attackSettings });
       const data = await response.json();
       queryClient.invalidateQueries({ queryKey: ['/api/games'] });
-      // Join as observer to watch the game play out
       watchCvCGame(data.gameId);
       toast({
         title: "Watching CvC Game",
@@ -161,7 +188,7 @@ export default function Game() {
     } finally {
       setIsCreatingCvC(false);
     }
-  }, [maxWalls, toast, watchCvCGame]);
+  }, [maxWalls, toast, watchCvCGame, pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent, totalAttackBudget, percentToThreshold]);
 
   const handleTakeoverGame = useCallback((gameId: string, color: 'white' | 'black') => {
     takeoverGame(gameId, color);
@@ -667,19 +694,54 @@ export default function Game() {
             </div>
             
             <div className="space-y-3 pt-2 border-t">
-              <h4 className="text-sm font-medium text-muted-foreground">Attack Probabilities</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">Special Attack Chances</h4>
               
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <Label>Pawn: roll {pawnSuccessRoll} or less on d6</Label>
-                  <span className="text-muted-foreground">{Math.round(pawnSuccessRoll / 6 * 100)}%</span>
+                  <Label>Total Budget</Label>
+                  <span className="text-muted-foreground">{totalAttackBudget}%</span>
                 </div>
                 <input
                   type="range"
-                  min="1"
-                  max="6"
-                  value={pawnSuccessRoll}
-                  onChange={(e) => setPawnSuccessRoll(parseInt(e.target.value))}
+                  min="0"
+                  max="500"
+                  step="5"
+                  value={totalAttackBudget}
+                  onChange={(e) => {
+                    const newBudget = parseInt(e.target.value);
+                    setTotalAttackBudget(newBudget);
+                    const currentTotal = pawnAttackPercent + bishopAttackPercent + knightAttackPercent + bombAttackPercent + wallBuildPercent;
+                    if (currentTotal > newBudget) {
+                      const scale = newBudget / currentTotal;
+                      setPawnAttackPercent(Math.round(pawnAttackPercent * scale));
+                      setBishopAttackPercent(Math.round(bishopAttackPercent * scale));
+                      setKnightAttackPercent(Math.round(knightAttackPercent * scale));
+                      setBombAttackPercent(Math.round(bombAttackPercent * scale));
+                      setWallBuildPercent(Math.round(wallBuildPercent * scale));
+                    }
+                  }}
+                  className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                  data-testid="slider-total-budget"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Used: {totalUsed}%</span>
+                  <span className={budgetRemaining < 0 ? "text-destructive font-medium" : ""}>
+                    Remaining: {budgetRemaining}%
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <Label>Pawn Attack</Label>
+                  <span className="text-muted-foreground">{pawnAttackPercent}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={pawnAttackPercent}
+                  onChange={(e) => setPawnAttackPercent(clampToAttackBudget(parseInt(e.target.value), pawnAttackPercent))}
                   className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
                   data-testid="slider-pawn-attack"
                 />
@@ -687,32 +749,31 @@ export default function Game() {
               
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <Label>Bishop: {bishopMinRoll === 0 ? 'roll >= distance on 2d6' : `roll ${bishopMinRoll}+ on 2d6`}</Label>
-                  <span className="text-muted-foreground">{bishopMinRoll === 0 ? 'varies' : `${Math.round((13 - bishopMinRoll) * (12 - bishopMinRoll) / 2 / 36 * 100)}%`}</span>
+                  <Label>Bishop Arrow</Label>
+                  <span className="text-muted-foreground">{bishopAttackPercent}%</span>
                 </div>
                 <input
                   type="range"
                   min="0"
-                  max="12"
-                  value={bishopMinRoll}
-                  onChange={(e) => setBishopMinRoll(parseInt(e.target.value))}
+                  max="100"
+                  value={bishopAttackPercent}
+                  onChange={(e) => setBishopAttackPercent(clampToAttackBudget(parseInt(e.target.value), bishopAttackPercent))}
                   className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
                   data-testid="slider-bishop-attack"
                 />
-                <div className="text-xs text-muted-foreground">0 = based on distance</div>
               </div>
               
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <Label>Knight: roll {knightMinRoll}+ on d6</Label>
-                  <span className="text-muted-foreground">{Math.round((7 - knightMinRoll) / 6 * 100)}%</span>
+                  <Label>Knight Axe</Label>
+                  <span className="text-muted-foreground">{knightAttackPercent}%</span>
                 </div>
                 <input
                   type="range"
-                  min="1"
-                  max="6"
-                  value={knightMinRoll}
-                  onChange={(e) => setKnightMinRoll(parseInt(e.target.value))}
+                  min="0"
+                  max="100"
+                  value={knightAttackPercent}
+                  onChange={(e) => setKnightAttackPercent(clampToAttackBudget(parseInt(e.target.value), knightAttackPercent))}
                   className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
                   data-testid="slider-knight-attack"
                 />
@@ -720,15 +781,15 @@ export default function Game() {
               
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <Label>Rook Bomb: roll {bombSuccessRoll} or less on d10</Label>
-                  <span className="text-muted-foreground">{bombSuccessRoll * 10}%</span>
+                  <Label>Rook Bomb</Label>
+                  <span className="text-muted-foreground">{bombAttackPercent}%</span>
                 </div>
                 <input
                   type="range"
-                  min="1"
-                  max="10"
-                  value={bombSuccessRoll}
-                  onChange={(e) => setBombSuccessRoll(parseInt(e.target.value))}
+                  min="0"
+                  max="100"
+                  value={bombAttackPercent}
+                  onChange={(e) => setBombAttackPercent(clampToAttackBudget(parseInt(e.target.value), bombAttackPercent))}
                   className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
                   data-testid="slider-bomb-attack"
                 />
@@ -736,15 +797,15 @@ export default function Game() {
               
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <Label>Rook Wall Build: roll {wallBuildRoll} or less on d10</Label>
-                  <span className="text-muted-foreground">{wallBuildRoll * 10}%</span>
+                  <Label>Rook Wall Build</Label>
+                  <span className="text-muted-foreground">{wallBuildPercent}%</span>
                 </div>
                 <input
                   type="range"
-                  min="1"
-                  max="10"
-                  value={wallBuildRoll}
-                  onChange={(e) => setWallBuildRoll(parseInt(e.target.value))}
+                  min="0"
+                  max="100"
+                  value={wallBuildPercent}
+                  onChange={(e) => setWallBuildPercent(clampToAttackBudget(parseInt(e.target.value), wallBuildPercent))}
                   className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
                   data-testid="slider-wall-build"
                 />
@@ -755,7 +816,19 @@ export default function Game() {
               <Button 
                 className="w-full gap-2" 
                 size="lg"
-                onClick={() => createGame(maxWalls, 'pvc', { pawnSuccessRoll, bishopMinRoll, knightMinRoll, bombSuccessRoll, wallBuildRoll })}
+                onClick={() => createGame(maxWalls, 'pvc', {
+                    pawnSuccessRoll: percentToThreshold(pawnAttackPercent, 6, true),
+                    bishopMinRoll: 0,
+                    knightMinRoll: percentToThreshold(knightAttackPercent, 6, false),
+                    bombSuccessRoll: percentToThreshold(bombAttackPercent, 10, true),
+                    wallBuildRoll: percentToThreshold(wallBuildPercent, 10, true),
+                    totalAttackBudget,
+                    pawnAttackPercent,
+                    bishopAttackPercent,
+                    knightAttackPercent,
+                    bombAttackPercent,
+                    wallBuildPercent,
+                  })}
                 data-testid="button-play-computer"
               >
                 <Bot className="w-5 h-5" />
@@ -766,7 +839,19 @@ export default function Game() {
                 className="w-full gap-2" 
                 size="lg"
                 variant="outline"
-                onClick={() => createGame(maxWalls, 'pvp', { pawnSuccessRoll, bishopMinRoll, knightMinRoll, bombSuccessRoll, wallBuildRoll })}
+                onClick={() => createGame(maxWalls, 'pvp', {
+                    pawnSuccessRoll: percentToThreshold(pawnAttackPercent, 6, true),
+                    bishopMinRoll: 0,
+                    knightMinRoll: percentToThreshold(knightAttackPercent, 6, false),
+                    bombSuccessRoll: percentToThreshold(bombAttackPercent, 10, true),
+                    wallBuildRoll: percentToThreshold(wallBuildPercent, 10, true),
+                    totalAttackBudget,
+                    pawnAttackPercent,
+                    bishopAttackPercent,
+                    knightAttackPercent,
+                    bombAttackPercent,
+                    wallBuildPercent,
+                  })}
                 data-testid="button-create-game"
               >
                 <Users className="w-5 h-5" />

@@ -63,11 +63,17 @@ export type GamePhase = 'waiting' | 'setup' | 'playing' | 'finished';
 export type GameMode = 'pvp' | 'pvc' | 'cvc';
 
 export interface AttackSettings {
-  pawnSuccessRoll: number;   // Roll this or lower on d6 to succeed (default 1)
-  bishopMinRoll: number;     // Roll this or higher on 2d6 for arrow (default: distance)
-  knightMinRoll: number;     // Roll this or higher on d6 for axe (default 4)
-  bombSuccessRoll: number;   // Roll this or lower on d10 to succeed (default 1 = 10%)
-  wallBuildRoll: number;     // Roll this or lower on d10 to build wall (default 5 = 50%)
+  pawnSuccessRoll: number;
+  bishopMinRoll: number;
+  knightMinRoll: number;
+  bombSuccessRoll: number;
+  wallBuildRoll: number;
+  totalAttackBudget?: number;
+  pawnAttackPercent?: number;
+  bishopAttackPercent?: number;
+  knightAttackPercent?: number;
+  bombAttackPercent?: number;
+  wallBuildPercent?: number;
 }
 
 export interface GameState {
@@ -99,11 +105,17 @@ export interface GameMessage {
 export const gameConfigSchema = z.object({
   maxWallsPerPlayer: z.number().min(0).max(32).default(8),
   attackSettings: z.object({
-    pawnSuccessRoll: z.number().min(1).max(6).default(1),
-    bishopMinRoll: z.number().min(2).max(12).default(0), // 0 means use distance
-    knightMinRoll: z.number().min(1).max(6).default(4),
-    bombSuccessRoll: z.number().min(1).max(10).default(1), // Roll this or lower on d10
-    wallBuildRoll: z.number().min(1).max(10).default(5), // Roll this or lower on d10 (default 50%)
+    pawnSuccessRoll: z.number().min(0).max(6).default(1),
+    bishopMinRoll: z.number().min(0).max(12).default(0),
+    knightMinRoll: z.number().min(1).max(7).default(4),
+    bombSuccessRoll: z.number().min(0).max(10).default(1),
+    wallBuildRoll: z.number().min(0).max(10).default(5),
+    totalAttackBudget: z.number().min(0).max(500).default(250).optional(),
+    pawnAttackPercent: z.number().min(0).max(100).default(17).optional(),
+    bishopAttackPercent: z.number().min(0).max(100).default(50).optional(),
+    knightAttackPercent: z.number().min(0).max(100).default(50).optional(),
+    bombAttackPercent: z.number().min(0).max(100).default(10).optional(),
+    wallBuildPercent: z.number().min(0).max(100).default(50).optional(),
   }).optional(),
 });
 

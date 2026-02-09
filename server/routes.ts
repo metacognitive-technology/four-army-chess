@@ -80,7 +80,8 @@ export async function registerRoutes(
   app.post('/api/games/cvc', (req, res) => {
     try {
       const maxWalls = req.body?.maxWalls ?? 8;
-      const result = gameManager.createCvCGame(maxWalls);
+      const attackSettings = req.body?.attackSettings;
+      const result = gameManager.createCvCGame(maxWalls, attackSettings);
       res.json({
         gameId: result.gameId,
         phase: result.state.phase,

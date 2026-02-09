@@ -241,6 +241,32 @@ class GameManager {
   private games: Map<string, GameRoom> = new Map();
   private playerToGame: Map<string, string> = new Map();
 
+  private checkAttackSuccess(settings: AttackSettings, attackType: 'pawn' | 'bishop' | 'knight' | 'bomb' | 'wallBuild', distance?: number): boolean {
+    const percentMap: Record<string, number | undefined> = {
+      pawn: settings.pawnAttackPercent,
+      bishop: settings.bishopAttackPercent,
+      knight: settings.knightAttackPercent,
+      bomb: settings.bombAttackPercent,
+      wallBuild: settings.wallBuildPercent,
+    };
+    const percent = percentMap[attackType];
+    if (percent !== undefined) {
+      return Math.random() * 100 < percent;
+    }
+    switch (attackType) {
+      case 'pawn': return Math.floor(Math.random() * 6) + 1 <= (settings.pawnSuccessRoll ?? 1);
+      case 'bishop': {
+        const die1 = Math.floor(Math.random() * 6) + 1;
+        const die2 = Math.floor(Math.random() * 6) + 1;
+        const threshold = settings.bishopMinRoll || distance || 2;
+        return (die1 + die2) >= threshold;
+      }
+      case 'knight': return Math.floor(Math.random() * 6) + 1 >= (settings.knightMinRoll ?? 4);
+      case 'bomb': return Math.floor(Math.random() * 10) + 1 <= (settings.bombSuccessRoll ?? 1);
+      case 'wallBuild': return Math.floor(Math.random() * 10) + 1 <= (settings.wallBuildRoll ?? 5);
+    }
+  }
+
   // File persistence methods
   private getGameFilePath(gameId: string): string {
     return join(GAMES_DIR, `${gameId}.json`);
@@ -268,6 +294,8 @@ class GameManager {
           pawnSuccessRoll: 1,
           bishopMinRoll: 0,
           knightMinRoll: 4,
+          bombSuccessRoll: 1,
+          wallBuildRoll: 5,
         };
       }
       return state;
@@ -957,11 +985,9 @@ class GameManager {
     
     if (targetPiece) {
       const distance = Math.abs(to.row - from.row);
-      const roll1 = Math.floor(Math.random() * 6) + 1;
-      const roll2 = Math.floor(Math.random() * 6) + 1;
-      const total = roll1 + roll2;
+      const success = this.checkAttackSuccess(state.attackSettings, 'bishop', distance);
       
-      if (total >= distance) {
+      if (success) {
         state.capturedPieces[color].push(targetPiece);
         board[to.row][to.col].piece = null;
       }
@@ -978,8 +1004,8 @@ class GameManager {
     const color = piece.color;
     
     if (targetPiece) {
-      const roll = Math.floor(Math.random() * 6) + 1;
-      if (roll >= 4) {
+      const success = this.checkAttackSuccess(state.attackSettings, 'knight');
+      if (success) {
         state.capturedPieces[color].push(targetPiece);
         board[to.row][to.col].piece = null;
       }
@@ -996,8 +1022,7 @@ class GameManager {
     
     // Roll 1d10, need <= bombSuccessRoll (default 1)
     const roll = Math.floor(Math.random() * 10) + 1;
-    const threshold = state.attackSettings?.bombSuccessRoll ?? 1;
-    const success = roll <= threshold;
+    const success = this.checkAttackSuccess(state.attackSettings, 'bomb');
     
     if (success && board[to.row][to.col].isWall) {
       board[to.row][to.col].isWall = false;
@@ -1010,7 +1035,7 @@ class GameManager {
       piece,
       isBombAttack: true,
       diceRoll: roll,
-      diceRequired: threshold,
+      diceRequired: state.attackSettings?.bombSuccessRoll ?? 1,
       success,
       notation: `R💣${String.fromCharCode(97 + to.col)}${BOARD_SIZE - to.row}(${roll}${success ? '✓' : '✗'})`,
     });
@@ -1499,14 +1524,11 @@ class GameManager {
     // Pawn attack requires dice roll
     if (piece.type === 'pawn' && targetPiece) {
       const roll = Math.floor(Math.random() * 6) + 1;
-      const pawnThreshold = room.state.attackSettings?.pawnSuccessRoll ?? 1;
-      const success = roll <= pawnThreshold;
+      const success = this.checkAttackSuccess(room.state.attackSettings, 'pawn');
       diceRoll = { value: roll, type: 'd6', success };
       room.state.lastDiceRoll = diceRoll;
       
       if (!success) {
-        // Failed attack - pawn stays in place, turn passes
-        // No move history entry for failed attacks, just swap turns
         room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
         this.saveGame(room.state);
         return { state: room.state, diceRoll };
@@ -1640,8 +1662,7 @@ class GameManager {
     const die1 = Math.floor(Math.random() * 6) + 1;
     const die2 = Math.floor(Math.random() * 6) + 1;
     const roll = die1 + die2;
-    const bishopThreshold = room.state.attackSettings?.bishopMinRoll || distance; // 0 means use distance
-    const success = roll >= bishopThreshold;
+    const success = this.checkAttackSuccess(room.state.attackSettings, 'bishop', distance);
     
     const diceRoll = { value: roll, type: '2d6' as const, success };
     room.state.lastDiceRoll = diceRoll;
@@ -1713,8 +1734,7 @@ class GameManager {
     
     // Roll 1d6 for axe - need to roll >= threshold to hit
     const roll = Math.floor(Math.random() * 6) + 1;
-    const knightThreshold = room.state.attackSettings?.knightMinRoll ?? 4;
-    const success = roll >= knightThreshold;
+    const success = this.checkAttackSuccess(room.state.attackSettings, 'knight');
     
     const diceRoll = { value: roll, type: 'd6' as const, success };
     room.state.lastDiceRoll = diceRoll;
@@ -1782,9 +1802,8 @@ class GameManager {
     if (!board[to.row][to.col].isWall) return null;
     
     // Roll 1d10 for bomb attack - configurable success rate
-    const bombSuccessRoll = room.state.attackSettings.bombSuccessRoll;
     const roll = Math.floor(Math.random() * 10) + 1;
-    const success = roll <= bombSuccessRoll;
+    const success = this.checkAttackSuccess(room.state.attackSettings, 'bomb');
     
     const diceRoll = { value: roll, type: 'd10' as const, success };
     room.state.lastDiceRoll = diceRoll;
@@ -1798,7 +1817,7 @@ class GameManager {
       diceRoll: roll,
       diceRequired: 10,
       success,
-      notation: `R${String.fromCharCode(97 + from.col)}${12 - from.row}💣${String.fromCharCode(97 + to.col)}${12 - to.row}[d10:${roll}≤${bombSuccessRoll}]`,
+      notation: `R${String.fromCharCode(97 + from.col)}${12 - from.row}💣${String.fromCharCode(97 + to.col)}${12 - to.row}[d10:${roll}${success ? '✓' : '✗'}]`,
     };
     room.state.moveHistory.push(move);
     
@@ -1841,9 +1860,8 @@ class GameManager {
     if (board[to.row][to.col].piece || board[to.row][to.col].isWall) return null;
     
     // Roll 1d10 for wall build - configurable success rate (default 50%)
-    const wallBuildRoll = room.state.attackSettings?.wallBuildRoll ?? 5;
     const roll = Math.floor(Math.random() * 10) + 1;
-    const success = roll <= wallBuildRoll;
+    const success = this.checkAttackSuccess(room.state.attackSettings, 'wallBuild');
     
     const diceRoll = { value: roll, type: 'd10' as const, success };
     room.state.lastDiceRoll = diceRoll;
@@ -1858,7 +1876,7 @@ class GameManager {
       diceRoll: roll,
       diceRequired: 10,
       success,
-      notation: `R${String.fromCharCode(97 + from.col)}${12 - from.row}🧱${String.fromCharCode(97 + to.col)}${12 - to.row}[d10:${roll}≤${wallBuildRoll}]`,
+      notation: `R${String.fromCharCode(97 + from.col)}${12 - from.row}🧱${String.fromCharCode(97 + to.col)}${12 - to.row}[d10:${roll}${success ? '✓' : '✗'}]`,
     };
     room.state.moveHistory.push(move);
     
@@ -2332,8 +2350,7 @@ class GameManager {
     // Pawn attack requires dice roll
     if (piece.type === 'pawn' && targetPiece) {
       const roll = Math.floor(Math.random() * 6) + 1;
-      const pawnThreshold = state.attackSettings?.pawnSuccessRoll ?? 1;
-      const success = roll <= pawnThreshold;
+      const success = this.checkAttackSuccess(state.attackSettings, 'pawn');
       diceRoll = { value: roll, type: 'd6', success };
       state.lastDiceRoll = diceRoll;
 
@@ -2396,7 +2413,7 @@ class GameManager {
 
     const distance = Math.abs(to.row - from.row);
     const roll = Math.floor(Math.random() * 4) + 1;
-    const success = distance <= roll;
+    const success = this.checkAttackSuccess(state.attackSettings, 'bishop', distance);
 
     const diceRoll = { value: roll, type: 'd4' as const, success };
     state.lastDiceRoll = diceRoll;
@@ -2452,8 +2469,7 @@ class GameManager {
 
     // Knight axe attack: roll d6, need >= knightMinRoll (default 4)
     const roll = Math.floor(Math.random() * 6) + 1;
-    const threshold = state.attackSettings?.knightMinRoll ?? 4;
-    const success = roll >= threshold;
+    const success = this.checkAttackSuccess(state.attackSettings, 'knight');
 
     const diceRoll = { value: roll, type: 'd6' as const, success };
     state.lastDiceRoll = diceRoll;
@@ -2465,7 +2481,7 @@ class GameManager {
       captured: success ? targetPiece : undefined,
       isAxeAttack: true,
       diceRoll: roll,
-      diceRequired: threshold,
+      diceRequired: state.attackSettings?.knightMinRoll ?? 4,
       success,
       notation: `${piece.type === 'knight' ? 'N' : ''}🪓${String.fromCharCode(97 + to.col)}${BOARD_SIZE - to.row}(${roll}${success ? '✓' : '✗'})`,
     };
@@ -2506,8 +2522,7 @@ class GameManager {
 
     // Rook bomb attack: roll d10, need <= bombSuccessRoll (default 1)
     const roll = Math.floor(Math.random() * 10) + 1;
-    const threshold = state.attackSettings?.bombSuccessRoll ?? 1;
-    const success = roll <= threshold;
+    const success = this.checkAttackSuccess(state.attackSettings, 'bomb');
 
     const diceRoll = { value: roll, type: 'd10' as const, success };
     state.lastDiceRoll = diceRoll;
@@ -2518,7 +2533,7 @@ class GameManager {
       piece,
       isBombAttack: true,
       diceRoll: roll,
-      diceRequired: threshold,
+      diceRequired: state.attackSettings?.bombSuccessRoll ?? 1,
       success,
       notation: `R💣${String.fromCharCode(97 + to.col)}${BOARD_SIZE - to.row}(${roll}${success ? '✓' : '✗'})`,
     };
