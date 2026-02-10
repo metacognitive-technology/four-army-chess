@@ -13,7 +13,7 @@ import { getValidMoves, getCheckSafeMoves, getArrowTargets, getAxeTargets, getBo
 import type { Position, GameState, SavedGameInfo, PromotionPieceType } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Wifi, WifiOff, Plus, Link2, Bot, Users, History, Trash2, MonitorPlay, Play } from "lucide-react";
+import { Loader2, Wifi, WifiOff, Plus, Link2, Bot, Users, History, Trash2, MonitorPlay, Play, ArrowLeft, ArrowRight, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.12.4";
+const GAME_VERSION = "1.12.5";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -1097,6 +1097,53 @@ export default function Game() {
               winner={gameState.winner}
               isArrowMode={isArrowMode}
             />
+            
+            <div className="w-full" data-testid="turn-indicator-container">
+              <div className="relative h-8">
+                <div
+                  className={`absolute top-0 transition-all duration-300 flex items-center gap-1 ${
+                    (phase === 'playing' || phase === 'setup') ? 'visible' : 'invisible'
+                  } ${
+                    currentTurn === 'black' ? 'left-0' : 'right-0'
+                  }`}
+                  data-testid="turn-indicator-arrow"
+                >
+                  {currentTurn === 'black' ? (
+                    <div className="flex items-center gap-1 text-foreground">
+                      <ArrowLeft className="w-7 h-7" strokeWidth={3} />
+                      <span className="text-sm font-bold">Black</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 text-foreground">
+                      <span className="text-sm font-bold">White</span>
+                      <ArrowRight className="w-7 h-7" strokeWidth={3} />
+                    </div>
+                  )}
+                </div>
+              </div>
+              {gameState.gameMode === 'cvc' && phase === 'playing' && (
+                <div className="flex justify-center gap-2 mt-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleTakeoverGame(gameState.id, 'white')}
+                    data-testid="button-cvc-takeover-white"
+                  >
+                    <User className="w-3 h-3 mr-1" />
+                    Play White
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleTakeoverGame(gameState.id, 'black')}
+                    data-testid="button-cvc-takeover-black"
+                  >
+                    <User className="w-3 h-3 mr-1" />
+                    Play Black
+                  </Button>
+                </div>
+              )}
+            </div>
             
             {phase === 'budget_setup' && !budgetSubmitted ? (
               <Card className="w-full max-w-md p-4 space-y-4" data-testid="budget-setup-panel">
