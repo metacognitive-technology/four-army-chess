@@ -240,7 +240,17 @@ export function GameControls({
               </Button>
             )}
             
-            {!isCvCGame && (
+            {isCvCGame ? (
+              <Button 
+                variant="destructive" 
+                className="w-full gap-2" 
+                onClick={onResign}
+                data-testid="button-end-game"
+              >
+                <Flag className="w-4 h-4" />
+                End Game
+              </Button>
+            ) : (
               <Button 
                 variant="destructive" 
                 className="w-full gap-2" 
