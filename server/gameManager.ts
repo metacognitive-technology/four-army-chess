@@ -981,13 +981,11 @@ class GameManager {
       }
     }
     
-    // Pawn promotion
+    // Pawn promotion - AI always promotes to queen
     if (piece.type === 'pawn') {
       const promotionRow = color === 'white' ? 0 : BOARD_SIZE - 1;
       if (to.row === promotionRow && board[to.row][to.col].piece) {
-        const promotionTypes: PieceType[] = ['queen', 'rook', 'bishop', 'knight'];
-        const randomPromotion = promotionTypes[Math.floor(Math.random() * promotionTypes.length)];
-        board[to.row][to.col].piece = { type: randomPromotion, color, hasMoved: true };
+        board[to.row][to.col].piece = { type: 'queen', color, hasMoved: true };
       }
     }
     
@@ -2144,10 +2142,31 @@ class GameManager {
               }
             }
             
-            // Bonus for advancing pawns
+            // Bonus for advancing pawns toward promotion
             if (piece.type === 'pawn') {
-              const advancement = aiColor === 'white' ? (BOARD_SIZE - 1 - to.row) : to.row;
-              score += advancement * 0.1;
+              const promotionRow = aiColor === 'white' ? 0 : BOARD_SIZE - 1;
+              const distToPromotion = Math.abs(to.row - promotionRow);
+              const advancement = BOARD_SIZE - 1 - distToPromotion;
+              
+              // Count total pieces to detect endgame
+              let totalPieces = 0;
+              for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                  if (board[r][c].piece) totalPieces++;
+                }
+              }
+              const isEndgame = totalPieces <= 16 || state.moveHistory.length > 80;
+              
+              if (isEndgame) {
+                score += advancement * 8;
+                if (distToPromotion === 0) {
+                  score += 800; // About to promote - extremely high priority
+                } else if (distToPromotion <= 2) {
+                  score += 200; // Very close to promotion
+                }
+              } else {
+                score += advancement * 0.5;
+              }
             }
             
             // Early bishop development - move out to establish arrow firing lanes
@@ -2492,7 +2511,15 @@ class GameManager {
       }
     }
 
-    board[to.row][to.col].piece = { ...piece, hasMoved: true };
+    // Handle pawn promotion
+    const promotionRow = aiColor === 'white' ? 0 : BOARD_SIZE - 1;
+    let promotionPiece: PieceType | undefined;
+    if (piece.type === 'pawn' && to.row === promotionRow) {
+      promotionPiece = 'queen'; // AI always promotes to queen
+      board[to.row][to.col].piece = { type: 'queen', color: aiColor, hasMoved: true };
+    } else {
+      board[to.row][to.col].piece = { ...piece, hasMoved: true };
+    }
 
     const move: Move = {
       from,
@@ -2502,7 +2529,8 @@ class GameManager {
       diceRoll: diceRoll?.value,
       diceRequired: piece.type === 'pawn' && targetPiece ? 6 : undefined,
       success: diceRoll ? diceRoll.success : undefined,
-      notation: this.getMoveNotation(piece, from, to, targetPiece || undefined, diceRoll?.value),
+      notation: this.getMoveNotation(piece, from, to, targetPiece || undefined, diceRoll?.value, promotionPiece),
+      promotionPiece,
     };
     state.moveHistory.push(move);
 
