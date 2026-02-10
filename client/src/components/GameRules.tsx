@@ -56,7 +56,7 @@ export function GameRules() {
               <p><strong>Queen:</strong> Moves up to 8 squares in any direction.</p>
               <p><strong>Rook:</strong> Moves up to 8 squares horizontally/vertically.</p>
               <p><strong>Bishop:</strong> Moves up to 8 squares diagonally.</p>
-              <p><strong>Knight:</strong> Moves in L-shape (2+1 squares).</p>
+              <p><strong>Knight:</strong> Moves in L-shape (2+1 squares). Can jump over walls as long as the landing square is not a wall.</p>
               <p><strong>Pawn:</strong> Moves 1 square in any direction (like a King). Promotes to Queen upon reaching the far row.</p>
             </AccordionContent>
           </AccordionItem>
