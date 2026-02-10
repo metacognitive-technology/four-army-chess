@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { BookOpen, Castle, Target, Dice1, Crown } from "lucide-react";
+import { BookOpen, Castle, Target, Dice1, Crown, Percent } from "lucide-react";
 
 export function GameRules() {
   return (
@@ -19,10 +19,28 @@ export function GameRules() {
               </span>
             </AccordionTrigger>
             <AccordionContent className="text-xs text-muted-foreground space-y-1">
-              <p>Each player can place walls on their half of the board.</p>
-              <p>Walls block all piece movement.</p>
-              <p>Click squares to toggle walls on/off.</p>
-              <p>Click "Ready" when done placing walls.</p>
+              <p>The game creator chooses how many walls each player gets (0-32).</p>
+              <p>If walls are enabled, each player places walls on their half of the board before play begins.</p>
+              <p>Walls block all piece movement and cannot be passed through.</p>
+              <p>Click squares to toggle walls on/off, or use "Place Randomly" / "Generate Maze" for quick setup.</p>
+              <p>Click "Ready" when done. Play begins once both sides are ready.</p>
+              <p>If walls are set to 0, the setup phase is skipped entirely.</p>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="budget">
+            <AccordionTrigger className="text-sm py-2">
+              <span className="flex items-center gap-2">
+                <Percent className="w-4 h-4" />
+                Attack Budget
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="text-xs text-muted-foreground space-y-1">
+              <p>Each special attack has a success chance set by a percentage budget.</p>
+              <p>The total budget (default 250%) is split across all five attack types using sliders. Higher percentage means a better chance of success.</p>
+              <p><strong>Shared mode:</strong> The game creator sets attack percentages for both players.</p>
+              <p><strong>Individual mode:</strong> Each player assigns their own percentages before play begins. Your opponent's settings are hidden during the game.</p>
+              <p>This lets you choose a strategy: go all-in on one powerful attack, or spread the budget for balanced options.</p>
             </AccordionContent>
           </AccordionItem>
           
@@ -39,7 +57,7 @@ export function GameRules() {
               <p><strong>Rook:</strong> Moves up to 8 squares horizontally/vertically.</p>
               <p><strong>Bishop:</strong> Moves up to 8 squares diagonally.</p>
               <p><strong>Knight:</strong> Moves in L-shape (2+1 squares).</p>
-              <p><strong>Pawn:</strong> Moves 1 square in any direction (like a King).</p>
+              <p><strong>Pawn:</strong> Moves 1 square in any direction (like a King). Promotes to Queen upon reaching the far row.</p>
             </AccordionContent>
           </AccordionItem>
           
@@ -51,11 +69,13 @@ export function GameRules() {
               </span>
             </AccordionTrigger>
             <AccordionContent className="text-xs text-muted-foreground space-y-1">
-              <p><strong>Pawn Attack:</strong> Roll 1d6. Need 1 to succeed.</p>
-              <p><strong>Bishop Arrow:</strong> Click the orange target icon on a selected bishop. Roll 2d6 and need to roll equal to or higher than the distance to hit.</p>
+              <p>Success chance for each attack depends on the percentage you assigned in the attack budget.</p>
+              <p><strong>Pawn Attack:</strong> A pawn can attempt to capture an adjacent enemy. Success is based on a d6 roll against your pawn attack budget.</p>
+              <p><strong>Bishop Arrow:</strong> Select a bishop and click the orange target icon. Fires an arrow at a distant enemy along its diagonal. Roll 2d6 and must meet or exceed the distance. Budget sets the threshold.</p>
               <p>Knights and Rooks are immune to arrows.</p>
-              <p><strong>Knight Axe:</strong> Click the purple axe icon on a selected knight. Roll 1d6 and need 4 or higher to hit an adjacent enemy.</p>
-              <p><strong>Rook Bomb:</strong> Click the red bomb icon on a selected rook. Roll 1d10 and need 1 to destroy an adjacent wall.</p>
+              <p><strong>Knight Axe:</strong> Select a knight and click the purple axe icon. Strikes an adjacent enemy. Roll 1d6 against your knight axe budget.</p>
+              <p><strong>Rook Bomb:</strong> Select a rook and click the red bomb icon. Destroys an adjacent wall. Roll 1d10 against your bomb budget.</p>
+              <p><strong>Rook Wall Build:</strong> Select a rook and click the blue wall icon. Creates a new wall on an adjacent empty square. Roll 1d10 against your wall build budget.</p>
             </AccordionContent>
           </AccordionItem>
           
@@ -69,6 +89,7 @@ export function GameRules() {
             <AccordionContent className="text-xs text-muted-foreground space-y-1">
               <p>Capture the opponent's King to win.</p>
               <p>Or put them in checkmate (no legal moves).</p>
+              <p>Players can also offer or accept a draw.</p>
               <p>Resign to forfeit the game.</p>
             </AccordionContent>
           </AccordionItem>
