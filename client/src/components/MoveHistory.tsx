@@ -25,6 +25,7 @@ export function MoveHistory({ moves }: MoveHistoryProps) {
   
   return (
     <div className="text-xs space-y-0.5">
+      <span className="text-sm font-medium" data-testid="text-move-history-label">Game History</span>
       {recentPairs.length === 0 ? (
         <p className="text-muted-foreground italic">No moves yet</p>
       ) : (
