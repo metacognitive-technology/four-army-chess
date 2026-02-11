@@ -47,7 +47,11 @@
       {
         "row": 0,
         "col": 7,
-        "piece": null,
+        "piece": {
+          "type": "queen",
+          "color": "white",
+          "hasMoved": true
+        },
         "isWall": false
       },
       {
@@ -125,11 +129,7 @@
       {
         "row": 1,
         "col": 7,
-        "piece": {
-          "type": "pawn",
-          "color": "white",
-          "hasMoved": true
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -242,7 +242,7 @@
         "row": 3,
         "col": 1,
         "piece": null,
-        "isWall": true
+        "isWall": false
       },
       {
         "row": 3,
@@ -939,7 +939,7 @@
       }
     ]
   ],
-  "currentTurn": "white",
+  "currentTurn": "black",
   "phase": "playing",
   "gameMode": "cvc",
   "aiControlled": {
@@ -2984,6 +2984,91 @@
       "diceRequired": 1,
       "success": false,
       "notation": "R💣b10(9✗)"
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 7
+      },
+      "to": {
+        "row": 2,
+        "col": 8
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 2
+      },
+      "to": {
+        "row": 3,
+        "col": 1
+      },
+      "piece": {
+        "type": "rook",
+        "color": "black",
+        "hasMoved": true
+      },
+      "isBombAttack": true,
+      "diceRoll": 3,
+      "diceRequired": 1,
+      "success": true,
+      "notation": "R💣b9(3✓)"
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 8
+      },
+      "to": {
+        "row": 1,
+        "col": 8
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 2
+      },
+      "to": {
+        "row": 4,
+        "col": 2
+      },
+      "piece": {
+        "type": "rook",
+        "color": "black",
+        "hasMoved": true
+      },
+      "isBombAttack": true,
+      "diceRoll": 5,
+      "diceRequired": 1,
+      "success": false,
+      "notation": "R💣c8(5✗)"
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 8
+      },
+      "to": {
+        "row": 0,
+        "col": 7
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
     }
   ],
   "capturedPieces": {
@@ -3092,7 +3177,7 @@
   },
   "aiDepth": 3,
   "lastDiceRoll": {
-    "value": 9,
+    "value": 5,
     "type": "d10",
     "success": false
   }
