@@ -443,7 +443,7 @@ class GameManager {
     return state;
   }
 
-  createGame(ws: WebSocket, maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual'): { gameId: string; playerId: string; color: PlayerColor } {
+  createGame(ws: WebSocket, maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual', aiDepth?: number): { gameId: string; playerId: string; color: PlayerColor } {
     const gameId = generateShortId();
     const playerId = generateShortId();
     
@@ -477,6 +477,7 @@ class GameManager {
       attackSettings: finalAttackSettings,
       budgetMode: effectiveBudgetMode,
       budgetReadyPlayers: [],
+      aiDepth: Math.max(0, Math.min(3, aiDepth ?? 0)),
     };
     
     if (effectiveBudgetMode === 'individual') {
@@ -524,7 +525,7 @@ class GameManager {
   }
 
   // Create a computer vs computer game that plays visibly
-  createCvCGame(maxWalls: number, attackSettings?: AttackSettings): { gameId: string; state: GameState } {
+  createCvCGame(maxWalls: number, attackSettings?: AttackSettings, aiDepth?: number): { gameId: string; state: GameState } {
     const gameId = generateShortId();
     
     const defaultAttackSettings: AttackSettings = {
@@ -550,6 +551,7 @@ class GameManager {
       players: { white: AI_PLAYER_ID, black: AI_PLAYER_ID },
       winner: null,
       attackSettings: attackSettings || defaultAttackSettings,
+      aiDepth: Math.max(0, Math.min(3, aiDepth ?? 0)),
     };
     
     // Place walls for both sides
@@ -2145,6 +2147,135 @@ class GameManager {
     return room.state;
   }
 
+  private evaluateBoard(board: Board, forColor: PlayerColor): number {
+    const pieceValues: Record<PieceType, number> = {
+      pawn: 100, knight: 320, bishop: 330, rook: 500, queen: 900, king: 20000
+    };
+    
+    let score = 0;
+    const enemyColor = forColor === 'white' ? 'black' : 'white';
+    
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        const piece = board[row][col].piece;
+        if (!piece) continue;
+        
+        const isOwn = piece.color === forColor;
+        const multiplier = isOwn ? 1 : -1;
+        
+        score += pieceValues[piece.type] * multiplier;
+        
+        const centerDistRow = Math.abs(row - BOARD_SIZE / 2 + 0.5);
+        const centerDistCol = Math.abs(col - BOARD_SIZE / 2 + 0.5);
+        const centerBonus = (BOARD_SIZE - centerDistRow - centerDistCol) * 0.5;
+        score += centerBonus * multiplier;
+        
+        if (piece.type === 'pawn') {
+          const promotionRow = piece.color === 'white' ? 0 : BOARD_SIZE - 1;
+          const advancement = piece.color === 'white' ? (BOARD_SIZE - 1 - row) : row;
+          score += advancement * 3 * multiplier;
+        }
+      }
+    }
+    
+    return score;
+  }
+
+  private generateMovesForColor(board: Board, color: PlayerColor): Array<{ from: Position; to: Position }> {
+    const moves: Array<{ from: Position; to: Position }> = [];
+    
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        const piece = board[row][col].piece;
+        if (piece && piece.color === color) {
+          const from = { row, col };
+          const validMoves = this.getValidMoves(board, from);
+          for (const to of validMoves) {
+            moves.push({ from, to });
+          }
+        }
+      }
+    }
+    
+    return moves;
+  }
+
+  private applyMoveOnBoard(board: Board, from: Position, to: Position): Board {
+    const newBoard: Board = board.map(row => row.map(cell => ({
+      ...cell,
+      piece: cell.piece ? { ...cell.piece } : null
+    })));
+    
+    const piece = newBoard[from.row][from.col].piece;
+    if (piece) {
+      if (piece.type === 'pawn') {
+        const promotionRow = piece.color === 'white' ? 0 : BOARD_SIZE - 1;
+        if (to.row === promotionRow) {
+          newBoard[to.row][to.col].piece = { type: 'queen', color: piece.color };
+        } else {
+          newBoard[to.row][to.col].piece = piece;
+        }
+      } else {
+        newBoard[to.row][to.col].piece = piece;
+      }
+    }
+    newBoard[from.row][from.col].piece = null;
+    
+    return newBoard;
+  }
+
+  private minimax(board: Board, depth: number, alpha: number, beta: number, maximizingColor: PlayerColor, currentColor: PlayerColor): number {
+    if (depth === 0) {
+      return this.evaluateBoard(board, maximizingColor);
+    }
+    
+    const isInCheck = this.isInCheck(board, currentColor);
+    const moves = this.generateMovesForColor(board, currentColor);
+    
+    const legalMoves = moves.filter(m => {
+      const newBoard = this.applyMoveOnBoard(board, m.from, m.to);
+      return !this.isInCheck(newBoard, currentColor);
+    });
+    
+    if (legalMoves.length === 0) {
+      if (isInCheck) {
+        return currentColor === maximizingColor ? -99999 + (4 - depth) : 99999 - (4 - depth);
+      }
+      return 0;
+    }
+    
+    // Move ordering: captures first for better pruning
+    legalMoves.sort((a, b) => {
+      const captA = board[a.to.row][a.to.col].piece ? 1 : 0;
+      const captB = board[b.to.row][b.to.col].piece ? 1 : 0;
+      return captB - captA;
+    });
+    
+    const nextColor = currentColor === 'white' ? 'black' : 'white';
+    
+    if (currentColor === maximizingColor) {
+      let maxEval = -Infinity;
+      for (const move of legalMoves) {
+        const newBoard = this.applyMoveOnBoard(board, move.from, move.to);
+        const evalScore = this.minimax(newBoard, depth - 1, alpha, beta, maximizingColor, nextColor);
+        maxEval = Math.max(maxEval, evalScore);
+        alpha = Math.max(alpha, evalScore);
+        if (beta <= alpha) break;
+      }
+      return maxEval;
+    } else {
+      let minEval = Infinity;
+      for (const move of legalMoves) {
+        const newBoard = this.applyMoveOnBoard(board, move.from, move.to);
+        const evalScore = this.minimax(newBoard, depth - 1, alpha, beta, maximizingColor, nextColor);
+        minEval = Math.min(minEval, evalScore);
+        beta = Math.min(beta, evalScore);
+        if (beta <= alpha) break;
+      }
+      return minEval;
+    }
+  }
+
   makeAIMove(gameId: string): { state: GameState; diceRoll?: { value: number; type: 'd4' | 'd6' | 'd10'; success: boolean } } | null {
     const room = this.games.get(gameId);
     if (!room || !this.isAITurn(gameId)) return null;
@@ -2486,27 +2617,71 @@ class GameManager {
     }
 
     if (possibleMoves.length === 0) {
-      // No moves available - stalemate or checkmate
       return null;
     }
 
-    // Sort by score and pick the best move (with some randomness in top choices)
-    possibleMoves.sort((a, b) => b.score - a.score);
-    
     // If in check, only consider moves that escape check
-    let validMoves = possibleMoves;
     if (inCheck) {
       const checkEscapingMoves = possibleMoves.filter(m => m.escapesCheck);
       if (checkEscapingMoves.length > 0) {
-        validMoves = checkEscapingMoves;
+        possibleMoves.splice(0, possibleMoves.length, ...checkEscapingMoves);
+      }
+    }
+
+    const aiDepth = state.aiDepth ?? 0;
+    
+    if (aiDepth > 0) {
+      // Minimax mode: score regular moves with lookahead, keep heuristic for special attacks
+      const regularMoves = possibleMoves.filter(m => !m.isArrow && !m.isAxe && !m.isBomb);
+      const specialMoves = possibleMoves.filter(m => m.isArrow || m.isAxe || m.isBomb);
+      
+      // Score regular moves with minimax
+      const enemyColor = aiColor === 'white' ? 'black' : 'white';
+      for (const move of regularMoves) {
+        const newBoard = this.applyMoveOnBoard(board, move.from, move.to);
+        if (this.isInCheck(newBoard, aiColor)) {
+          move.score = -99999;
+          continue;
+        }
+        const minimaxScore = this.minimax(newBoard, aiDepth, -Infinity, Infinity, aiColor, enemyColor);
+        move.score = minimaxScore;
+      }
+      
+      // Combine: pick best regular move and best special move, compare
+      regularMoves.sort((a, b) => b.score - a.score);
+      specialMoves.sort((a, b) => b.score - a.score);
+      
+      let selectedMove: AIMove;
+      const bestRegular = regularMoves[0];
+      const bestSpecial = specialMoves[0];
+      
+      if (bestSpecial && (!bestRegular || bestSpecial.score > 800)) {
+        // Special attacks with very high heuristic scores (captures, check escapes) take priority
+        selectedMove = bestSpecial;
+      } else if (bestRegular) {
+        selectedMove = bestRegular;
+      } else {
+        selectedMove = bestSpecial || possibleMoves[0];
+      }
+      
+      if (selectedMove.isArrow) {
+        return this.executeAIArrowAttack(gameId, selectedMove.from, selectedMove.to);
+      } else if (selectedMove.isAxe) {
+        return this.executeAIAxeAttack(gameId, selectedMove.from, selectedMove.to);
+      } else if (selectedMove.isBomb) {
+        return this.executeAIBombAttack(gameId, selectedMove.from, selectedMove.to);
+      } else {
+        return this.executeAIMove(gameId, selectedMove.from, selectedMove.to);
       }
     }
     
+    // Depth 0: original heuristic-only selection
+    possibleMoves.sort((a, b) => b.score - a.score);
+    
     // Pick from top 3 moves with weighted probability
-    const topMoves = validMoves.slice(0, Math.min(3, validMoves.length));
+    const topMoves = possibleMoves.slice(0, Math.min(3, possibleMoves.length));
     const selectedMove = topMoves[Math.floor(Math.random() * topMoves.length)];
 
-    // Execute the move
     if (selectedMove.isArrow) {
       return this.executeAIArrowAttack(gameId, selectedMove.from, selectedMove.to);
     } else if (selectedMove.isAxe) {

@@ -85,6 +85,7 @@ export interface GameState {
   gameMode: GameMode;
   aiColor?: PlayerColor;
   aiControlled?: { white: boolean; black: boolean };
+  aiDepth?: number;
   setupWallsRemaining: { white: number; black: number };
   maxWallsPerPlayer: number;
   moveHistory: Move[];

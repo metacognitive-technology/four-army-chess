@@ -81,7 +81,8 @@ export async function registerRoutes(
     try {
       const maxWalls = req.body?.maxWalls ?? 8;
       const attackSettings = req.body?.attackSettings;
-      const result = gameManager.createCvCGame(maxWalls, attackSettings);
+      const aiDepth = req.body?.aiDepth ?? 0;
+      const result = gameManager.createCvCGame(maxWalls, attackSettings, aiDepth);
       res.json({
         gameId: result.gameId,
         phase: result.state.phase,
@@ -107,7 +108,7 @@ export async function registerRoutes(
         switch (message.type) {
           case 'join': {
             if (message.payload.action === 'create') {
-              const result = gameManager.createGame(ws, message.payload.maxWalls ?? 8, message.payload.gameMode || 'pvp', message.payload.attackSettings, message.payload.budgetMode);
+              const result = gameManager.createGame(ws, message.payload.maxWalls ?? 8, message.payload.gameMode || 'pvp', message.payload.attackSettings, message.payload.budgetMode, message.payload.aiDepth);
               currentPlayerId = result.playerId;
               currentGameId = result.gameId;
 

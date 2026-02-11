@@ -20,7 +20,7 @@ interface UseWebSocketReturn {
   playerColor: 'white' | 'black' | null;
   connectionStatus: ConnectionStatus;
   sendMessage: (message: GameMessage) => void;
-  createGame: (maxWalls: number, gameMode?: GameMode, attackSettings?: AttackSettings) => void;
+  createGame: (maxWalls: number, gameMode?: GameMode, attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual', aiDepth?: number) => void;
   joinGame: (gameId: string) => void;
   reconnectGame: (gameId: string, storedPlayerId: string | null) => void;
   takeoverGame: (gameId: string, color: 'white' | 'black') => void;
@@ -191,14 +191,14 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     }
   }, [playerId]);
   
-  const createGame = useCallback((maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual') => {
+  const createGame = useCallback((maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual', aiDepth?: number) => {
     connect();
     
     const checkAndSend = () => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({
           type: 'join',
-          payload: { action: 'create', maxWalls, gameMode, attackSettings, budgetMode },
+          payload: { action: 'create', maxWalls, gameMode, attackSettings, budgetMode, aiDepth },
         }));
       } else {
         setTimeout(checkAndSend, 100);

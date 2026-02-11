@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.13.0";
+const GAME_VERSION = "1.14.0";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -110,6 +110,7 @@ export default function Game() {
   const [bombAttackPercent, setBombAttackPercent] = useState(10);
   const [wallBuildPercent, setWallBuildPercent] = useState(50);
   const [budgetMode, setBudgetMode] = useState<'shared' | 'individual'>('shared');
+  const [aiDepth, setAiDepth] = useState(0);
   const [budgetSubmitted, setBudgetSubmitted] = useState(false);
 
   const totalUsed = pawnAttackPercent + bishopAttackPercent + knightAttackPercent + bombAttackPercent + wallBuildPercent;
@@ -174,7 +175,7 @@ export default function Game() {
         bombAttackPercent,
         wallBuildPercent,
       };
-      const response = await apiRequest('POST', '/api/games/cvc', { maxWalls, attackSettings });
+      const response = await apiRequest('POST', '/api/games/cvc', { maxWalls, attackSettings, aiDepth });
       const data = await response.json();
       queryClient.invalidateQueries({ queryKey: ['/api/games'] });
       watchCvCGame(data.gameId);
@@ -191,7 +192,7 @@ export default function Game() {
     } finally {
       setIsCreatingCvC(false);
     }
-  }, [maxWalls, toast, watchCvCGame, pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent, totalAttackBudget, percentToThreshold]);
+  }, [maxWalls, toast, watchCvCGame, pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent, totalAttackBudget, percentToThreshold, aiDepth]);
 
   const handleTakeoverGame = useCallback((gameId: string, color: 'white' | 'black') => {
     takeoverGame(gameId, color);
@@ -741,6 +742,29 @@ export default function Game() {
               )}
             </div>
 
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs">
+                <Label>AI Look-Ahead (Ply Depth)</Label>
+                <span className="text-muted-foreground">{aiDepth === 0 ? 'Off (fast)' : `${aiDepth} ply${aiDepth > 1 ? 's' : ''}`}</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="3"
+                step="1"
+                value={aiDepth}
+                onChange={(e) => setAiDepth(parseInt(e.target.value))}
+                className="w-full accent-primary"
+                data-testid="slider-ai-depth"
+              />
+              <p className="text-xs text-muted-foreground">
+                {aiDepth === 0 && 'Instant moves, heuristic only.'}
+                {aiDepth === 1 && 'Thinks 1 move ahead. Quick.'}
+                {aiDepth === 2 && 'Thinks 2 moves ahead. Moderate.'}
+                {aiDepth === 3 && 'Thinks 3 moves ahead. Slower but stronger.'}
+              </p>
+            </div>
+
             <div className="space-y-3 pt-2 border-t">
               <h4 className="text-sm font-medium text-muted-foreground">
                 {budgetMode === 'individual' ? 'Attack Budget (max per player)' : 'Special Attack Chances'}
@@ -880,7 +904,7 @@ export default function Game() {
                     totalAttackBudget,
                     ...(budgetMode === 'shared' ? { pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent } : {}),
                   };
-                  createGame(maxWalls, 'pvc', as, budgetMode);
+                  createGame(maxWalls, 'pvc', as, budgetMode, aiDepth);
                 }}
                 data-testid="button-play-computer"
               >
