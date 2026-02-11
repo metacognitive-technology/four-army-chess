@@ -302,6 +302,25 @@ export async function registerRoutes(
             break;
           }
 
+          case 'setup_load_layout': {
+            if (message.playerId || currentPlayerId) {
+              const state = gameManager.handleLoadLayout(
+                message.playerId || currentPlayerId!,
+                message.payload.walls
+              );
+              if (state && currentGameId) {
+                const room = gameManager.getRoom(currentGameId);
+                if (room) {
+                  broadcastToRoom(room, {
+                    type: 'state',
+                    payload: { state },
+                  });
+                }
+              }
+            }
+            break;
+          }
+
           case 'budget_submit': {
             if (message.playerId || currentPlayerId) {
               const state = gameManager.handleBudgetSubmit(

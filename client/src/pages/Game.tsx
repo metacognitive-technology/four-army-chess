@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.12.9";
+const GAME_VERSION = "1.13.0";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -419,6 +419,19 @@ export default function Game() {
     return findHangingPieces(board, playerColor);
   }, [gameState, phase, playerColor, board]);
   
+  const wallPositions = useMemo(() => {
+    if (!board) return [];
+    const positions: Position[] = [];
+    for (let row = 0; row < board.length; row++) {
+      for (let col = 0; col < board[row].length; col++) {
+        if (board[row][col].isWall) {
+          positions.push({ row, col });
+        }
+      }
+    }
+    return positions;
+  }, [board]);
+  
   const checkStatus = useMemo(() => {
     if (!gameState || phase !== 'playing') return { isCheck: false, isCheckmate: false };
     const inCheck = isInCheck(board, currentTurn);
@@ -583,6 +596,10 @@ export default function Game() {
   
   const handleMazeWalls = useCallback(() => {
     sendMessage({ type: 'setup_maze_walls', payload: {} });
+  }, [sendMessage]);
+  
+  const handleLoadLayout = useCallback((walls: Position[]) => {
+    sendMessage({ type: 'setup_load_layout', payload: { walls } });
   }, [sendMessage]);
   
   const handleNewGame = useCallback(() => {
@@ -1328,6 +1345,8 @@ export default function Game() {
               onHandoff={handleHandoff}
               onTakeControl={handleTakeControl}
               winner={gameState.winner}
+              wallPositions={wallPositions}
+              onLoadLayout={handleLoadLayout}
             />
             
             {(phase === 'playing' || phase === 'setup') && gameState.attackSettings && (

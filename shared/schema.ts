@@ -102,7 +102,7 @@ export interface GameState {
 }
 
 export interface GameMessage {
-  type: 'join' | 'setup_wall' | 'setup_random_walls' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'bomb_attack' | 'wall_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover' | 'games_updated' | 'watch_cvc' | 'stop_cvc' | 'pause_cvc' | 'offer_draw' | 'respond_draw' | 'draw_offered' | 'draw_response' | 'handoff' | 'take_control' | 'budget_submit';
+  type: 'join' | 'setup_wall' | 'setup_random_walls' | 'setup_load_layout' | 'ready' | 'move' | 'arrow_attack' | 'axe_attack' | 'bomb_attack' | 'wall_attack' | 'state' | 'error' | 'player_joined' | 'player_left' | 'reconnect' | 'needsPromotion' | 'takeover' | 'games_updated' | 'watch_cvc' | 'stop_cvc' | 'pause_cvc' | 'offer_draw' | 'respond_draw' | 'draw_offered' | 'draw_response' | 'handoff' | 'take_control' | 'budget_submit';
   payload: any;
   playerId?: string;
 }

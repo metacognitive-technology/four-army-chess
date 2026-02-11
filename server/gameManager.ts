@@ -1588,6 +1588,54 @@ class GameManager {
     return room.state;
   }
 
+  handleLoadLayout(playerId: string, walls: Position[]): GameState | null {
+    const gameId = this.playerToGame.get(playerId);
+    if (!gameId) return null;
+    
+    const room = this.games.get(gameId);
+    if (!room || room.state.phase !== 'setup') return null;
+    
+    const player = room.players.get(playerId);
+    if (!player) return null;
+    
+    const color = player.color;
+    
+    // Clear all existing walls for this player's half
+    const isWhite = color === 'white';
+    const startRow = isWhite ? BOARD_SIZE / 2 : 0;
+    const endRow = isWhite ? BOARD_SIZE : BOARD_SIZE / 2;
+    
+    let existingWallCount = 0;
+    for (let row = startRow; row < endRow; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        if (room.state.board[row][col].isWall) {
+          room.state.board[row][col].isWall = false;
+          existingWallCount++;
+        }
+      }
+    }
+    
+    const totalWalls = room.state.setupWallsRemaining[color] + existingWallCount;
+    
+    // Place walls from the layout (only on this player's half)
+    let placed = 0;
+    for (const pos of walls) {
+      if (placed >= totalWalls) break;
+      if (pos.row >= startRow && pos.row < endRow && pos.col >= 0 && pos.col < BOARD_SIZE) {
+        const square = room.state.board[pos.row][pos.col];
+        if (!square.piece && !square.isWall) {
+          square.isWall = true;
+          placed++;
+        }
+      }
+    }
+    
+    room.state.setupWallsRemaining[color] = totalWalls - placed;
+    
+    this.saveGame(room.state);
+    return room.state;
+  }
+
   handleReady(playerId: string): GameState | null {
     const gameId = this.playerToGame.get(playerId);
     if (!gameId) return null;
@@ -2225,6 +2273,45 @@ class GameManager {
               if (newPathDist > currentPathDist && currentPathDist !== Infinity) {
                 score -= 1;
               }
+              
+              // Rook blockade strategy: when path is blocked, move rooks toward walls to bomb them
+              if (piece.type === 'rook' && currentPathDist === Infinity) {
+                // Find nearest wall in the middle zone to move toward
+                let nearestWallDist = Infinity;
+                const midRowMin = Math.floor(BOARD_SIZE * 0.33);
+                const midRowMax = Math.floor(BOARD_SIZE * 0.67);
+                for (let wr = 0; wr < BOARD_SIZE; wr++) {
+                  for (let wc = 0; wc < BOARD_SIZE; wc++) {
+                    if (board[wr][wc].isWall) {
+                      const dist = Math.abs(to.row - wr) + Math.abs(to.col - wc);
+                      // Prefer walls in the middle zone
+                      const midBonus = (wr >= midRowMin && wr <= midRowMax) ? -2 : 0;
+                      if (dist + midBonus < nearestWallDist) {
+                        nearestWallDist = dist + midBonus;
+                      }
+                    }
+                  }
+                }
+                if (nearestWallDist <= 2) {
+                  score += 80; // Close to a wall - ready to bomb next turn
+                } else if (nearestWallDist < Infinity) {
+                  const fromNearestWall = (() => {
+                    let best = Infinity;
+                    for (let wr = 0; wr < BOARD_SIZE; wr++) {
+                      for (let wc = 0; wc < BOARD_SIZE; wc++) {
+                        if (board[wr][wc].isWall) {
+                          const d = Math.abs(from.row - wr) + Math.abs(from.col - wc);
+                          if (d < best) best = d;
+                        }
+                      }
+                    }
+                    return best;
+                  })();
+                  if (nearestWallDist < fromNearestWall) {
+                    score += 40; // Moving closer to walls for future bombing
+                  }
+                }
+              }
             }
             
             possibleMoves.push({ from, to, score, escapesCheck });
@@ -2278,13 +2365,15 @@ class GameManager {
             }
             const isHeavilyWalled = totalWalls > 15;
             
-            // Count how many friendly pieces have blocked paths
+            // Count how many friendly pieces have blocked paths to enemy king
             let blockedPieces = 0;
+            let totalFriendlyPieces = 0;
             if (enemyKingPos) {
               for (let r = 0; r < BOARD_SIZE; r++) {
                 for (let c = 0; c < BOARD_SIZE; c++) {
                   const p = board[r][c].piece;
                   if (p && p.color === aiColor && p.type !== 'king') {
+                    totalFriendlyPieces++;
                     if (aStarPathfind(board, { row: r, col: c }, enemyKingPos) === Infinity) {
                       blockedPieces++;
                     }
@@ -2293,15 +2382,40 @@ class GameManager {
               }
             }
             
+            // Determine if there's a full blockade (most/all pieces blocked)
+            const blockadeRatio = totalFriendlyPieces > 0 ? blockedPieces / totalFriendlyPieces : 0;
+            const isFullBlockade = blockadeRatio >= 0.6;
+            
+            // Check if this rook itself has no path to enemy king
+            const rookPathDist = enemyKingPos ? aStarPathfind(board, from, enemyKingPos) : Infinity;
+            const rookIsBlocked = rookPathDist === Infinity;
+            
+            // Identify walls forming a dividing barrier between board halves
+            // A wall in the middle rows (rows 4-7 on a 12x12 board) is more likely part of a blockade
+            const midRowMin = Math.floor(BOARD_SIZE * 0.33);
+            const midRowMax = Math.floor(BOARD_SIZE * 0.67);
+            
             for (const to of bombTargets) {
-              // Higher base score when board is heavily walled or pieces are blocked
               let score = 350 + Math.random() * 0.5;
               if (isHeavilyWalled) score += 150;
-              if (blockedPieces >= 3) score += 200; // Many pieces blocked, prioritize clearing
+              if (blockedPieces >= 3) score += 200;
+              
+              // Full blockade: make bomb attacks top priority over regular moves
+              if (isFullBlockade) {
+                score += 400;
+                // Extra priority if the wall target is in the middle zone (part of barrier)
+                if (to.row >= midRowMin && to.row <= midRowMax) {
+                  score += 200;
+                }
+              }
+              
+              // Blocked rook should heavily prioritize bombing to free itself
+              if (rookIsBlocked) {
+                score += 250;
+              }
               
               // Use A* to determine if bombing this wall opens up a path
               if (enemyKingPos) {
-                // Check current path distance (may be blocked)
                 const currentPathDist = aStarPathfind(board, from, enemyKingPos);
                 
                 // Simulate removing the wall
@@ -2311,9 +2425,9 @@ class GameManager {
                 
                 // HUGE bonus if bombing opens a previously blocked path
                 if (currentPathDist === Infinity && newPathDist !== Infinity) {
-                  score += 500; // Critical: opens a blocked path for this rook
+                  score += 600; // Critical: opens a blocked path for this rook
                 } else if (newPathDist < currentPathDist) {
-                  score += (currentPathDist - newPathDist) * 25; // Significantly shortens path
+                  score += (currentPathDist - newPathDist) * 30;
                 }
                 
                 // Check how many friendly pieces this bomb would help
@@ -2327,10 +2441,10 @@ class GameManager {
                       const otherNewDist = aStarPathfind(tempBoard, otherFrom, enemyKingPos);
                       
                       if (otherCurrentDist === Infinity && otherNewDist !== Infinity) {
-                        score += 150; // Opens path for another blocked piece
+                        score += 200; // Opens path for another blocked piece
                         piecesHelped++;
                       } else if (otherNewDist < otherCurrentDist - 2) {
-                        score += 40; // Significantly helps another piece
+                        score += 50; // Significantly helps another piece
                         piecesHelped++;
                       }
                     }
@@ -2339,7 +2453,28 @@ class GameManager {
                 
                 // Bonus for bombs that help multiple pieces (bottleneck walls)
                 if (piecesHelped >= 3) {
-                  score += 100; // This wall is a bottleneck blocking many pieces
+                  score += 150;
+                }
+                if (piecesHelped >= 5) {
+                  score += 200; // Critical bottleneck - breaking this frees many pieces
+                }
+                
+                // Prefer bombing walls that are connected to other walls (part of wall lines)
+                let adjacentWalls = 0;
+                for (let dr = -1; dr <= 1; dr++) {
+                  for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    const nr = to.row + dr;
+                    const nc = to.col + dc;
+                    if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && board[nr][nc].isWall) {
+                      adjacentWalls++;
+                    }
+                  }
+                }
+                // Walls that are endpoints of wall lines (1-2 adjacent walls) are better bomb targets
+                // than walls deep inside a wall cluster (many adjacent walls)
+                if (adjacentWalls >= 1 && adjacentWalls <= 3) {
+                  score += 80; // Good target: edge/end of a wall line
                 }
               }
               

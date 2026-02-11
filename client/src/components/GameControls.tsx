@@ -1,9 +1,17 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Play, RotateCcw, Flag, CheckCircle, Copy, Share2, Pause, Handshake, Shuffle, Grid3X3, Bot, User } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Play, RotateCcw, Flag, CheckCircle, Copy, Share2, Pause, Handshake, Shuffle, Grid3X3, Bot, User, Save, FolderOpen, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import type { Position } from "@shared/schema";
+
+interface SavedLayout {
+  name: string;
+  walls: Position[];
+}
 
 interface GameControlsProps {
   gameId: string | null;
@@ -30,6 +38,8 @@ interface GameControlsProps {
   onHandoff?: () => void;
   onTakeControl?: () => void;
   winner?: string | null;
+  wallPositions?: Position[];
+  onLoadLayout?: (walls: Position[]) => void;
 }
 
 export function GameControls({
@@ -57,8 +67,53 @@ export function GameControls({
   onHandoff,
   onTakeControl,
   winner = null,
+  wallPositions = [],
+  onLoadLayout,
 }: GameControlsProps) {
   const { toast } = useToast();
+  const [savedLayouts, setSavedLayouts] = useState<SavedLayout[]>([]);
+  const [layoutName, setLayoutName] = useState('');
+  const [showLayoutManager, setShowLayoutManager] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('battleChessLayouts');
+      if (stored) setSavedLayouts(JSON.parse(stored));
+    } catch {}
+  }, []);
+
+  const saveLayout = () => {
+    const name = layoutName.trim();
+    if (!name) {
+      toast({ title: "Enter a name", description: "Please name your layout before saving." });
+      return;
+    }
+    const newLayout: SavedLayout = { name, walls: wallPositions };
+    const updated = [...savedLayouts.filter(l => l.name !== name), newLayout];
+    setSavedLayouts(updated);
+    localStorage.setItem('battleChessLayouts', JSON.stringify(updated));
+    setLayoutName('');
+    toast({ title: "Layout Saved", description: `"${name}" saved with ${wallPositions.length} walls.` });
+  };
+
+  const deleteLayout = (name: string) => {
+    const updated = savedLayouts.filter(l => l.name !== name);
+    setSavedLayouts(updated);
+    localStorage.setItem('battleChessLayouts', JSON.stringify(updated));
+    toast({ title: "Layout Deleted", description: `"${name}" has been removed.` });
+  };
+
+  const loadLayout = (layout: SavedLayout) => {
+    if (onLoadLayout) {
+      onLoadLayout(layout.walls);
+      const totalAvailable = wallsRemaining + wallPositions.length;
+      if (layout.walls.length > totalAvailable) {
+        toast({ title: "Layout Partially Loaded", description: `"${layout.name}" has ${layout.walls.length} walls but only ${totalAvailable} allowed. Some walls were skipped.`, variant: "destructive" });
+      } else {
+        toast({ title: "Layout Loaded", description: `"${layout.name}" applied (${layout.walls.length} walls).` });
+      }
+    }
+  };
   
   const copyGameLink = () => {
     if (gameId) {
@@ -167,6 +222,73 @@ export function GameControls({
                 Generate Maze Pattern
               </Button>
             )}
+            
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={() => setShowLayoutManager(!showLayoutManager)}
+              data-testid="button-toggle-layouts"
+            >
+              <FolderOpen className="w-4 h-4" />
+              {showLayoutManager ? 'Hide Layouts' : 'Wall Layouts'}
+            </Button>
+            
+            {showLayoutManager && (
+              <div className="space-y-2 p-2 border rounded-md">
+                <div className="flex gap-1">
+                  <Input
+                    placeholder="Layout name"
+                    value={layoutName}
+                    onChange={(e) => setLayoutName(e.target.value)}
+                    className="text-xs"
+                    data-testid="input-layout-name"
+                  />
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={saveLayout}
+                    disabled={wallPositions.length === 0}
+                    data-testid="button-save-layout"
+                  >
+                    <Save className="w-3 h-3" />
+                  </Button>
+                </div>
+                {savedLayouts.length > 0 ? (
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {savedLayouts.map((layout) => (
+                      <div
+                        key={layout.name}
+                        className="flex items-center gap-1 text-xs"
+                        data-testid={`layout-${layout.name}`}
+                      >
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="flex-1 justify-start text-xs h-7 px-2"
+                          onClick={() => loadLayout(layout)}
+                          data-testid={`button-load-layout-${layout.name}`}
+                        >
+                          {layout.name}
+                          <span className="text-muted-foreground ml-auto">{layout.walls.length}w</span>
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 shrink-0"
+                          onClick={() => deleteLayout(layout.name)}
+                          data-testid={`button-delete-layout-${layout.name}`}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic text-center">No saved layouts</p>
+                )}
+              </div>
+            )}
+            
             <Button 
               className="w-full gap-2" 
               onClick={onReady}
