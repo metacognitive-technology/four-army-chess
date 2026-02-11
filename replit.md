@@ -38,9 +38,9 @@ Always update `GAME_VERSION` in `client/src/pages/Game.tsx` whenever code is mod
 
 ### AI System
 - **A* Pathfinding**: AI uses A* algorithm with Chebyshev distance heuristic for 8-directional movement
-- **Minimax with Alpha-Beta Pruning**: Configurable look-ahead depth (0-3 plys) for strategic move evaluation
+- **Minimax with Alpha-Beta Pruning**: Configurable look-ahead depth (0-8 plys) for strategic move evaluation
   - Depth 0: Heuristic-only (instant, original behavior)
-  - Depth 1-3: Minimax search with alpha-beta pruning for regular moves
+  - Depth 1-8: Minimax search with alpha-beta pruning for regular moves
   - Special attacks (arrows, axes, bombs) still scored with heuristics since they're probabilistic
   - `aiDepth` stored in GameState, configurable via lobby slider
 - **Board Evaluation**: Material values, central control bonuses, pawn advancement scoring

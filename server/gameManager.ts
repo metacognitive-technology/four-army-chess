@@ -477,7 +477,7 @@ class GameManager {
       attackSettings: finalAttackSettings,
       budgetMode: effectiveBudgetMode,
       budgetReadyPlayers: [],
-      aiDepth: Math.max(0, Math.min(3, aiDepth ?? 0)),
+      aiDepth: Math.max(0, Math.min(8, aiDepth ?? 0)),
     };
     
     if (effectiveBudgetMode === 'individual') {
@@ -551,7 +551,7 @@ class GameManager {
       players: { white: AI_PLAYER_ID, black: AI_PLAYER_ID },
       winner: null,
       attackSettings: attackSettings || defaultAttackSettings,
-      aiDepth: Math.max(0, Math.min(3, aiDepth ?? 0)),
+      aiDepth: Math.max(0, Math.min(8, aiDepth ?? 0)),
     };
     
     // Place walls for both sides

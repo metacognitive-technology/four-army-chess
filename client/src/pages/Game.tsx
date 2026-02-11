@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.14.0";
+const GAME_VERSION = "1.15.0";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -750,7 +750,7 @@ export default function Game() {
               <input
                 type="range"
                 min="0"
-                max="3"
+                max="8"
                 step="1"
                 value={aiDepth}
                 onChange={(e) => setAiDepth(parseInt(e.target.value))}
@@ -759,9 +759,10 @@ export default function Game() {
               />
               <p className="text-xs text-muted-foreground">
                 {aiDepth === 0 && 'Instant moves, heuristic only.'}
-                {aiDepth === 1 && 'Thinks 1 move ahead. Quick.'}
-                {aiDepth === 2 && 'Thinks 2 moves ahead. Moderate.'}
-                {aiDepth === 3 && 'Thinks 3 moves ahead. Slower but stronger.'}
+                {aiDepth >= 1 && aiDepth <= 2 && `Thinks ${aiDepth} move${aiDepth > 1 ? 's' : ''} ahead. Quick.`}
+                {aiDepth >= 3 && aiDepth <= 4 && `Thinks ${aiDepth} moves ahead. Moderate.`}
+                {aiDepth >= 5 && aiDepth <= 6 && `Thinks ${aiDepth} moves ahead. Slow but strong.`}
+                {aiDepth >= 7 && `Thinks ${aiDepth} moves ahead. Very slow, strongest.`}
               </p>
             </div>
 
