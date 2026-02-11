@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.12.8";
+const GAME_VERSION = "1.12.9";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -1327,6 +1327,7 @@ export default function Game() {
               isAIControlled={playerColor ? gameState.aiControlled?.[playerColor] ?? false : false}
               onHandoff={handleHandoff}
               onTakeControl={handleTakeControl}
+              winner={gameState.winner}
             />
             
             {(phase === 'playing' || phase === 'setup') && gameState.attackSettings && (

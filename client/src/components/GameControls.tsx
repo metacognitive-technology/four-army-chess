@@ -29,6 +29,7 @@ interface GameControlsProps {
   isAIControlled?: boolean;
   onHandoff?: () => void;
   onTakeControl?: () => void;
+  winner?: string | null;
 }
 
 export function GameControls({
@@ -55,6 +56,7 @@ export function GameControls({
   isAIControlled = false,
   onHandoff,
   onTakeControl,
+  winner = null,
 }: GameControlsProps) {
   const { toast } = useToast();
   
@@ -240,7 +242,16 @@ export function GameControls({
               </Button>
             )}
             
-            {isCvCGame ? (
+            {winner ? (
+              <Button 
+                className="w-full gap-2" 
+                onClick={onNewGame}
+                data-testid="button-new-game"
+              >
+                <RotateCcw className="w-4 h-4" />
+                New Game
+              </Button>
+            ) : isCvCGame ? (
               <Button 
                 variant="destructive" 
                 className="w-full gap-2" 
