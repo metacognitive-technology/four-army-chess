@@ -471,9 +471,10 @@ export async function registerRoutes(
                             payload: { state: result.state, diceRoll: result.diceRoll },
                           });
                           
-                          // Continue AI moves if needed
-                          const checkAndMakeAIMove = () => {
+                          // Continue AI moves if needed (with longer delay for special attacks)
+                          const checkAndMakeAIMove = (lastWasSpecial: boolean) => {
                             if (gameManager.isAITurn(currentGameId)) {
+                              const delay = lastWasSpecial ? 1500 : 800;
                               setTimeout(() => {
                                 const aiResult = gameManager.makeAIMove(currentGameId);
                                 if (aiResult) {
@@ -483,13 +484,13 @@ export async function registerRoutes(
                                       type: 'state',
                                       payload: { state: aiResult.state, diceRoll: aiResult.diceRoll },
                                     });
-                                    checkAndMakeAIMove();
+                                    checkAndMakeAIMove(!!aiResult.diceRoll);
                                   }
                                 }
-                              }, 800);
+                              }, delay);
                             }
                           };
-                          checkAndMakeAIMove();
+                          checkAndMakeAIMove(!!result.diceRoll);
                         }
                       }
                     }, 500);

@@ -576,28 +576,27 @@ class GameManager {
   
   private startCvCGameLoop(gameId: string) {
     const MAX_MOVES = 500;
+    const REGULAR_DELAY = 500;
+    const SPECIAL_ATTACK_DELAY = 1500;
     
-    const interval = setInterval(() => {
+    const scheduleNext = () => {
       const room = this.games.get(gameId);
       if (!room || room.state.phase !== 'playing') {
-        clearInterval(interval);
         this.cvcIntervals.delete(gameId);
         return;
       }
       
-      // Check if a human has taken over (game mode changed)
       if (room.state.gameMode !== 'cvc') {
-        clearInterval(interval);
         this.cvcIntervals.delete(gameId);
         return;
       }
       
       const state = room.state;
       const currentColor = state.currentTurn;
+      state.lastDiceRoll = undefined;
       const moveResult = this.makeCvCMove(state, currentColor);
       
       if (!moveResult) {
-        // No valid moves - check for checkmate or stalemate
         const inCheck = this.isInCheck(state.board, currentColor);
         if (inCheck) {
           state.winner = currentColor === 'white' ? 'black' : 'white';
@@ -607,27 +606,29 @@ class GameManager {
         state.phase = 'finished';
         this.saveGame(state);
         this.onCvCStateUpdate?.(gameId, state);
-        clearInterval(interval);
         this.cvcIntervals.delete(gameId);
         return;
       }
       
-      // Save and broadcast state after each move
       this.saveGame(state);
       this.onCvCStateUpdate?.(gameId, state);
       
-      // Check max moves
       if (state.moveHistory.length >= MAX_MOVES) {
         state.winner = 'draw';
         state.phase = 'finished';
         this.saveGame(state);
         this.onCvCStateUpdate?.(gameId, state);
-        clearInterval(interval);
         this.cvcIntervals.delete(gameId);
+        return;
       }
-    }, 500); // 500ms between moves
+      
+      const delay = moveResult === 'special' ? SPECIAL_ATTACK_DELAY : REGULAR_DELAY;
+      const timeout = setTimeout(scheduleNext, delay);
+      this.cvcIntervals.set(gameId, timeout);
+    };
     
-    this.cvcIntervals.set(gameId, interval);
+    const timeout = setTimeout(scheduleNext, REGULAR_DELAY);
+    this.cvcIntervals.set(gameId, timeout);
   }
   
   // Join as observer for CvC game
@@ -637,9 +638,9 @@ class GameManager {
     if (!room || room.state.gameMode !== 'cvc') return null;
     
     // Stop the game loop
-    const interval = this.cvcIntervals.get(gameId);
-    if (interval) {
-      clearInterval(interval);
+    const timeout = this.cvcIntervals.get(gameId);
+    if (timeout) {
+      clearTimeout(timeout);
       this.cvcIntervals.delete(gameId);
     }
     
@@ -657,9 +658,9 @@ class GameManager {
     
     if (paused) {
       // Pause - stop the game loop
-      const interval = this.cvcIntervals.get(gameId);
-      if (interval) {
-        clearInterval(interval);
+      const timeout = this.cvcIntervals.get(gameId);
+      if (timeout) {
+        clearTimeout(timeout);
         this.cvcIntervals.delete(gameId);
       }
     } else {
@@ -724,7 +725,7 @@ class GameManager {
     }
   }
   
-  private makeCvCMove(state: GameState, color: PlayerColor): boolean {
+  private makeCvCMove(state: GameState, color: PlayerColor): false | 'regular' | 'special' {
     const board = state.board;
     const inCheck = this.isInCheck(board, color);
     
@@ -962,6 +963,8 @@ class GameManager {
     const topMoves = validMoves.slice(0, Math.min(3, validMoves.length));
     const selected = topMoves[Math.floor(Math.random() * topMoves.length)];
     
+    const isSpecial = !!(selected.isArrow || selected.isAxe || selected.isBomb);
+    
     // Execute the move directly on state
     if (selected.isArrow) {
       this.executeCvCArrowAttack(state, selected.from, selected.to);
@@ -971,9 +974,11 @@ class GameManager {
       this.executeCvCBombAttack(state, selected.from, selected.to);
     } else {
       this.executeCvCMove(state, selected.from, selected.to);
+      // Check if pawn attack happened (has lastDiceRoll set)
+      if (state.lastDiceRoll) return 'special';
     }
     
-    return true;
+    return isSpecial ? 'special' : 'regular';
   }
   
   private executeCvCMove(state: GameState, from: Position, to: Position): void {
@@ -984,12 +989,21 @@ class GameManager {
     
     let actualCaptured: Piece | undefined;
     
+    let pawnDiceRoll: number | undefined;
+    let pawnSuccess: boolean | undefined;
+    
     if (targetPiece) {
       // Combat
       if (piece.type === 'pawn') {
         const roll = Math.floor(Math.random() * 6) + 1;
-        if (roll === 1) {
-          // Success
+        pawnDiceRoll = roll;
+        const settings = this.getAttackSettingsForColor(state, color);
+        const success = this.checkAttackSuccess(settings, 'pawn');
+        pawnSuccess = success;
+        
+        state.lastDiceRoll = { value: roll, type: 'd6' as const, success };
+        
+        if (success) {
           actualCaptured = targetPiece;
           state.capturedPieces[color].push(targetPiece);
           board[to.row][to.col].piece = { ...piece, hasMoved: true };
@@ -1031,7 +1045,13 @@ class GameManager {
       }
     }
     
-    state.moveHistory.push({ from, to, piece, captured: actualCaptured, notation: this.getMoveNotation(piece, from, to, actualCaptured) });
+    const moveEntry: Move = { from, to, piece, captured: actualCaptured, notation: this.getMoveNotation(piece, from, to, actualCaptured, pawnDiceRoll) };
+    if (pawnDiceRoll !== undefined) {
+      moveEntry.diceRoll = pawnDiceRoll;
+      moveEntry.diceRequired = 1;
+      moveEntry.success = pawnSuccess;
+    }
+    state.moveHistory.push(moveEntry);
     
     // Check for king capture
     if (actualCaptured && actualCaptured.type === 'king') {
@@ -1052,20 +1072,34 @@ class GameManager {
     const piece = board[from.row][from.col].piece!;
     const color = piece.color;
     
-    if (targetPiece) {
-      const distance = Math.abs(to.row - from.row);
-      const settings = this.getAttackSettingsForColor(state, color);
-      const success = this.checkAttackSuccess(settings, 'bishop', distance);
+    const distance = Math.abs(to.row - from.row);
+    const settings = this.getAttackSettingsForColor(state, color);
+    const success = targetPiece ? this.checkAttackSuccess(settings, 'bishop', distance) : false;
+    const roll = Math.floor(Math.random() * 4) + 1;
+    
+    const diceRoll = { value: roll, type: 'd4' as const, success };
+    state.lastDiceRoll = diceRoll;
+    
+    state.moveHistory.push({
+      from,
+      to,
+      piece,
+      captured: success ? targetPiece : undefined,
+      isArrowAttack: true,
+      diceRoll: roll,
+      diceRequired: 4,
+      success,
+      notation: this.getMoveNotation(piece, from, to, success ? targetPiece : undefined, roll, true),
+    });
+    
+    if (success && targetPiece) {
+      state.capturedPieces[color].push(targetPiece);
+      board[to.row][to.col].piece = null;
       
-      if (success) {
-        state.capturedPieces[color].push(targetPiece);
-        board[to.row][to.col].piece = null;
-        
-        if (targetPiece.type === 'king') {
-          state.winner = color;
-          state.phase = 'finished';
-          return;
-        }
+      if (targetPiece.type === 'king') {
+        state.winner = color;
+        state.phase = 'finished';
+        return;
       }
     }
     
@@ -1081,18 +1115,33 @@ class GameManager {
     const piece = board[from.row][from.col].piece!;
     const color = piece.color;
     
-    if (targetPiece) {
-      const settings = this.getAttackSettingsForColor(state, color);
-      const success = this.checkAttackSuccess(settings, 'knight');
-      if (success) {
-        state.capturedPieces[color].push(targetPiece);
-        board[to.row][to.col].piece = null;
-        
-        if (targetPiece.type === 'king') {
-          state.winner = color;
-          state.phase = 'finished';
-          return;
-        }
+    const settings = this.getAttackSettingsForColor(state, color);
+    const success = targetPiece ? this.checkAttackSuccess(settings, 'knight') : false;
+    const roll = Math.floor(Math.random() * 6) + 1;
+    
+    const diceRoll = { value: roll, type: 'd6' as const, success };
+    state.lastDiceRoll = diceRoll;
+    
+    state.moveHistory.push({
+      from,
+      to,
+      piece,
+      captured: success ? targetPiece : undefined,
+      isAxeAttack: true,
+      diceRoll: roll,
+      diceRequired: settings?.knightMinRoll ?? 4,
+      success,
+      notation: `${piece.type === 'knight' ? 'N' : ''}🪓${String.fromCharCode(97 + to.col)}${BOARD_SIZE - to.row}(${roll}${success ? '✓' : '✗'})`,
+    });
+    
+    if (success && targetPiece) {
+      state.capturedPieces[color].push(targetPiece);
+      board[to.row][to.col].piece = null;
+      
+      if (targetPiece.type === 'king') {
+        state.winner = color;
+        state.phase = 'finished';
+        return;
       }
     }
     
@@ -2945,6 +2994,7 @@ class GameManager {
 
     const targetPiece = board[to.row][to.col].piece;
     let diceRoll: { value: number; type: 'd4' | 'd6'; success: boolean } | undefined;
+    state.lastDiceRoll = undefined;
 
     // Pawn attack requires dice roll
     if (piece.type === 'pawn' && targetPiece) {
