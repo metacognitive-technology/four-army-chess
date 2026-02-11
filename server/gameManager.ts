@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { randomUUID, randomBytes } from "crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, unlinkSync, statSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -8,6 +8,16 @@ import type { WebSocket } from "ws";
 const BOARD_SIZE = 12;
 const MAX_MOVE_DISTANCE = 8;
 const AI_PLAYER_ID = 'ai-player';
+
+function generateShortId(length = 9): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  const bytes = randomBytes(length);
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars[bytes[i] % chars.length];
+  }
+  return result;
+}
 
 // A* pathfinding for AI to navigate around walls
 // Uses Chebyshev distance (8-directional with uniform cost)
@@ -434,8 +444,8 @@ class GameManager {
   }
 
   createGame(ws: WebSocket, maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual'): { gameId: string; playerId: string; color: PlayerColor } {
-    const gameId = randomUUID().slice(0, 8);
-    const playerId = randomUUID();
+    const gameId = generateShortId();
+    const playerId = generateShortId();
     
     const isVsComputer = gameMode === 'pvc';
     
@@ -515,7 +525,7 @@ class GameManager {
 
   // Create a computer vs computer game that plays visibly
   createCvCGame(maxWalls: number, attackSettings?: AttackSettings): { gameId: string; state: GameState } {
-    const gameId = randomUUID().slice(0, 8);
+    const gameId = generateShortId();
     
     const defaultAttackSettings: AttackSettings = {
       pawnSuccessRoll: 1,
@@ -677,7 +687,7 @@ class GameManager {
     }
     
     // Add as observer (no player ID needed)
-    const observerId = `observer-${randomUUID().slice(0, 8)}`;
+    const observerId = `observer-${generateShortId()}`;
     room.players.set(observerId, { ws, id: observerId, color: 'white' });
     
     return { state: room.state };
@@ -1082,7 +1092,7 @@ class GameManager {
       if (!state) return null;
     }
     
-    const playerId = randomUUID();
+    const playerId = generateShortId();
     
     // Update the game state
     state.players[color] = playerId;
@@ -1179,7 +1189,7 @@ class GameManager {
       return null;
     }
     
-    const playerId = randomUUID();
+    const playerId = generateShortId();
     room.state.players.black = playerId;
     room.players.set(playerId, { ws, id: playerId, color: 'black' });
     this.playerToGame.set(playerId, gameId);

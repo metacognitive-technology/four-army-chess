@@ -3,7 +3,7 @@ import { PIECE_SYMBOLS, calculateScore } from "@/lib/gameUtils";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Crown, User } from "lucide-react";
+import { User } from "lucide-react";
 
 interface PlayerPanelProps {
   color: PlayerColor;
@@ -98,12 +98,6 @@ export function PlayerPanel({
           </div>
         </div>
         
-        {isCurrentTurn && (
-          <div className="flex items-center justify-center gap-1 text-primary pt-2 border-t">
-            <Crown className="w-4 h-4" />
-            <span className="text-sm font-medium">Current Turn</span>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
