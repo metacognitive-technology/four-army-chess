@@ -93,6 +93,8 @@ export interface GameState {
   players: { white: string | null; black: string | null };
   winner: PlayerColor | 'draw' | null;
   lastDiceRoll?: { value: number; type: 'd4' | 'd6' | '2d6' | 'd10'; success: boolean };
+  aiThinkingPly?: number;
+  aiThinkingMaxPly?: number;
   pendingArrowTarget?: Position;
   selectedPiece?: Position;
   attackSettings: AttackSettings;
