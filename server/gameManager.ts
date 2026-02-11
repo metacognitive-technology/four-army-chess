@@ -771,17 +771,43 @@ class GameManager {
               score += advancement * 0.1;
             }
             
-            // Early bishop development - move out to establish arrow firing lanes
-            if (piece.type === 'bishop' && state.moveHistory.length < 20) {
-              const startRow = color === 'white' ? BOARD_SIZE - 1 : 0;
-              const isOnStartRow = from.row === startRow;
-              if (isOnStartRow) {
-                // Big bonus for developing bishops early
-                score += 50;
-                // Extra bonus for moving toward center diagonals
-                const centerCol = BOARD_SIZE / 2;
-                const towardCenter = Math.abs(to.col - centerCol) < Math.abs(from.col - centerCol);
-                if (towardCenter) score += 20;
+            // Bishop safety and development
+            if (piece.type === 'bishop') {
+              const enemyColorForBishop = color === 'white' ? 'black' : 'white';
+              
+              const destThreatened = this.isSquareAttackedBy(newBoard, to, enemyColorForBishop);
+              
+              if (destThreatened && !targetPiece) {
+                score -= 80;
+              } else if (destThreatened && targetPiece) {
+                const captureValue = ({ pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100 } as Record<PieceType, number>)[targetPiece.type];
+                if (captureValue < 3) score -= 40;
+              }
+              
+              if (!destThreatened) {
+                const lanes = this.countBishopFiringLanes(newBoard, to, color);
+                score += lanes * 6;
+                if (lanes >= 4) score += 15;
+              }
+              
+              if (state.moveHistory.length < 20) {
+                const startRow = color === 'white' ? BOARD_SIZE - 1 : 0;
+                if (from.row === startRow) {
+                  score += 50;
+                  const centerCol = BOARD_SIZE / 2;
+                  const towardCenter = Math.abs(to.col - centerCol) < Math.abs(from.col - centerCol);
+                  if (towardCenter) score += 20;
+                }
+              }
+              
+              let totalPieces = 0;
+              for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                  if (board[r][c].piece) totalPieces++;
+                }
+              }
+              if (totalPieces <= 16 || state.moveHistory.length > 80) {
+                if (!destThreatened) score += 25;
               }
             }
             
@@ -2175,13 +2201,57 @@ class GameManager {
     return room.state;
   }
 
+  private isSquareAttackedBy(board: Board, pos: Position, byColor: PlayerColor): boolean {
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        const piece = board[row][col].piece;
+        if (piece && piece.color === byColor) {
+          const attacks = this.getRawAttacks(board, { row, col }, piece);
+          if (attacks.some(a => a.row === pos.row && a.col === pos.col)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  private countBishopFiringLanes(board: Board, pos: Position, color: PlayerColor): number {
+    const directions = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]];
+    let lanes = 0;
+    for (const [dr, dc] of directions) {
+      let dist = 0;
+      let r = pos.row + dr, c = pos.col + dc;
+      while (this.isValidPosition(r, c) && !board[r][c].isWall) {
+        dist++;
+        if (board[r][c].piece) {
+          if (board[r][c].piece!.color !== color && dist >= 2) lanes++;
+          break;
+        }
+        r += dr;
+        c += dc;
+      }
+      if (dist >= 2 && !(this.isValidPosition(r, c) && board[r][c].piece)) lanes++;
+    }
+    return lanes;
+  }
+
   private evaluateBoard(board: Board, forColor: PlayerColor): number {
+    const enemyColor = forColor === 'white' ? 'black' : 'white';
+    
+    let totalPieces = 0;
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        if (board[row][col].piece) totalPieces++;
+      }
+    }
+    const isEndgame = totalPieces <= 16;
+    
     const pieceValues: Record<PieceType, number> = {
-      pawn: 100, knight: 320, bishop: 330, rook: 500, queen: 900, king: 20000
+      pawn: 100, knight: 320, bishop: isEndgame ? 400 : 350, rook: 500, queen: 900, king: 20000
     };
     
     let score = 0;
-    const enemyColor = forColor === 'white' ? 'black' : 'white';
     
     for (let row = 0; row < BOARD_SIZE; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
@@ -2199,9 +2269,22 @@ class GameManager {
         score += centerBonus * multiplier;
         
         if (piece.type === 'pawn') {
-          const promotionRow = piece.color === 'white' ? 0 : BOARD_SIZE - 1;
           const advancement = piece.color === 'white' ? (BOARD_SIZE - 1 - row) : row;
           score += advancement * 3 * multiplier;
+        }
+        
+        if (piece.type === 'bishop') {
+          const pos = { row, col };
+          const lanes = this.countBishopFiringLanes(board, pos, piece.color);
+          score += lanes * 5 * multiplier;
+          
+          const opponentColor = piece.color === forColor ? enemyColor : forColor;
+          const isSafe = !this.isSquareAttackedBy(board, pos, opponentColor);
+          if (isSafe) {
+            score += (isEndgame ? 25 : 12) * multiplier;
+          } else {
+            score -= (isEndgame ? 20 : 10) * multiplier;
+          }
         }
       }
     }
@@ -2386,17 +2469,47 @@ class GameManager {
               }
             }
             
-            // Early bishop development - move out to establish arrow firing lanes
-            if (piece.type === 'bishop' && state.moveHistory.length < 20) {
-              const startRow = aiColor === 'white' ? BOARD_SIZE - 1 : 0;
-              const isOnStartRow = from.row === startRow;
-              if (isOnStartRow) {
-                // Big bonus for developing bishops early
-                score += 50;
-                // Extra bonus for moving toward center diagonals
-                const centerCol = BOARD_SIZE / 2;
-                const towardCenter = Math.abs(to.col - centerCol) < Math.abs(from.col - centerCol);
-                if (towardCenter) score += 20;
+            // Bishop safety and development
+            if (piece.type === 'bishop') {
+              const enemyColorForBishop = aiColor === 'white' ? 'black' : 'white';
+              
+              const destThreatened = this.isSquareAttackedBy(newBoard, to, enemyColorForBishop);
+              
+              // Penalize threatened destinations, but allow good captures
+              if (destThreatened && !targetPiece) {
+                score -= 80; // Penalty for moving to danger without gaining material
+              } else if (destThreatened && targetPiece) {
+                const captureValue = ({ pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100 } as Record<PieceType, number>)[targetPiece.type];
+                if (captureValue < 3) score -= 40; // Not worth trading bishop for pawn
+              }
+              
+              // Bonus for safe squares with good firing lanes
+              if (!destThreatened) {
+                const lanes = this.countBishopFiringLanes(newBoard, to, aiColor);
+                score += lanes * 6;
+                if (lanes >= 4) score += 15;
+              }
+              
+              // Early development
+              if (state.moveHistory.length < 20) {
+                const startRow = aiColor === 'white' ? BOARD_SIZE - 1 : 0;
+                if (from.row === startRow) {
+                  score += 50;
+                  const centerCol = BOARD_SIZE / 2;
+                  const towardCenter = Math.abs(to.col - centerCol) < Math.abs(from.col - centerCol);
+                  if (towardCenter) score += 20;
+                }
+              }
+              
+              // Endgame bishop preservation bonus
+              let totalPieces = 0;
+              for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                  if (board[r][c].piece) totalPieces++;
+                }
+              }
+              if (totalPieces <= 16 || state.moveHistory.length > 80) {
+                if (!destThreatened) score += 25;
               }
             }
             
