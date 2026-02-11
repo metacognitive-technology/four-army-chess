@@ -852,8 +852,8 @@ class GameManager {
                 const values: Record<PieceType, number> = {
                   pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
                 };
-                // High priority for arrow attacks
-                const score = values[targetPiece.type] * 10 + 400 + Math.random() * 0.5;
+                let score = values[targetPiece.type] * 10 + 400 + Math.random() * 0.5;
+                if (targetPiece.type === 'bishop') score += 200;
                 possibleMoves.push({ from, to, score, isArrow: true });
               }
             }
@@ -2647,8 +2647,8 @@ class GameManager {
                 const values: Record<PieceType, number> = {
                   pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
                 };
-                // Very high priority for arrow attacks (prioritize special attacks)
-                const score = values[targetPiece.type] * 15 + 600 + Math.random() * 0.5;
+                let score = values[targetPiece.type] * 15 + 600 + Math.random() * 0.5;
+                if (targetPiece.type === 'bishop') score += 300;
                 possibleMoves.push({ from, to, score, isArrow: true });
               }
             }
