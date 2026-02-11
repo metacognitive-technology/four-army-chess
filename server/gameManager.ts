@@ -956,19 +956,23 @@ class GameManager {
     const targetPiece = board[to.row][to.col].piece;
     const color = piece.color;
     
+    let actualCaptured: Piece | undefined;
+    
     if (targetPiece) {
       // Combat
       if (piece.type === 'pawn') {
         const roll = Math.floor(Math.random() * 6) + 1;
         if (roll === 1) {
           // Success
+          actualCaptured = targetPiece;
           state.capturedPieces[color].push(targetPiece);
           board[to.row][to.col].piece = { ...piece, hasMoved: true };
           board[from.row][from.col].piece = null;
         }
-        // Failure - turn still changes
+        // Failure - turn still changes, piece stays put
       } else {
         // Non-pawn captures succeed
+        actualCaptured = targetPiece;
         state.capturedPieces[color].push(targetPiece);
         board[to.row][to.col].piece = { ...piece, hasMoved: true };
         board[from.row][from.col].piece = null;
@@ -1001,15 +1005,18 @@ class GameManager {
       }
     }
     
-    state.moveHistory.push({ from, to, piece, capturedPiece: targetPiece || undefined });
+    state.moveHistory.push({ from, to, piece, capturedPiece: actualCaptured });
     
     // Check for king capture
-    if (targetPiece && targetPiece.type === 'king') {
+    if (actualCaptured && actualCaptured.type === 'king') {
       state.winner = color;
       state.phase = 'finished';
     } else {
-      // Switch turns - checkmate detection happens in makeCvCMove loop
+      // Switch turns
       state.currentTurn = color === 'white' ? 'black' : 'white';
+      
+      // Check for checkmate or stalemate
+      this.checkGameEnd(state, color);
     }
   }
   
@@ -1027,11 +1034,19 @@ class GameManager {
       if (success) {
         state.capturedPieces[color].push(targetPiece);
         board[to.row][to.col].piece = null;
+        
+        if (targetPiece.type === 'king') {
+          state.winner = color;
+          state.phase = 'finished';
+          return;
+        }
       }
     }
     
     const enemyColor = color === 'white' ? 'black' : 'white';
     state.currentTurn = enemyColor;
+    
+    this.checkGameEnd(state, color);
   }
   
   private executeCvCAxeAttack(state: GameState, from: Position, to: Position): void {
@@ -1046,11 +1061,19 @@ class GameManager {
       if (success) {
         state.capturedPieces[color].push(targetPiece);
         board[to.row][to.col].piece = null;
+        
+        if (targetPiece.type === 'king') {
+          state.winner = color;
+          state.phase = 'finished';
+          return;
+        }
       }
     }
     
     const enemyColor = color === 'white' ? 'black' : 'white';
     state.currentTurn = enemyColor;
+    
+    this.checkGameEnd(state, color);
   }
   
   private executeCvCBombAttack(state: GameState, from: Position, to: Position): void {
@@ -1083,6 +1106,11 @@ class GameManager {
     
     const enemyColor = color === 'white' ? 'black' : 'white';
     state.currentTurn = enemyColor;
+    
+    // Destroying a wall can open lines of attack - check for checkmate/stalemate
+    if (success) {
+      this.checkGameEnd(state, color);
+    }
   }
   
   // Allow a human to take over a color in a saved game
@@ -3349,6 +3377,39 @@ class GameManager {
     }
     
     return attacks;
+  }
+
+  private hasLegalMoves(board: Board, color: PlayerColor): boolean {
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        const piece = board[row][col].piece;
+        if (piece && piece.color === color) {
+          const moves = this.getValidMoves(board, { row, col });
+          for (const move of moves) {
+            const newBoard = JSON.parse(JSON.stringify(board));
+            newBoard[move.row][move.col].piece = piece;
+            newBoard[row][col].piece = null;
+            if (!this.isInCheck(newBoard, color)) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  private checkGameEnd(state: GameState, movingColor: PlayerColor): void {
+    if (state.phase === 'finished') return;
+    const opponentColor = movingColor === 'white' ? 'black' : 'white';
+    if (!this.hasLegalMoves(state.board, opponentColor)) {
+      if (this.isInCheck(state.board, opponentColor)) {
+        state.winner = movingColor;
+      } else {
+        state.winner = 'draw';
+      }
+      state.phase = 'finished';
+    }
   }
 
   private isCheckmate(board: Board, color: PlayerColor): boolean {

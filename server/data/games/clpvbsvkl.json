@@ -1,5 +1,5 @@
 {
-  "id": "falzhthik",
+  "id": "clpvbsvkl",
   "board": [
     [
       {
@@ -17,20 +17,13 @@
       {
         "row": 0,
         "col": 2,
-        "piece": {
-          "type": "rook",
-          "color": "black"
-        },
+        "piece": null,
         "isWall": false
       },
       {
         "row": 0,
         "col": 3,
-        "piece": {
-          "type": "pawn",
-          "color": "black",
-          "hasMoved": true
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -42,469 +35,462 @@
       {
         "row": 0,
         "col": 5,
-        "piece": {
-          "type": "rook",
-          "color": "black",
-          "hasMoved": true
-        },
+        "piece": null,
         "isWall": false
       },
       {
         "row": 0,
         "col": 6,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 0,
-        "col": 7,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 0,
-        "col": 8,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 0,
-        "col": 9,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 0,
-        "col": 10,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 0,
-        "col": 11,
-        "piece": null,
-        "isWall": false
-      }
-    ],
-    [
-      {
-        "row": 1,
-        "col": 0,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 1,
-        "col": 1,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 1,
-        "col": 2,
-        "piece": {
-          "type": "pawn",
-          "color": "black"
-        },
-        "isWall": false
-      },
-      {
-        "row": 1,
-        "col": 3,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 1,
-        "col": 4,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 1,
-        "col": 5,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 1,
-        "col": 6,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 1,
-        "col": 7,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 1,
-        "col": 8,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 1,
-        "col": 9,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 1,
-        "col": 10,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 1,
-        "col": 11,
-        "piece": null,
-        "isWall": false
-      }
-    ],
-    [
-      {
-        "row": 2,
-        "col": 0,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 2,
-        "col": 1,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 2,
-        "col": 2,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 2,
-        "col": 3,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 2,
-        "col": 4,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 2,
-        "col": 5,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 2,
-        "col": 6,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 2,
-        "col": 7,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 2,
-        "col": 8,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 2,
-        "col": 9,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 2,
-        "col": 10,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 2,
-        "col": 11,
-        "piece": null,
-        "isWall": false
-      }
-    ],
-    [
-      {
-        "row": 3,
-        "col": 0,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 3,
-        "col": 1,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 3,
-        "col": 2,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 3,
-        "col": 3,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 3,
-        "col": 4,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 3,
-        "col": 5,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 3,
-        "col": 6,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 3,
-        "col": 7,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 3,
-        "col": 8,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 3,
-        "col": 9,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 3,
-        "col": 10,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 3,
-        "col": 11,
-        "piece": null,
-        "isWall": false
-      }
-    ],
-    [
-      {
-        "row": 4,
-        "col": 0,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 4,
-        "col": 1,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 4,
-        "col": 2,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 4,
-        "col": 3,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 4,
-        "col": 4,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 4,
-        "col": 5,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 4,
-        "col": 6,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 4,
-        "col": 7,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 4,
-        "col": 8,
-        "piece": {
-          "type": "pawn",
-          "color": "black",
-          "hasMoved": true
-        },
-        "isWall": false
-      },
-      {
-        "row": 4,
-        "col": 9,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 4,
-        "col": 10,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 4,
-        "col": 11,
-        "piece": null,
-        "isWall": false
-      }
-    ],
-    [
-      {
-        "row": 5,
-        "col": 0,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 5,
-        "col": 1,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 5,
-        "col": 2,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 5,
-        "col": 3,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 5,
-        "col": 4,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 5,
-        "col": 5,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 5,
-        "col": 6,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 5,
-        "col": 7,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 5,
-        "col": 8,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 5,
-        "col": 9,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 5,
-        "col": 10,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 5,
-        "col": 11,
-        "piece": null,
-        "isWall": false
-      }
-    ],
-    [
-      {
-        "row": 6,
-        "col": 0,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 6,
-        "col": 1,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 6,
-        "col": 2,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 6,
-        "col": 3,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 6,
-        "col": 4,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 6,
-        "col": 5,
         "piece": {
           "type": "king",
-          "color": "black",
+          "color": "white",
           "hasMoved": true
         },
         "isWall": false
       },
       {
+        "row": 0,
+        "col": 7,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 0,
+        "col": 8,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 0,
+        "col": 9,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 0,
+        "col": 10,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 0,
+        "col": 11,
+        "piece": null,
+        "isWall": false
+      }
+    ],
+    [
+      {
+        "row": 1,
+        "col": 0,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 1,
+        "col": 1,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 1,
+        "col": 2,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 1,
+        "col": 3,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 1,
+        "col": 4,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 1,
+        "col": 5,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 1,
+        "col": 6,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 1,
+        "col": 7,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 1,
+        "col": 8,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 1,
+        "col": 9,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 1,
+        "col": 10,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 1,
+        "col": 11,
+        "piece": null,
+        "isWall": false
+      }
+    ],
+    [
+      {
+        "row": 2,
+        "col": 0,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 2,
+        "col": 1,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 2,
+        "col": 2,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 2,
+        "col": 3,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 2,
+        "col": 4,
+        "piece": {
+          "type": "knight",
+          "color": "white",
+          "hasMoved": true
+        },
+        "isWall": false
+      },
+      {
+        "row": 2,
+        "col": 5,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 2,
+        "col": 6,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 2,
+        "col": 7,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 2,
+        "col": 8,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 2,
+        "col": 9,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 2,
+        "col": 10,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 2,
+        "col": 11,
+        "piece": null,
+        "isWall": false
+      }
+    ],
+    [
+      {
+        "row": 3,
+        "col": 0,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 3,
+        "col": 1,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 3,
+        "col": 2,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 3,
+        "col": 4,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 3,
+        "col": 5,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 3,
+        "col": 6,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 3,
+        "col": 7,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 3,
+        "col": 8,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 3,
+        "col": 9,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 3,
+        "col": 10,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 3,
+        "col": 11,
+        "piece": null,
+        "isWall": false
+      }
+    ],
+    [
+      {
+        "row": 4,
+        "col": 0,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 4,
+        "col": 1,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 4,
+        "col": 2,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 4,
+        "col": 4,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 4,
+        "col": 5,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 4,
+        "col": 6,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 4,
+        "col": 7,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 4,
+        "col": 8,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 4,
+        "col": 9,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 4,
+        "col": 10,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 4,
+        "col": 11,
+        "piece": null,
+        "isWall": false
+      }
+    ],
+    [
+      {
+        "row": 5,
+        "col": 0,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 5,
+        "col": 1,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 5,
+        "col": 2,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 5,
+        "col": 4,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 5,
+        "col": 5,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 5,
+        "col": 6,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 5,
+        "col": 7,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 5,
+        "col": 8,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 5,
+        "col": 9,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 5,
+        "col": 10,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 5,
+        "col": 11,
+        "piece": null,
+        "isWall": true
+      }
+    ],
+    [
+      {
+        "row": 6,
+        "col": 0,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 6,
+        "col": 1,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 6,
+        "col": 2,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 6,
+        "col": 4,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 6,
+        "col": 5,
+        "piece": null,
+        "isWall": false
+      },
+      {
         "row": 6,
         "col": 6,
         "piece": null,
@@ -538,7 +524,7 @@
         "row": 6,
         "col": 11,
         "piece": null,
-        "isWall": true
+        "isWall": false
       }
     ],
     [
@@ -546,7 +532,7 @@
         "row": 7,
         "col": 0,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
@@ -558,19 +544,19 @@
         "row": 7,
         "col": 2,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
         "col": 3,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
         "col": 4,
         "piece": null,
-        "isWall": true
+        "isWall": false
       },
       {
         "row": 7,
@@ -600,13 +586,13 @@
         "row": 7,
         "col": 9,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
         "col": 10,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 7,
@@ -724,7 +710,7 @@
         "row": 9,
         "col": 5,
         "piece": null,
-        "isWall": false
+        "isWall": true
       },
       {
         "row": 9,
@@ -754,7 +740,7 @@
         "row": 9,
         "col": 10,
         "piece": null,
-        "isWall": true
+        "isWall": false
       },
       {
         "row": 9,
@@ -768,13 +754,13 @@
         "row": 10,
         "col": 0,
         "piece": null,
-        "isWall": true
+        "isWall": false
       },
       {
         "row": 10,
         "col": 1,
         "piece": null,
-        "isWall": true
+        "isWall": false
       },
       {
         "row": 10,
@@ -908,11 +894,11 @@
         "row": 11,
         "col": 11,
         "piece": null,
-        "isWall": true
+        "isWall": false
       }
     ]
   ],
-  "currentTurn": "white",
+  "currentTurn": "black",
   "phase": "finished",
   "gameMode": "cvc",
   "aiControlled": {
@@ -928,11 +914,11 @@
     {
       "from": {
         "row": 10,
-        "col": 4
+        "col": 8
       },
       "to": {
         "row": 9,
-        "col": 5
+        "col": 7
       },
       "piece": {
         "type": "pawn",
@@ -942,213 +928,59 @@
     {
       "from": {
         "row": 1,
-        "col": 5
-      },
-      "to": {
-        "row": 2,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black"
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 2
-      },
-      "to": {
-        "row": 9,
-        "col": 1
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white"
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 6
-      },
-      "to": {
-        "row": 3,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 11,
-        "col": 2
-      },
-      "to": {
-        "row": 9,
-        "col": 2
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white"
-      }
-    },
-    {
-      "from": {
-        "row": 0,
-        "col": 4
-      },
-      "to": {
-        "row": 2,
-        "col": 6
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "black"
-      }
-    },
-    {
-      "from": {
-        "row": 11,
-        "col": 8
-      },
-      "to": {
-        "row": 9,
-        "col": 9
-      },
-      "piece": {
-        "type": "knight",
-        "color": "white"
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 8
-      },
-      "to": {
-        "row": 2,
-        "col": 9
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black"
-      }
-    },
-    {
-      "from": {
-        "row": 11,
-        "col": 5
-      },
-      "to": {
-        "row": 6,
-        "col": 0
-      },
-      "piece": {
-        "type": "queen",
-        "color": "white"
-      }
-    },
-    {
-      "from": {
-        "row": 0,
         "col": 7
       },
       "to": {
-        "row": 1,
-        "col": 8
+        "row": 2,
+        "col": 6
       },
       "piece": {
-        "type": "bishop",
+        "type": "pawn",
         "color": "black"
       }
     },
     {
       "from": {
-        "row": 9,
-        "col": 2
+        "row": 11,
+        "col": 3
       },
       "to": {
         "row": 10,
         "col": 1
       },
       "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 8,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣b2(8✗)"
-    },
-    {
-      "from": {
-        "row": 0,
-        "col": 8
-      },
-      "to": {
-        "row": 2,
-        "col": 7
-      },
-      "piece": {
         "type": "knight",
-        "color": "black"
+        "color": "white"
       }
     },
     {
       "from": {
-        "row": 9,
-        "col": 2
+        "row": 2,
+        "col": 6
       },
       "to": {
-        "row": 5,
-        "col": 2
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 8
-      },
-      "to": {
-        "row": 0,
+        "row": 3,
         "col": 7
       },
       "piece": {
-        "type": "bishop",
+        "type": "pawn",
         "color": "black",
         "hasMoved": true
       }
     },
     {
       "from": {
-        "row": 5,
-        "col": 2
+        "row": 11,
+        "col": 7
       },
       "to": {
-        "row": 4,
-        "col": 2
+        "row": 9,
+        "col": 9
       },
       "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 2,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣c8(2✗)"
+        "type": "bishop",
+        "color": "white"
+      }
     },
     {
       "from": {
@@ -1167,1634 +999,77 @@
     {
       "from": {
         "row": 9,
-        "col": 5
-      },
-      "to": {
-        "row": 8,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 4
-      },
-      "to": {
-        "row": 0,
-        "col": 3
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black"
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 5
-      },
-      "to": {
-        "row": 8,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 0,
-        "col": 7
-      },
-      "to": {
-        "row": 1,
-        "col": 8
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 6
+        "col": 9
       },
       "to": {
         "row": 7,
         "col": 7
       },
       "piece": {
-        "type": "pawn",
+        "type": "bishop",
         "color": "white",
         "hasMoved": true
       }
     },
     {
       "from": {
-        "row": 1,
-        "col": 7
-      },
-      "to": {
         "row": 0,
         "col": 8
       },
+      "to": {
+        "row": 2,
+        "col": 7
+      },
       "piece": {
-        "type": "pawn",
+        "type": "knight",
         "color": "black"
       }
     },
     {
       "from": {
+        "row": 7,
+        "col": 7
+      },
+      "to": {
         "row": 5,
+        "col": 5
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 0,
         "col": 2
       },
       "to": {
-        "row": 6,
+        "row": 0,
         "col": 1
       },
       "piece": {
         "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 3,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣b6(3✗)"
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 7
-      },
-      "to": {
-        "row": 4,
-        "col": 8
-      },
-      "piece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 5,
-        "col": 2
-      },
-      "to": {
-        "row": 6,
-        "col": 2
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 8
-      },
-      "to": {
-        "row": 3,
-        "col": 6
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 2
-      },
-      "to": {
-        "row": 6,
-        "col": 10
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 8
-      },
-      "to": {
-        "row": 6,
-        "col": 7
-      },
-      "piece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 10
-      },
-      "to": {
-        "row": 6,
-        "col": 7
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 6
-      },
-      "to": {
-        "row": 4,
-        "col": 8
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 7
-      },
-      "to": {
-        "row": 1,
-        "col": 7
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 6
-      },
-      "to": {
-        "row": 1,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
         "color": "black"
       },
-      "capturedPiece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 7
-      },
-      "to": {
-        "row": 2,
-        "col": 8
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
       "isBombAttack": true,
-      "diceRoll": 5,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣i10(5✗)"
-    },
-    {
-      "from": {
-        "row": 0,
-        "col": 8
-      },
-      "to": {
-        "row": 1,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 7
-      },
-      "to": {
-        "row": 1,
-        "col": 6
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "black"
-      }
-    },
-    {
-      "from": {
-        "row": 0,
-        "col": 6
-      },
-      "to": {
-        "row": 1,
-        "col": 6
-      },
-      "piece": {
-        "type": "king",
-        "color": "black"
-      },
-      "capturedPiece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 9,
-        "col": 9
-      },
-      "to": {
-        "row": 7,
-        "col": 8
-      },
-      "piece": {
-        "type": "knight",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 8
-      },
-      "to": {
-        "row": 9,
-        "col": 3
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 0
-      },
-      "to": {
-        "row": 9,
-        "col": 3
-      },
-      "piece": {
-        "type": "queen",
-        "color": "white",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "bishop",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 5
-      },
-      "to": {
-        "row": 4,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 9,
-        "col": 3
-      },
-      "to": {
-        "row": 3,
-        "col": 9
-      },
-      "piece": {
-        "type": "queen",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 4
-      },
-      "to": {
-        "row": 4,
-        "col": 3
-      },
-      "piece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 9
-      },
-      "to": {
-        "row": 3,
-        "col": 7
-      },
-      "piece": {
-        "type": "queen",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 6
-      },
-      "to": {
-        "row": 3,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "queen",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 8
-      },
-      "to": {
-        "row": 5,
-        "col": 7
-      },
-      "piece": {
-        "type": "knight",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 6,
-        "col": 4
-      },
-      "piece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 5,
-        "col": 7
-      },
-      "to": {
-        "row": 3,
-        "col": 6
-      },
-      "piece": {
-        "type": "knight",
-        "color": "white",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "bishop",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 7
-      },
-      "to": {
-        "row": 3,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "knight",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 7
-      },
-      "to": {
-        "row": 6,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 6
-      },
-      "to": {
-        "row": 4,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 8
-      },
-      "to": {
-        "row": 5,
-        "col": 9
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 4
-      },
-      "to": {
-        "row": 8,
-        "col": 5
-      },
-      "piece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 5,
-        "col": 9
-      },
-      "to": {
-        "row": 4,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 5
-      },
-      "to": {
-        "row": 9,
-        "col": 3
-      },
-      "piece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 8
-      },
-      "to": {
-        "row": 3,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 9
-      },
-      "to": {
-        "row": 3,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 8
-      },
-      "to": {
-        "row": 2,
-        "col": 9
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 9,
-        "col": 3
-      },
-      "to": {
-        "row": 10,
-        "col": 5
-      },
-      "piece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "white"
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 9
-      },
-      "to": {
-        "row": 1,
-        "col": 9
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "black"
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 6
-      },
-      "to": {
-        "row": 10,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white"
-      },
-      "capturedPiece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 5
-      },
-      "to": {
-        "row": 11,
-        "col": 3
-      },
-      "piece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "knight",
-        "color": "white"
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 3
-      },
-      "to": {
-        "row": 11,
-        "col": 3
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white"
-      },
-      "capturedPiece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 9
-      },
-      "to": {
-        "row": 1,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 8
-      },
-      "to": {
-        "row": 0,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 9
-      },
-      "to": {
-        "row": 0,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black"
-      },
-      "capturedPiece": {
-        "type": "queen",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 0,
-        "col": 8
-      },
-      "to": {
-        "row": 0,
-        "col": 5
-      },
-      "piece": {
-        "type": "queen",
-        "color": "white",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "queen",
-        "color": "black"
-      }
-    },
-    {
-      "from": {
-        "row": 0,
-        "col": 9
-      },
-      "to": {
-        "row": 0,
-        "col": 5
-      },
-      "piece": {
-        "type": "rook",
-        "color": "black"
-      },
-      "capturedPiece": {
-        "type": "queen",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 6
-      },
-      "to": {
-        "row": 9,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white"
-      }
-    },
-    {
-      "from": {
-        "row": 11,
-        "col": 7
-      },
-      "to": {
-        "row": 10,
-        "col": 6
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white"
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 6
-      },
-      "to": {
-        "row": 5,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 3
-      },
-      "to": {
-        "row": 11,
-        "col": 3
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white"
-      },
-      "capturedPiece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 5,
-        "col": 5
-      },
-      "to": {
-        "row": 6,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 3
-      },
-      "to": {
-        "row": 11,
-        "col": 3
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white"
-      },
-      "capturedPiece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 6
-      },
-      "to": {
-        "row": 6,
-        "col": 10
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 6
-      },
-      "to": {
-        "row": 7,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 10
-      },
-      "to": {
-        "row": 2,
-        "col": 6
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 6
-      },
-      "to": {
-        "row": 2,
-        "col": 6
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 11,
-        "col": 4
-      },
-      "to": {
-        "row": 7,
-        "col": 0
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white"
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 6
-      },
-      "to": {
-        "row": 7,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 11,
-        "col": 9
-      },
-      "to": {
-        "row": 11,
-        "col": 3
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white"
-      },
-      "capturedPiece": {
-        "type": "knight",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 5
-      },
-      "to": {
-        "row": 7,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 11,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 3
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 6
-      },
-      "to": {
-        "row": 6,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 7
-      },
-      "to": {
-        "row": 9,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white"
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 5
-      },
-      "to": {
-        "row": 6,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 2
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 7,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣c8(7✗)"
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 6
-      },
-      "to": {
-        "row": 7,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 4
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 7,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣e8(7✗)"
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 6
-      },
-      "to": {
-        "row": 6,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 4
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 2,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣e8(2✗)"
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 6
-      },
-      "to": {
-        "row": 7,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 2
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 9,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣c8(9✗)"
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 6
-      },
-      "to": {
-        "row": 7,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 4
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 9,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣e8(9✗)"
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 5
-      },
-      "to": {
-        "row": 8,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 9,
-        "col": 5
-      },
-      "to": {
-        "row": 8,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 5
-      },
-      "to": {
-        "row": 7,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 4
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 7,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣e8(7✗)"
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 6
-      },
-      "to": {
-        "row": 6,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 2
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 2,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣c8(2✗)"
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 6
-      },
-      "to": {
-        "row": 7,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 4
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 4,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣e8(4✗)"
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 5
-      },
-      "to": {
-        "row": 7,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 4
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 5,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣e8(5✗)"
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 6
-      },
-      "to": {
-        "row": 6,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 2
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 9,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣c8(9✗)"
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 6
-      },
-      "to": {
-        "row": 7,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 4
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 10,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣e8(10✗)"
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 7
-      },
-      "to": {
-        "row": 7,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 2
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 3,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣c8(3✗)"
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 8
-      },
-      "to": {
-        "row": 8,
-        "col": 9
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 4
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 3,
-      "diceRequired": 1,
+      "diceRoll": 6,
+      "diceRequired": 10,
       "success": true,
-      "notation": "R💣e8(3✓)"
+      "notation": "R💣b12(6✓)"
     },
     {
       "from": {
-        "row": 8,
-        "col": 9
+        "row": 2,
+        "col": 7
       },
       "to": {
-        "row": 7,
-        "col": 10
+        "row": 4,
+        "col": 8
       },
       "piece": {
-        "type": "pawn",
+        "type": "knight",
         "color": "black",
         "hasMoved": true
       }
@@ -2802,208 +1077,97 @@
     {
       "from": {
         "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 2
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 5,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣c8(5✗)"
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 10
-      },
-      "to": {
-        "row": 7,
-        "col": 11
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 9,
-        "col": 5
-      },
-      "to": {
-        "row": 8,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 11
-      },
-      "to": {
-        "row": 8,
-        "col": 11
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 5
-      },
-      "to": {
-        "row": 7,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 11
-      },
-      "to": {
-        "row": 9,
-        "col": 11
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 6
+        "col": 8
       },
       "to": {
         "row": 6,
-        "col": 6
+        "col": 9
       },
       "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 9,
-        "col": 11
-      },
-      "to": {
-        "row": 8,
-        "col": 10
-      },
-      "piece": {
-        "type": "pawn",
+        "type": "knight",
         "color": "black",
         "hasMoved": true
       }
     },
     {
       "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
-        "col": 2
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 4,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣c8(4✗)"
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 10
-      },
-      "to": {
-        "row": 9,
-        "col": 11
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 3
-      },
-      "to": {
-        "row": 4,
+        "row": 2,
         "col": 4
       },
+      "to": {
+        "row": 4,
+        "col": 5
+      },
       "piece": {
-        "type": "rook",
+        "type": "knight",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 5
+      },
+      "to": {
+        "row": 3,
+        "col": 7
+      },
+      "piece": {
+        "type": "bishop",
         "color": "white",
         "hasMoved": true
       }
     },
     {
       "from": {
-        "row": 9,
-        "col": 11
+        "row": 6,
+        "col": 9
       },
       "to": {
-        "row": 10,
-        "col": 10
+        "row": 8,
+        "col": 8
       },
       "piece": {
-        "type": "pawn",
+        "type": "knight",
         "color": "black",
         "hasMoved": true
       }
     },
     {
       "from": {
-        "row": 10,
-        "col": 9
+        "row": 8,
+        "col": 8
       },
       "to": {
         "row": 10,
-        "col": 10
+        "col": 7
+      },
+      "piece": {
+        "type": "knight",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "white"
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 6
+      },
+      "to": {
+        "row": 10,
+        "col": 7
       },
       "piece": {
         "type": "pawn",
         "color": "white"
       },
       "capturedPiece": {
-        "type": "pawn",
+        "type": "knight",
         "color": "black",
         "hasMoved": true
       }
@@ -3011,48 +1175,33 @@
     {
       "from": {
         "row": 10,
-        "col": 10
+        "col": 7
       },
       "to": {
         "row": 11,
         "col": 9
       },
       "piece": {
-        "type": "pawn",
+        "type": "knight",
         "color": "black",
         "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 8
-      },
-      "to": {
-        "row": 11,
-        "col": 9
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white"
       },
       "capturedPiece": {
-        "type": "queen",
-        "color": "black",
-        "hasMoved": true
+        "type": "rook",
+        "color": "white"
       }
     },
     {
       "from": {
-        "row": 1,
-        "col": 9
+        "row": 0,
+        "col": 4
       },
       "to": {
         "row": 1,
-        "col": 8
+        "col": 5
       },
       "piece": {
-        "type": "pawn",
+        "type": "bishop",
         "color": "black"
       }
     },
@@ -3070,8 +1219,792 @@
         "color": "white"
       },
       "capturedPiece": {
+        "type": "knight",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 5
+      },
+      "to": {
+        "row": 0,
+        "col": 3
+      },
+      "piece": {
+        "type": "queen",
+        "color": "black"
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 9
+      },
+      "to": {
+        "row": 11,
+        "col": 9
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white"
+      },
+      "capturedPiece": {
+        "type": "knight",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 5
+      },
+      "to": {
+        "row": 3,
+        "col": 7
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "bishop",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 6
+      },
+      "to": {
+        "row": 10,
+        "col": 7
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white"
+      }
+    },
+    {
+      "from": {
+        "row": 11,
+        "col": 9
+      },
+      "to": {
+        "row": 10,
+        "col": 7
+      },
+      "piece": {
+        "type": "knight",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 11,
+        "col": 5
+      },
+      "to": {
+        "row": 10,
+        "col": 6
+      },
+      "piece": {
+        "type": "queen",
+        "color": "white"
+      }
+    },
+    {
+      "from": {
+        "row": 11,
+        "col": 6
+      },
+      "to": {
+        "row": 10,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "white"
+      },
+      "capturedPiece": {
+        "type": "knight",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 5
+      },
+      "to": {
+        "row": 6,
+        "col": 6
+      },
+      "piece": {
+        "type": "knight",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 7
+      },
+      "to": {
+        "row": 8,
+        "col": 6
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 6
+      },
+      "to": {
+        "row": 7,
+        "col": 8
+      },
+      "piece": {
+        "type": "knight",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 6
+      },
+      "to": {
+        "row": 8,
+        "col": 8
+      },
+      "piece": {
+        "type": "queen",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 8
+      },
+      "to": {
+        "row": 9,
+        "col": 7
+      },
+      "piece": {
+        "type": "knight",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 11,
+        "col": 8
+      },
+      "to": {
+        "row": 9,
+        "col": 7
+      },
+      "piece": {
+        "type": "knight",
+        "color": "white"
+      },
+      "capturedPiece": {
+        "type": "knight",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 7
+      },
+      "to": {
+        "row": 7,
+        "col": 11
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 8,
+        "col": 8
+      },
+      "to": {
+        "row": 4,
+        "col": 8
+      },
+      "piece": {
+        "type": "queen",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 11
+      },
+      "to": {
+        "row": 4,
+        "col": 8
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "queen",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 11,
+        "col": 2
+      },
+      "to": {
+        "row": 11,
+        "col": 1
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white"
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 8
+      },
+      "to": {
+        "row": 7,
+        "col": 5
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 7
+      },
+      "to": {
+        "row": 7,
+        "col": 8
+      },
+      "piece": {
+        "type": "knight",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 8
+      },
+      "to": {
+        "row": 5,
+        "col": 7
+      },
+      "piece": {
+        "type": "knight",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 5
+      },
+      "to": {
+        "row": 5,
+        "col": 7
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "knight",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 3
+      },
+      "to": {
+        "row": 9,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white"
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 7
+      },
+      "to": {
+        "row": 6,
+        "col": 6
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 11,
+        "col": 4
+      },
+      "to": {
+        "row": 9,
+        "col": 2
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "white"
+      }
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 6
+      },
+      "to": {
+        "row": 9,
+        "col": 9
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 9
+      },
+      "to": {
+        "row": 9,
+        "col": 9
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white"
+      },
+      "capturedPiece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 9
+      },
+      "to": {
+        "row": 11,
+        "col": 7
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 2
+      },
+      "to": {
+        "row": 6,
+        "col": 5
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 6
+      },
+      "to": {
+        "row": 2,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black"
+      }
+    },
+    {
+      "from": {
+        "row": 11,
+        "col": 1
+      },
+      "to": {
+        "row": 11,
+        "col": 7
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 3
+      },
+      "to": {
+        "row": 2,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black"
+      }
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 4
+      },
+      "to": {
+        "row": 8,
+        "col": 3
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 3
+      },
+      "to": {
+        "row": 3,
+        "col": 3
+      },
+      "piece": {
         "type": "queen",
         "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 8,
+        "col": 6
+      },
+      "to": {
+        "row": 7,
+        "col": 6
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 5
+      },
+      "to": {
+        "row": 3,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 5
+      },
+      "to": {
+        "row": 9,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white"
+      }
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 2
+      },
+      "to": {
+        "row": 0,
+        "col": 5
+      },
+      "piece": {
+        "type": "rook",
+        "color": "black"
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 6
+      },
+      "to": {
+        "row": 6,
+        "col": 7
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 7
+      },
+      "to": {
+        "row": 2,
+        "col": 5
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black"
+      }
+    },
+    {
+      "from": {
+        "row": 8,
+        "col": 3
+      },
+      "to": {
+        "row": 7,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 5
+      },
+      "to": {
+        "row": 4,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 4
+      },
+      "to": {
+        "row": 6,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 4
+      },
+      "to": {
+        "row": 3,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 4
+      },
+      "to": {
+        "row": 5,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 4
+      },
+      "to": {
+        "row": 2,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black"
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 5
+      },
+      "to": {
+        "row": 4,
+        "col": 6
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 5
+      },
+      "to": {
+        "row": 5,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 6
+      },
+      "to": {
+        "row": 3,
+        "col": 7
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 4
+      },
+      "to": {
+        "row": 6,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "bishop",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 7
+      },
+      "to": {
+        "row": 2,
+        "col": 7
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
         "hasMoved": true
       }
     },
@@ -3086,72 +2019,37 @@
       },
       "piece": {
         "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 8
-      },
-      "to": {
-        "row": 11,
-        "col": 9
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white"
+        "color": "black"
       },
       "capturedPiece": {
-        "type": "queen",
-        "color": "black",
+        "type": "pawn",
+        "color": "white",
         "hasMoved": true
       }
     },
     {
       "from": {
-        "row": 2,
+        "row": 6,
         "col": 7
       },
       "to": {
-        "row": 3,
+        "row": 5,
         "col": 8
       },
       "piece": {
         "type": "pawn",
-        "color": "black",
+        "color": "white",
         "hasMoved": true
       }
     },
     {
       "from": {
-        "row": 4,
+        "row": 3,
         "col": 4
       },
       "to": {
         "row": 4,
         "col": 5
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 10,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣f8(10✗)"
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 8
-      },
-      "to": {
-        "row": 4,
-        "col": 7
       },
       "piece": {
         "type": "pawn",
@@ -3162,26 +2060,31 @@
     {
       "from": {
         "row": 6,
-        "col": 6
+        "col": 5
       },
       "to": {
         "row": 5,
-        "col": 7
+        "col": 4
       },
       "piece": {
-        "type": "pawn",
+        "type": "bishop",
         "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "black",
         "hasMoved": true
       }
     },
     {
       "from": {
         "row": 4,
-        "col": 7
+        "col": 5
       },
       "to": {
         "row": 5,
-        "col": 7
+        "col": 4
       },
       "piece": {
         "type": "pawn",
@@ -3189,14 +2092,14 @@
         "hasMoved": true
       },
       "capturedPiece": {
-        "type": "pawn",
+        "type": "bishop",
         "color": "white",
         "hasMoved": true
       }
     },
     {
       "from": {
-        "row": 4,
+        "row": 5,
         "col": 4
       },
       "to": {
@@ -3204,78 +2107,195 @@
         "col": 5
       },
       "piece": {
-        "type": "rook",
+        "type": "bishop",
         "color": "white",
         "hasMoved": true
       },
-      "isBombAttack": true,
-      "diceRoll": 2,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣f8(2✗)"
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
     },
     {
       "from": {
-        "row": 4,
-        "col": 7
+        "row": 2,
+        "col": 4
       },
       "to": {
-        "row": 5,
-        "col": 7
+        "row": 3,
+        "col": 5
       },
       "piece": {
         "type": "pawn",
         "color": "black",
         "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 5
+      },
+      "to": {
+        "row": 2,
+        "col": 7
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "white",
+        "hasMoved": true
       },
       "capturedPiece": {
         "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 9
+      },
+      "to": {
+        "row": 2,
+        "col": 8
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black"
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 7
+      },
+      "to": {
+        "row": 1,
+        "col": 6
+      },
+      "piece": {
+        "type": "bishop",
         "color": "white",
         "hasMoved": true
       }
     },
     {
       "from": {
-        "row": 5,
-        "col": 7
+        "row": 2,
+        "col": 5
       },
       "to": {
-        "row": 4,
+        "row": 1,
         "col": 6
       },
       "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 7
-      },
-      "to": {
-        "row": 4,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
+        "type": "bishop",
         "color": "black",
         "hasMoved": true
       },
       "capturedPiece": {
-        "type": "pawn",
+        "type": "bishop",
         "color": "white",
         "hasMoved": true
       }
     },
     {
       "from": {
-        "row": 4,
+        "row": 10,
+        "col": 2
+      },
+      "to": {
+        "row": 9,
+        "col": 3
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white"
+      }
+    },
+    {
+      "from": {
+        "row": 1,
         "col": 6
       },
       "to": {
         "row": 3,
+        "col": 8
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 3
+      },
+      "to": {
+        "row": 8,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 9
+      },
+      "to": {
+        "row": 2,
+        "col": 9
+      },
+      "piece": {
+        "type": "rook",
+        "color": "black"
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 8
+      },
+      "to": {
+        "row": 4,
+        "col": 8
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 5
+      },
+      "to": {
+        "row": 2,
+        "col": 5
+      },
+      "piece": {
+        "type": "rook",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 8,
+        "col": 4
+      },
+      "to": {
+        "row": 7,
         "col": 5
       },
       "piece": {
@@ -3287,14 +2307,79 @@
     {
       "from": {
         "row": 2,
-        "col": 6
+        "col": 8
       },
       "to": {
         "row": 3,
+        "col": 9
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 8
+      },
+      "to": {
+        "row": 3,
+        "col": 8
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 5
+      },
+      "to": {
+        "row": 4,
+        "col": 6
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 8
+      },
+      "to": {
+        "row": 3,
+        "col": 7
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 5
+      },
+      "to": {
+        "row": 7,
         "col": 5
       },
       "piece": {
-        "type": "king",
+        "type": "rook",
         "color": "black",
         "hasMoved": true
       },
@@ -3306,63 +2391,108 @@
     },
     {
       "from": {
-        "row": 4,
-        "col": 4
-      },
-      "to": {
-        "row": 4,
-        "col": 5
-      },
-      "piece": {
-        "type": "rook",
-        "color": "white",
-        "hasMoved": true
-      },
-      "isBombAttack": true,
-      "diceRoll": 7,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣f8(7✗)"
-    },
-    {
-      "from": {
-        "row": 4,
+        "row": 3,
         "col": 7
       },
       "to": {
-        "row": 4,
-        "col": 6
+        "row": 2,
+        "col": 7
       },
       "piece": {
         "type": "pawn",
-        "color": "black",
+        "color": "white",
         "hasMoved": true
       }
     },
     {
       "from": {
-        "row": 4,
+        "row": 9,
         "col": 4
       },
       "to": {
-        "row": 4,
+        "row": 8,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 5
+      },
+      "to": {
+        "row": 8,
         "col": 5
       },
       "piece": {
         "type": "rook",
-        "color": "white",
+        "color": "black",
         "hasMoved": true
       },
       "isBombAttack": true,
       "diceRoll": 4,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣f8(4✗)"
+      "diceRequired": 10,
+      "success": true,
+      "notation": "R💣f4(4✓)"
+    },
+    {
+      "from": {
+        "row": 8,
+        "col": 4
+      },
+      "to": {
+        "row": 7,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "rook",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 9
+      },
+      "to": {
+        "row": 4,
+        "col": 8
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 5
+      },
+      "to": {
+        "row": 6,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
     },
     {
       "from": {
         "row": 4,
-        "col": 6
+        "col": 8
       },
       "to": {
         "row": 5,
@@ -3376,12 +2506,12 @@
     },
     {
       "from": {
-        "row": 9,
-        "col": 7
+        "row": 6,
+        "col": 4
       },
       "to": {
-        "row": 8,
-        "col": 6
+        "row": 5,
+        "col": 5
       },
       "piece": {
         "type": "pawn",
@@ -3392,71 +2522,11 @@
     {
       "from": {
         "row": 5,
-        "col": 7
-      },
-      "to": {
-        "row": 6,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 6
-      },
-      "to": {
-        "row": 7,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 6
-      },
-      "to": {
-        "row": 7,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
         "col": 7
       },
       "to": {
         "row": 6,
         "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 6
-      },
-      "to": {
-        "row": 6,
-        "col": 6
       },
       "piece": {
         "type": "pawn",
@@ -3471,7 +2541,7 @@
       },
       "to": {
         "row": 9,
-        "col": 8
+        "col": 10
       },
       "piece": {
         "type": "pawn",
@@ -3481,11 +2551,81 @@
     {
       "from": {
         "row": 6,
-        "col": 6
+        "col": 8
       },
       "to": {
         "row": 7,
+        "col": 7
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 5,
         "col": 5
+      },
+      "to": {
+        "row": 4,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 6
+      },
+      "to": {
+        "row": 4,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 5
+      },
+      "to": {
+        "row": 4,
+        "col": 6
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 7
+      },
+      "to": {
+        "row": 8,
+        "col": 7
       },
       "piece": {
         "type": "pawn",
@@ -3496,11 +2636,210 @@
     {
       "from": {
         "row": 4,
-        "col": 4
+        "col": 5
+      },
+      "to": {
+        "row": 4,
+        "col": 6
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 6
       },
       "to": {
         "row": 4,
         "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 5
+      },
+      "to": {
+        "row": 3,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 6
+      },
+      "to": {
+        "row": 3,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 5
+      },
+      "to": {
+        "row": 2,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 8,
+        "col": 7
+      },
+      "to": {
+        "row": 9,
+        "col": 8
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 7
+      },
+      "to": {
+        "row": 9,
+        "col": 8
+      },
+      "piece": {
+        "type": "king",
+        "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 6
+      },
+      "to": {
+        "row": 5,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 5
+      },
+      "to": {
+        "row": 1,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 6
+      },
+      "to": {
+        "row": 1,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "black"
+      }
+    },
+    {
+      "from": {
+        "row": 11,
+        "col": 7
+      },
+      "to": {
+        "row": 5,
+        "col": 7
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 5
+      },
+      "to": {
+        "row": 6,
+        "col": 6
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 7
+      },
+      "to": {
+        "row": 4,
+        "col": 7
       },
       "piece": {
         "type": "rook",
@@ -3509,14 +2848,119 @@
       },
       "isBombAttack": true,
       "diceRoll": 9,
-      "diceRequired": 1,
-      "success": false,
-      "notation": "R💣f8(9✗)"
+      "diceRequired": 10,
+      "success": true,
+      "notation": "R💣h8(9✓)"
     },
     {
       "from": {
-        "row": 7,
-        "col": 5
+        "row": 3,
+        "col": 3
+      },
+      "to": {
+        "row": 3,
+        "col": 7
+      },
+      "piece": {
+        "type": "queen",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 7
+      },
+      "to": {
+        "row": 3,
+        "col": 7
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "queen",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 9
+      },
+      "to": {
+        "row": 2,
+        "col": 7
+      },
+      "piece": {
+        "type": "rook",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 7
+      },
+      "to": {
+        "row": 3,
+        "col": 8
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 7
+      },
+      "to": {
+        "row": 9,
+        "col": 7
+      },
+      "piece": {
+        "type": "rook",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 8
+      },
+      "to": {
+        "row": 9,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "rook",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 6
       },
       "to": {
         "row": 7,
@@ -3530,12 +2974,46 @@
     },
     {
       "from": {
-        "row": 6,
+        "row": 3,
         "col": 8
       },
       "to": {
-        "row": 5,
-        "col": 7
+        "row": 4,
+        "col": 9
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "hasMoved": true
+      },
+      "isBombAttack": true,
+      "diceRoll": 4,
+      "diceRequired": 10,
+      "success": true,
+      "notation": "R💣j8(4✓)"
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 2
+      },
+      "to": {
+        "row": 2,
+        "col": 3
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black"
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 5
+      },
+      "to": {
+        "row": 1,
+        "col": 6
       },
       "piece": {
         "type": "pawn",
@@ -3545,12 +3023,271 @@
     },
     {
       "from": {
+        "row": 1,
+        "col": 7
+      },
+      "to": {
+        "row": 1,
+        "col": 6
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 4
+      },
+      "to": {
+        "row": 9,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white"
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 3
+      },
+      "to": {
         "row": 3,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 4
+      },
+      "to": {
+        "row": 8,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 6
+      },
+      "to": {
+        "row": 8,
+        "col": 7
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 7
+      },
+      "to": {
+        "row": 8,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 6
+      },
+      "to": {
+        "row": 2,
         "col": 5
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 8
+      },
+      "to": {
+        "row": 3,
+        "col": 6
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 4
       },
       "to": {
         "row": 4,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 8,
         "col": 4
+      },
+      "to": {
+        "row": 7,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 5
+      },
+      "to": {
+        "row": 3,
+        "col": 6
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "rook",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 4
+      },
+      "to": {
+        "row": 6,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 5
+      },
+      "to": {
+        "row": 5,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 10
+      },
+      "to": {
+        "row": 8,
+        "col": 9
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 5
+      },
+      "to": {
+        "row": 6,
+        "col": 6
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 5
+      },
+      "to": {
+        "row": 6,
+        "col": 6
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 5
+      },
+      "to": {
+        "row": 3,
+        "col": 6
       },
       "piece": {
         "type": "king",
@@ -3565,11 +3302,46 @@
     },
     {
       "from": {
-        "row": 5,
-        "col": 7
+        "row": 6,
+        "col": 5
       },
       "to": {
         "row": 5,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 6
+      },
+      "to": {
+        "row": 5,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 5
+      },
+      "to": {
+        "row": 4,
         "col": 6
       },
       "piece": {
@@ -3580,11 +3352,76 @@
     },
     {
       "from": {
-        "row": 7,
+        "row": 3,
         "col": 6
       },
       "to": {
+        "row": 2,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 6
+      },
+      "to": {
+        "row": 3,
+        "col": 7
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 7
+      },
+      "to": {
+        "row": 3,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 8,
+        "col": 7
+      },
+      "to": {
         "row": 7,
+        "col": 8
+      },
+      "piece": {
+        "type": "king",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 6
+      },
+      "to": {
+        "row": 6,
         "col": 7
       },
       "piece": {
@@ -3595,145 +3432,50 @@
     },
     {
       "from": {
-        "row": 9,
+        "row": 7,
+        "col": 8
+      },
+      "to": {
+        "row": 6,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "white",
+        "hasMoved": true
+      },
+      "capturedPiece": {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 7
+      },
+      "to": {
+        "row": 4,
+        "col": 6
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 10,
         "col": 1
       },
       "to": {
-        "row": 8,
-        "col": 2
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 7
-      },
-      "to": {
-        "row": 8,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
         "row": 9,
-        "col": 8
-      },
-      "to": {
-        "row": 8,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 7
-      },
-      "to": {
-        "row": 9,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 2
-      },
-      "to": {
-        "row": 7,
         "col": 3
       },
       "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 7
-      },
-      "to": {
-        "row": 8,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 3
-      },
-      "to": {
-        "row": 6,
-        "col": 3
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 6
-      },
-      "to": {
-        "row": 7,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 3
-      },
-      "to": {
-        "row": 5,
-        "col": 4
-      },
-      "piece": {
-        "type": "pawn",
+        "type": "knight",
         "color": "white",
         "hasMoved": true
       }
@@ -3741,11 +3483,11 @@
     {
       "from": {
         "row": 4,
-        "col": 4
+        "col": 6
       },
       "to": {
         "row": 3,
-        "col": 5
+        "col": 7
       },
       "piece": {
         "type": "king",
@@ -3756,44 +3498,14 @@
     {
       "from": {
         "row": 9,
-        "col": 8
-      },
-      "to": {
-        "row": 8,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 5
+        "col": 3
       },
       "to": {
         "row": 7,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 5,
-        "col": 4
-      },
-      "to": {
-        "row": 4,
         "col": 4
       },
       "piece": {
-        "type": "pawn",
+        "type": "knight",
         "color": "white",
         "hasMoved": true
       }
@@ -3801,7 +3513,37 @@
     {
       "from": {
         "row": 3,
-        "col": 5
+        "col": 7
+      },
+      "to": {
+        "row": 4,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 8,
+        "col": 9
+      },
+      "to": {
+        "row": 7,
+        "col": 8
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 7
       },
       "to": {
         "row": 3,
@@ -3815,20 +3557,425 @@
     },
     {
       "from": {
-        "row": 8,
+        "row": 6,
         "col": 7
       },
       "to": {
+        "row": 5,
+        "col": 8
+      },
+      "piece": {
+        "type": "king",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 6
+      },
+      "to": {
+        "row": 3,
+        "col": 5
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 8
+      },
+      "to": {
+        "row": 4,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 5
+      },
+      "to": {
+        "row": 2,
+        "col": 6
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
         "row": 7,
+        "col": 8
+      },
+      "to": {
+        "row": 6,
+        "col": 8
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 6
+      },
+      "to": {
+        "row": 2,
+        "col": 5
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 8
+      },
+      "to": {
+        "row": 5,
+        "col": 8
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 5
+      },
+      "to": {
+        "row": 3,
+        "col": 5
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 8
+      },
+      "to": {
+        "row": 5,
+        "col": 7
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 5
+      },
+      "to": {
+        "row": 2,
+        "col": 5
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 7
+      },
+      "to": {
+        "row": 4,
         "col": 6
       },
       "piece": {
         "type": "pawn",
         "color": "white",
         "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 5
+      },
+      "to": {
+        "row": 1,
+        "col": 5
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 6
+      },
+      "to": {
+        "row": 3,
+        "col": 6
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 5
+      },
+      "to": {
+        "row": 1,
+        "col": 6
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 6
+      },
+      "to": {
+        "row": 2,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 6
+      },
+      "to": {
+        "row": 2,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 5
+      },
+      "to": {
+        "row": 1,
+        "col": 6
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 7
+      },
+      "to": {
+        "row": 1,
+        "col": 6
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
       },
       "capturedPiece": {
         "type": "pawn",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 7
+      },
+      "to": {
+        "row": 3,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 6
+      },
+      "to": {
+        "row": 1,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 4
+      },
+      "to": {
+        "row": 6,
+        "col": 6
+      },
+      "piece": {
+        "type": "knight",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 7
+      },
+      "to": {
+        "row": 0,
+        "col": 6
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 7
+      },
+      "to": {
+        "row": 2,
+        "col": 7
+      },
+      "piece": {
+        "type": "king",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 6
+      },
+      "to": {
+        "row": 0,
+        "col": 5
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 6
+      },
+      "to": {
+        "row": 4,
+        "col": 5
+      },
+      "piece": {
+        "type": "knight",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 5
+      },
+      "to": {
+        "row": 0,
+        "col": 4
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 5
+      },
+      "to": {
+        "row": 2,
+        "col": 4
+      },
+      "piece": {
+        "type": "knight",
+        "color": "white",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 4
+      },
+      "to": {
+        "row": 1,
+        "col": 3
+      },
+      "piece": {
+        "type": "king",
         "color": "black",
         "hasMoved": true
       }
@@ -3839,556 +3986,12 @@
         "col": 3
       },
       "to": {
-        "row": 2,
-        "col": 4
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black"
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 4
-      },
-      "to": {
-        "row": 3,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 6
-      },
-      "to": {
-        "row": 3,
-        "col": 5
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 6
-      },
-      "to": {
-        "row": 6,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 4
-      },
-      "to": {
-        "row": 1,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 7
-      },
-      "to": {
-        "row": 5,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 5
-      },
-      "to": {
-        "row": 3,
-        "col": 6
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 5,
-        "col": 6
-      },
-      "to": {
-        "row": 4,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 6
-      },
-      "to": {
-        "row": 2,
-        "col": 6
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 6
-      },
-      "to": {
-        "row": 3,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 6
-      },
-      "to": {
-        "row": 1,
-        "col": 6
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 7
-      },
-      "to": {
-        "row": 2,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 6
-      },
-      "to": {
-        "row": 0,
-        "col": 7
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 7
-      },
-      "to": {
-        "row": 1,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 0,
-        "col": 7
-      },
-      "to": {
-        "row": 1,
-        "col": 6
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 5,
-        "col": 7
-      },
-      "to": {
-        "row": 4,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 5
-      },
-      "to": {
-        "row": 0,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 7
-      },
-      "to": {
-        "row": 3,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 6
-      },
-      "to": {
-        "row": 1,
-        "col": 5
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 8
-      },
-      "to": {
-        "row": 2,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 0,
-        "col": 6
-      },
-      "to": {
-        "row": 1,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 11,
-        "col": 9
-      },
-      "to": {
-        "row": 10,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 6
-      },
-      "to": {
-        "row": 0,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 8
-      },
-      "to": {
-        "row": 9,
-        "col": 9
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 0,
-        "col": 7
-      },
-      "to": {
-        "row": 1,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 7
-      },
-      "to": {
-        "row": 2,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 6
-      },
-      "to": {
-        "row": 2,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 9,
-        "col": 9
-      },
-      "to": {
-        "row": 8,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 5
-      },
-      "to": {
-        "row": 2,
-        "col": 6
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 8
-      },
-      "to": {
-        "row": 7,
-        "col": 9
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 6
-      },
-      "to": {
-        "row": 1,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 9
-      },
-      "to": {
-        "row": 6,
-        "col": 9
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 6
-      },
-      "to": {
-        "row": 2,
-        "col": 7
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 9
-      },
-      "to": {
-        "row": 5,
-        "col": 10
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 5
-      },
-      "to": {
         "row": 1,
         "col": 4
       },
       "piece": {
-        "type": "pawn",
+        "type": "king",
         "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 5,
-        "col": 10
-      },
-      "to": {
-        "row": 4,
-        "col": 10
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
         "hasMoved": true
       }
     },
@@ -4398,26 +4001,11 @@
         "col": 7
       },
       "to": {
-        "row": 3,
-        "col": 7
+        "row": 1,
+        "col": 6
       },
       "piece": {
         "type": "king",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 10
-      },
-      "to": {
-        "row": 5,
-        "col": 9
-      },
-      "piece": {
-        "type": "pawn",
         "color": "white",
         "hasMoved": true
       }
@@ -4428,412 +4016,42 @@
         "col": 4
       },
       "to": {
+        "row": 0,
+        "col": 4
+      },
+      "piece": {
+        "type": "king",
+        "color": "black",
+        "hasMoved": true
+      }
+    },
+    {
+      "from": {
         "row": 1,
-        "col": 5
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 5,
-        "col": 9
+        "col": 6
       },
       "to": {
-        "row": 4,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 7
-      },
-      "to": {
-        "row": 2,
+        "row": 0,
         "col": 6
       },
       "piece": {
         "type": "king",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 8
-      },
-      "to": {
-        "row": 4,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
         "color": "white",
         "hasMoved": true
       }
     },
     {
       "from": {
-        "row": 2,
-        "col": 6
+        "row": 0,
+        "col": 4
       },
       "to": {
-        "row": 2,
-        "col": 7
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 7
-      },
-      "to": {
-        "row": 3,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 7
-      },
-      "to": {
-        "row": 3,
-        "col": 8
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 0
-      },
-      "to": {
-        "row": 10,
+        "row": 1,
         "col": 3
       },
       "piece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 5
-      },
-      "to": {
-        "row": 1,
-        "col": 6
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 10,
-        "col": 3
-      },
-      "to": {
-        "row": 6,
-        "col": 7
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 8
-      },
-      "to": {
-        "row": 3,
-        "col": 7
-      },
-      "piece": {
         "type": "king",
         "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 7
-      },
-      "to": {
-        "row": 7,
-        "col": 8
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 7
-      },
-      "to": {
-        "row": 4,
-        "col": 6
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 8
-      },
-      "to": {
-        "row": 6,
-        "col": 9
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 6
-      },
-      "to": {
-        "row": 1,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 9
-      },
-      "to": {
-        "row": 8,
-        "col": 11
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 4,
-        "col": 6
-      },
-      "to": {
-        "row": 5,
-        "col": 6
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 11
-      },
-      "to": {
-        "row": 7,
-        "col": 10
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 5,
-        "col": 6
-      },
-      "to": {
-        "row": 5,
-        "col": 5
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 10
-      },
-      "to": {
-        "row": 8,
-        "col": 9
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 1,
-        "col": 7
-      },
-      "to": {
-        "row": 2,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 8,
-        "col": 9
-      },
-      "to": {
-        "row": 6,
-        "col": 7
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 2,
-        "col": 7
-      },
-      "to": {
-        "row": 3,
-        "col": 7
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 7
-      },
-      "to": {
-        "row": 7,
-        "col": 6
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 3,
-        "col": 7
-      },
-      "to": {
-        "row": 4,
-        "col": 8
-      },
-      "piece": {
-        "type": "pawn",
-        "color": "black",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 7,
-        "col": 6
-      },
-      "to": {
-        "row": 6,
-        "col": 5
-      },
-      "piece": {
-        "type": "bishop",
-        "color": "white",
-        "hasMoved": true
-      }
-    },
-    {
-      "from": {
-        "row": 5,
-        "col": 5
-      },
-      "to": {
-        "row": 6,
-        "col": 5
-      },
-      "piece": {
-        "type": "king",
-        "color": "black",
-        "hasMoved": true
-      },
-      "capturedPiece": {
-        "type": "bishop",
-        "color": "white",
         "hasMoved": true
       }
     }
@@ -4841,7 +4059,7 @@
   "capturedPieces": {
     "white": [
       {
-        "type": "knight",
+        "type": "pawn",
         "color": "black",
         "hasMoved": true
       },
@@ -4850,7 +4068,12 @@
         "color": "black"
       },
       {
-        "type": "bishop",
+        "type": "knight",
+        "color": "black",
+        "hasMoved": true
+      },
+      {
+        "type": "knight",
         "color": "black",
         "hasMoved": true
       },
@@ -4861,6 +4084,21 @@
       },
       {
         "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      },
+      {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      },
+      {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      },
+      {
+        "type": "rook",
         "color": "black",
         "hasMoved": true
       },
@@ -4871,27 +4109,51 @@
       },
       {
         "type": "queen",
-        "color": "black"
-      },
-      {
-        "type": "knight",
         "color": "black",
         "hasMoved": true
       },
       {
-        "type": "queen",
+        "type": "bishop",
+        "color": "black",
+        "hasMoved": true
+      },
+      {
+        "type": "rook",
         "color": "black",
         "hasMoved": true
       },
       {
         "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      },
+      {
+        "type": "pawn",
+        "color": "black",
+        "hasMoved": true
+      },
+      {
+        "type": "king",
         "color": "black",
         "hasMoved": true
       }
     ],
     "black": [
       {
+        "type": "pawn",
+        "color": "white"
+      },
+      {
         "type": "rook",
+        "color": "white"
+      },
+      {
+        "type": "bishop",
+        "color": "white",
+        "hasMoved": true
+      },
+      {
+        "type": "pawn",
         "color": "white",
         "hasMoved": true
       },
@@ -4907,27 +4169,21 @@
       },
       {
         "type": "pawn",
-        "color": "white"
+        "color": "white",
+        "hasMoved": true
       },
       {
-        "type": "king",
-        "color": "white"
-      },
-      {
-        "type": "knight",
-        "color": "white"
-      },
-      {
-        "type": "queen",
+        "type": "bishop",
         "color": "white",
         "hasMoved": true
       },
       {
         "type": "pawn",
-        "color": "white"
+        "color": "white",
+        "hasMoved": true
       },
       {
-        "type": "bishop",
+        "type": "pawn",
         "color": "white",
         "hasMoved": true
       },
@@ -4948,21 +4204,6 @@
       },
       {
         "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      },
-      {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      },
-      {
-        "type": "pawn",
-        "color": "white",
-        "hasMoved": true
-      },
-      {
-        "type": "bishop",
         "color": "white",
         "hasMoved": true
       }
@@ -4977,19 +4218,19 @@
     "pawnSuccessRoll": 1,
     "bishopMinRoll": 0,
     "knightMinRoll": 4,
-    "bombSuccessRoll": 1,
-    "wallBuildRoll": 5,
-    "totalAttackBudget": 250,
+    "bombSuccessRoll": 10,
+    "wallBuildRoll": 10,
+    "totalAttackBudget": 500,
     "pawnAttackPercent": 17,
-    "bishopAttackPercent": 50,
-    "knightAttackPercent": 50,
-    "bombAttackPercent": 10,
-    "wallBuildPercent": 50
+    "bishopAttackPercent": 49,
+    "knightAttackPercent": 49,
+    "bombAttackPercent": 100,
+    "wallBuildPercent": 100
   },
   "aiDepth": 8,
   "lastDiceRoll": {
-    "value": 9,
+    "value": 4,
     "type": "d10",
-    "success": false
+    "success": true
   }
 }
