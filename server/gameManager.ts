@@ -2436,7 +2436,7 @@ class GameManager {
     }
   }
 
-  makeAIMove(gameId: string): { state: GameState; diceRoll?: { value: number; type: 'd4' | 'd6' | 'd10'; success: boolean } } | null {
+  async makeAIMove(gameId: string, onPlyUpdate?: (ply: number, maxPly: number) => void): Promise<{ state: GameState; diceRoll?: { value: number; type: 'd4' | 'd6' | 'd10'; success: boolean } } | null> {
     const room = this.games.get(gameId);
     if (!room || !this.isAITurn(gameId)) return null;
 
@@ -2821,23 +2821,32 @@ class GameManager {
     const aiDepth = state.aiDepth ?? 0;
     
     if (aiDepth > 0) {
-      // Minimax mode: score regular moves with lookahead, keep heuristic for special attacks
       const regularMoves = possibleMoves.filter(m => !m.isArrow && !m.isAxe && !m.isBomb);
       const specialMoves = possibleMoves.filter(m => m.isArrow || m.isAxe || m.isBomb);
       
-      // Score regular moves with minimax
       const enemyColor = aiColor === 'white' ? 'black' : 'white';
-      for (const move of regularMoves) {
-        const newBoard = this.applyMoveOnBoard(board, move.from, move.to);
-        if (this.isInCheck(newBoard, aiColor)) {
-          move.score = -99999;
-          continue;
+      
+      for (let currentPly = 1; currentPly <= aiDepth; currentPly++) {
+        state.aiThinkingPly = currentPly;
+        state.aiThinkingMaxPly = aiDepth;
+        if (onPlyUpdate) {
+          onPlyUpdate(currentPly, aiDepth);
+          await new Promise(resolve => setImmediate(resolve));
         }
-        const minimaxScore = this.minimax(newBoard, aiDepth, -Infinity, Infinity, aiColor, enemyColor);
-        move.score = minimaxScore;
+        
+        for (const move of regularMoves) {
+          const newBoard = this.applyMoveOnBoard(board, move.from, move.to);
+          if (this.isInCheck(newBoard, aiColor)) {
+            move.score = -99999;
+            continue;
+          }
+          const minimaxScore = this.minimax(newBoard, currentPly, -Infinity, Infinity, aiColor, enemyColor);
+          move.score = minimaxScore;
+        }
       }
       
-      // Combine: pick best regular move and best special move, compare
+      state.aiThinkingPly = undefined;
+      state.aiThinkingMaxPly = undefined;
       regularMoves.sort((a, b) => b.score - a.score);
       specialMoves.sort((a, b) => b.score - a.score);
       

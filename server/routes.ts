@@ -96,6 +96,18 @@ export async function registerRoutes(
   // Create WebSocket server
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
+  function createPlyBroadcaster(gId: string) {
+    return (ply: number, maxPly: number) => {
+      const room = gameManager.getRoom(gId);
+      if (room) {
+        broadcastToRoom(room, {
+          type: 'state',
+          payload: { state: room.state },
+        });
+      }
+    };
+  }
+
   wss.on('connection', (ws: WebSocket) => {
     allClients.add(ws);
     let currentPlayerId: string | null = null;
@@ -354,8 +366,8 @@ export async function registerRoutes(
                   
                   // Check if AI should move after game starts
                   if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(() => {
-                      const aiResult = gameManager.makeAIMove(currentGameId!);
+                    setTimeout(async () => {
+                      const aiResult = await gameManager.makeAIMove(currentGameId!, createPlyBroadcaster(currentGameId!));
                       if (aiResult) {
                         const aiRoom = gameManager.getRoom(currentGameId!);
                         if (aiRoom) {
@@ -461,8 +473,8 @@ export async function registerRoutes(
                   
                   // Trigger AI move if it's now AI's turn
                   if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(() => {
-                      const result = gameManager.makeAIMove(currentGameId);
+                    setTimeout(async () => {
+                      const result = await gameManager.makeAIMove(currentGameId, createPlyBroadcaster(currentGameId!));
                       if (result) {
                         const updatedRoom = gameManager.getRoom(currentGameId);
                         if (updatedRoom) {
@@ -475,8 +487,8 @@ export async function registerRoutes(
                           const checkAndMakeAIMove = (lastWasSpecial: boolean) => {
                             if (gameManager.isAITurn(currentGameId)) {
                               const delay = lastWasSpecial ? 1500 : 800;
-                              setTimeout(() => {
-                                const aiResult = gameManager.makeAIMove(currentGameId);
+                              setTimeout(async () => {
+                                const aiResult = await gameManager.makeAIMove(currentGameId, createPlyBroadcaster(currentGameId!));
                                 if (aiResult) {
                                   const rm = gameManager.getRoom(currentGameId);
                                   if (rm) {
@@ -544,8 +556,8 @@ export async function registerRoutes(
                     
                     // Check if AI should move after human move
                     if (gameManager.isAITurn(currentGameId)) {
-                      setTimeout(() => {
-                        const aiResult = gameManager.makeAIMove(currentGameId!);
+                      setTimeout(async () => {
+                        const aiResult = await gameManager.makeAIMove(currentGameId!, createPlyBroadcaster(currentGameId!));
                         if (aiResult) {
                           const aiRoom = gameManager.getRoom(currentGameId!);
                           if (aiRoom) {
@@ -581,8 +593,8 @@ export async function registerRoutes(
                   
                   // Check if AI should move after human arrow attack
                   if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(() => {
-                      const aiResult = gameManager.makeAIMove(currentGameId!);
+                    setTimeout(async () => {
+                      const aiResult = await gameManager.makeAIMove(currentGameId!, createPlyBroadcaster(currentGameId!));
                       if (aiResult) {
                         const aiRoom = gameManager.getRoom(currentGameId!);
                         if (aiRoom) {
@@ -617,8 +629,8 @@ export async function registerRoutes(
                   
                   // Check if AI should move after human axe attack
                   if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(() => {
-                      const aiResult = gameManager.makeAIMove(currentGameId!);
+                    setTimeout(async () => {
+                      const aiResult = await gameManager.makeAIMove(currentGameId!, createPlyBroadcaster(currentGameId!));
                       if (aiResult) {
                         const aiRoom = gameManager.getRoom(currentGameId!);
                         if (aiRoom) {
@@ -653,8 +665,8 @@ export async function registerRoutes(
                   
                   // Check if AI should move after human bomb attack
                   if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(() => {
-                      const aiResult = gameManager.makeAIMove(currentGameId!);
+                    setTimeout(async () => {
+                      const aiResult = await gameManager.makeAIMove(currentGameId!, createPlyBroadcaster(currentGameId!));
                       if (aiResult) {
                         const aiRoom = gameManager.getRoom(currentGameId!);
                         if (aiRoom) {
@@ -689,8 +701,8 @@ export async function registerRoutes(
                   
                   // Check if AI should move after human wall attack
                   if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(() => {
-                      const aiResult = gameManager.makeAIMove(currentGameId!);
+                    setTimeout(async () => {
+                      const aiResult = await gameManager.makeAIMove(currentGameId!, createPlyBroadcaster(currentGameId!));
                       if (aiResult) {
                         const aiRoom = gameManager.getRoom(currentGameId!);
                         if (aiRoom) {

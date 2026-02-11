@@ -13,7 +13,7 @@ import { getValidMoves, getCheckSafeMoves, getArrowTargets, getAxeTargets, getBo
 import type { Position, GameState, SavedGameInfo, PromotionPieceType } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Wifi, WifiOff, Plus, Link2, Bot, Users, History, Trash2, MonitorPlay, Play, ArrowLeft, ArrowRight, User } from "lucide-react";
+import { Loader2, Wifi, WifiOff, Plus, Link2, Bot, Users, History, Trash2, MonitorPlay, Play, ArrowLeft, ArrowRight, User, Brain } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.16.1";
+const GAME_VERSION = "1.17.0";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -1162,6 +1162,14 @@ export default function Game() {
                   )}
                 </div>
               </div>
+              {gameState.aiThinkingPly != null && gameState.aiThinkingMaxPly != null && (
+                <div className="flex items-center justify-center gap-1.5 text-muted-foreground" data-testid="ai-ply-indicator">
+                  <Brain className="w-4 h-4 animate-pulse" />
+                  <span className="text-xs font-medium">
+                    Thinking... Ply {gameState.aiThinkingPly}/{gameState.aiThinkingMaxPly}
+                  </span>
+                </div>
+              )}
               {gameState.gameMode === 'cvc' && phase === 'playing' && (
                 <div className="flex justify-center gap-2 mt-1">
                   <Button
