@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.15.1";
+const GAME_VERSION = "1.15.2";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -251,8 +251,8 @@ export default function Game() {
     if (gameState?.lastDiceRoll && gameState.moveHistory.length > 0) {
       const lastMove = gameState.moveHistory[gameState.moveHistory.length - 1];
       
-      // Only show flash/toast if the last move was actually an attack (has dice roll data)
-      const isAttackMove = lastMove.isArrowAttack || (lastMove.diceRoll !== undefined && lastMove.diceRequired !== undefined);
+      // Only show flash/toast if the last move was actually an attack (has explicit attack flag or dice roll data)
+      const isAttackMove = lastMove.isArrowAttack || lastMove.isAxeAttack || lastMove.isBombAttack || lastMove.isWallBuild || (lastMove.diceRoll !== undefined && lastMove.diceRequired !== undefined);
       if (!isAttackMove) return;
       
       const rollKey = `${lastMove.from.row}-${lastMove.from.col}-${lastMove.to.row}-${lastMove.to.col}-${gameState.lastDiceRoll.value}`;
@@ -269,13 +269,12 @@ export default function Game() {
         );
         const pieceType = lastMove.piece?.type || 'pawn';
         
-        // Determine animation type based on piece and attack type
+        // Determine animation type based on move flags, not piece type
         let animType: AttackAnimationType = 'pawn';
-        if (pieceType === 'bishop') animType = 'arrow';
-        else if (pieceType === 'knight') animType = 'axe';
-        else if (pieceType === 'rook') {
-          animType = lastMove.isWallBuild ? 'wallbuild' : 'bomb';
-        }
+        if (lastMove.isArrowAttack) animType = 'arrow';
+        else if (lastMove.isAxeAttack) animType = 'axe';
+        else if (lastMove.isWallBuild) animType = 'wallbuild';
+        else if (lastMove.isBombAttack) animType = 'bomb';
         
         // Trigger attack animation and sound
         setAttackAnimation({

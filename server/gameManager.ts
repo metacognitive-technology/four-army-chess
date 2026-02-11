@@ -1005,7 +1005,7 @@ class GameManager {
       }
     }
     
-    state.moveHistory.push({ from, to, piece, capturedPiece: actualCaptured });
+    state.moveHistory.push({ from, to, piece, captured: actualCaptured, notation: this.getMoveNotation(piece, from, to, actualCaptured) });
     
     // Check for king capture
     if (actualCaptured && actualCaptured.type === 'king') {
