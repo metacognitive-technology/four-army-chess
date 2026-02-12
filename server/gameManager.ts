@@ -845,6 +845,18 @@ class GameManager {
           
           // Arrow attacks for bishops - always try to shoot if target available
           if (piece.type === 'bishop' && !inCheck) {
+            const recentColorMoves = state.moveHistory.slice(-20).filter(m => m.piece.color === color);
+            let consecutiveBishopChases = 0;
+            for (let i = recentColorMoves.length - 1; i >= 0; i--) {
+              const m = recentColorMoves[i];
+              if (m.isArrowAttack && m.piece.type === 'bishop' && !m.captured) {
+                consecutiveBishopChases++;
+              } else {
+                break;
+              }
+            }
+            const bishopChaseFatigue = consecutiveBishopChases >= 5;
+
             const arrowTargets = this.getArrowTargets(board, from, color);
             for (const to of arrowTargets) {
               const targetPiece = board[to.row][to.col].piece;
@@ -853,7 +865,13 @@ class GameManager {
                   pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
                 };
                 let score = values[targetPiece.type] * 10 + 400 + Math.random() * 0.5;
-                if (targetPiece.type === 'bishop') score += 200;
+                if (targetPiece.type === 'bishop') {
+                  if (bishopChaseFatigue) {
+                    score -= 500;
+                  } else {
+                    score += 200;
+                  }
+                }
                 possibleMoves.push({ from, to, score, isArrow: true });
               }
             }
@@ -2640,6 +2658,18 @@ class GameManager {
           
           // Add arrow attacks for bishops - always try to shoot if target available
           if (piece.type === 'bishop' && !inCheck) {
+            const recentColorMoves = state.moveHistory.slice(-20).filter(m => m.piece.color === aiColor);
+            let consecutiveBishopChases = 0;
+            for (let i = recentColorMoves.length - 1; i >= 0; i--) {
+              const m = recentColorMoves[i];
+              if (m.isArrowAttack && m.piece.type === 'bishop' && !m.captured) {
+                consecutiveBishopChases++;
+              } else {
+                break;
+              }
+            }
+            const bishopChaseFatigue = consecutiveBishopChases >= 5;
+
             const arrowTargets = this.getArrowTargets(board, from, aiColor);
             for (const to of arrowTargets) {
               const targetPiece = board[to.row][to.col].piece;
@@ -2648,7 +2678,13 @@ class GameManager {
                   pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
                 };
                 let score = values[targetPiece.type] * 15 + 600 + Math.random() * 0.5;
-                if (targetPiece.type === 'bishop') score += 300;
+                if (targetPiece.type === 'bishop') {
+                  if (bishopChaseFatigue) {
+                    score -= 700;
+                  } else {
+                    score += 300;
+                  }
+                }
                 possibleMoves.push({ from, to, score, isArrow: true });
               }
             }
