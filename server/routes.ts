@@ -3,6 +3,30 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { gameManager } from "./gameManager";
 import type { GameMessage } from "@shared/schema";
+import fs from "fs";
+import path from "path";
+
+interface SavedLayout {
+  name: string;
+  walls: { row: number; col: number }[];
+}
+
+const LAYOUTS_FILE = path.join(process.cwd(), 'server', 'data', 'layouts.json');
+
+function loadLayouts(): SavedLayout[] {
+  try {
+    if (fs.existsSync(LAYOUTS_FILE)) {
+      return JSON.parse(fs.readFileSync(LAYOUTS_FILE, 'utf-8'));
+    }
+  } catch {}
+  return [];
+}
+
+function saveLayouts(layouts: SavedLayout[]) {
+  const dir = path.dirname(LAYOUTS_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(LAYOUTS_FILE, JSON.stringify(layouts, null, 2));
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -73,6 +97,59 @@ export async function registerRoutes(
     } catch (error) {
       console.error('Failed to delete all games:', error);
       res.status(500).json({ error: 'Failed to delete all games' });
+    }
+  });
+
+  app.get('/api/layouts', (_req, res) => {
+    try {
+      res.json(loadLayouts());
+    } catch (error) {
+      console.error('Failed to list layouts:', error);
+      res.status(500).json({ error: 'Failed to list layouts' });
+    }
+  });
+
+  app.post('/api/layouts', (req, res) => {
+    try {
+      const { name, walls } = req.body;
+      if (!name || typeof name !== 'string' || !name.trim()) {
+        res.status(400).json({ error: 'Layout name is required' });
+        return;
+      }
+      if (!Array.isArray(walls)) {
+        res.status(400).json({ error: 'Walls must be an array' });
+        return;
+      }
+      const layouts = loadLayouts();
+      const existing = layouts.findIndex(l => l.name === name.trim());
+      const layout: SavedLayout = { name: name.trim(), walls };
+      if (existing >= 0) {
+        layouts[existing] = layout;
+      } else {
+        layouts.push(layout);
+      }
+      saveLayouts(layouts);
+      res.json(layout);
+    } catch (error) {
+      console.error('Failed to save layout:', error);
+      res.status(500).json({ error: 'Failed to save layout' });
+    }
+  });
+
+  app.delete('/api/layouts/:name', (req, res) => {
+    try {
+      const name = decodeURIComponent(req.params.name);
+      const layouts = loadLayouts();
+      const filtered = layouts.filter(l => l.name !== name);
+      if (filtered.length === layouts.length) {
+        res.status(404).json({ error: 'Layout not found' });
+        return;
+      }
+      saveLayouts(filtered);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to delete layout:', error);
+      res.status(500).json({ error: 'Failed to delete layout' });
     }
   });
 

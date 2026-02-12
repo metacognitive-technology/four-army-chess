@@ -75,32 +75,49 @@ export function GameControls({
   const [layoutName, setLayoutName] = useState('');
   const [showLayoutManager, setShowLayoutManager] = useState(false);
 
-  useEffect(() => {
+  const fetchLayouts = async () => {
     try {
-      const stored = localStorage.getItem('battleChessLayouts');
-      if (stored) setSavedLayouts(JSON.parse(stored));
+      const res = await fetch('/api/layouts');
+      if (res.ok) setSavedLayouts(await res.json());
     } catch {}
+  };
+
+  useEffect(() => {
+    fetchLayouts();
   }, []);
 
-  const saveLayout = () => {
+  const saveLayout = async () => {
     const name = layoutName.trim();
     if (!name) {
       toast({ title: "Enter a name", description: "Please name your layout before saving." });
       return;
     }
-    const newLayout: SavedLayout = { name, walls: wallPositions };
-    const updated = [...savedLayouts.filter(l => l.name !== name), newLayout];
-    setSavedLayouts(updated);
-    localStorage.setItem('battleChessLayouts', JSON.stringify(updated));
-    setLayoutName('');
-    toast({ title: "Layout Saved", description: `"${name}" saved with ${wallPositions.length} walls.` });
+    try {
+      const res = await fetch('/api/layouts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, walls: wallPositions }),
+      });
+      if (res.ok) {
+        await fetchLayouts();
+        setLayoutName('');
+        toast({ title: "Layout Saved", description: `"${name}" saved with ${wallPositions.length} walls.` });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to save layout.", variant: "destructive" });
+    }
   };
 
-  const deleteLayout = (name: string) => {
-    const updated = savedLayouts.filter(l => l.name !== name);
-    setSavedLayouts(updated);
-    localStorage.setItem('battleChessLayouts', JSON.stringify(updated));
-    toast({ title: "Layout Deleted", description: `"${name}" has been removed.` });
+  const deleteLayout = async (name: string) => {
+    try {
+      const res = await fetch(`/api/layouts/${encodeURIComponent(name)}`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchLayouts();
+        toast({ title: "Layout Deleted", description: `"${name}" has been removed.` });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to delete layout.", variant: "destructive" });
+    }
   };
 
   const loadLayout = (layout: SavedLayout) => {
@@ -226,7 +243,7 @@ export function GameControls({
             <Button
               variant="outline"
               className="w-full gap-2"
-              onClick={() => setShowLayoutManager(!showLayoutManager)}
+              onClick={() => { if (!showLayoutManager) fetchLayouts(); setShowLayoutManager(!showLayoutManager); }}
               data-testid="button-toggle-layouts"
             >
               <FolderOpen className="w-4 h-4" />

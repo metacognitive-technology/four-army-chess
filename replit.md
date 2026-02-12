@@ -68,6 +68,12 @@ Always update `GAME_VERSION` in `client/src/pages/Game.tsx` whenever code is mod
 - **Client UI**: Budget mode toggle in lobby, budget_setup phase with sliders and submit, attack chances panel during gameplay
 - **WebSocket Messages**: `budget_submit` message type for player budget submissions
 
+### Shared Wall Layouts System
+- **File Storage**: Layouts saved as JSON in `server/data/layouts.json`
+- **REST API**: `GET /api/layouts`, `POST /api/layouts` (upsert by name), `DELETE /api/layouts/:name`
+- **Shared Across Users**: All players see the same layout list; any player can add or remove layouts
+- **Client Integration**: GameControls fetches layouts on mount and when opening the layout manager panel
+
 ### Game Persistence System
 - **File Storage**: Games are saved as JSON files in `server/data/games/{gameId}.json`
 - **Auto-Save**: Game state is saved after every mutation (create, join, move, wall, ready, resign)
