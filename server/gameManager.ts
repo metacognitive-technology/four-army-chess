@@ -845,17 +845,28 @@ class GameManager {
           
           // Arrow attacks for bishops - always try to shoot if target available
           if (piece.type === 'bishop' && !inCheck) {
-            const recentColorMoves = state.moveHistory.slice(-20).filter(m => m.piece.color === color);
+            const recentColorMoves = state.moveHistory.slice(-30).filter(m => m.piece.color === color);
             let consecutiveBishopChases = 0;
+            let movesAfterChase = 0;
+            let chaseDetected = false;
             for (let i = recentColorMoves.length - 1; i >= 0; i--) {
               const m = recentColorMoves[i];
-              if (m.isArrowAttack && m.piece.type === 'bishop' && !m.captured) {
-                consecutiveBishopChases++;
-              } else {
-                break;
+              if (!chaseDetected) {
+                if (m.isArrowAttack && m.piece.type === 'bishop' && !m.captured) {
+                  consecutiveBishopChases++;
+                } else if (consecutiveBishopChases >= 5) {
+                  chaseDetected = true;
+                  movesAfterChase = recentColorMoves.length - 1 - i;
+                } else {
+                  break;
+                }
               }
             }
-            const bishopChaseFatigue = consecutiveBishopChases >= 5;
+            if (consecutiveBishopChases >= 5 && !chaseDetected) {
+              chaseDetected = true;
+              movesAfterChase = 0;
+            }
+            const bishopChaseFatigue = chaseDetected && movesAfterChase < 6;
 
             const arrowTargets = this.getArrowTargets(board, from, color);
             for (const to of arrowTargets) {
@@ -865,6 +876,7 @@ class GameManager {
                   pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
                 };
                 let score = values[targetPiece.type] * 10 + 400 + Math.random() * 0.5;
+                if (targetPiece.type === 'king') score += 500;
                 if (targetPiece.type === 'bishop') {
                   if (bishopChaseFatigue) {
                     score -= 500;
@@ -2658,17 +2670,28 @@ class GameManager {
           
           // Add arrow attacks for bishops - always try to shoot if target available
           if (piece.type === 'bishop' && !inCheck) {
-            const recentColorMoves = state.moveHistory.slice(-20).filter(m => m.piece.color === aiColor);
+            const recentColorMoves = state.moveHistory.slice(-30).filter(m => m.piece.color === aiColor);
             let consecutiveBishopChases = 0;
+            let movesAfterChase = 0;
+            let chaseDetected = false;
             for (let i = recentColorMoves.length - 1; i >= 0; i--) {
               const m = recentColorMoves[i];
-              if (m.isArrowAttack && m.piece.type === 'bishop' && !m.captured) {
-                consecutiveBishopChases++;
-              } else {
-                break;
+              if (!chaseDetected) {
+                if (m.isArrowAttack && m.piece.type === 'bishop' && !m.captured) {
+                  consecutiveBishopChases++;
+                } else if (consecutiveBishopChases >= 5) {
+                  chaseDetected = true;
+                  movesAfterChase = recentColorMoves.length - 1 - i;
+                } else {
+                  break;
+                }
               }
             }
-            const bishopChaseFatigue = consecutiveBishopChases >= 5;
+            if (consecutiveBishopChases >= 5 && !chaseDetected) {
+              chaseDetected = true;
+              movesAfterChase = 0;
+            }
+            const bishopChaseFatigue = chaseDetected && movesAfterChase < 6;
 
             const arrowTargets = this.getArrowTargets(board, from, aiColor);
             for (const to of arrowTargets) {
@@ -2678,6 +2701,7 @@ class GameManager {
                   pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100
                 };
                 let score = values[targetPiece.type] * 15 + 600 + Math.random() * 0.5;
+                if (targetPiece.type === 'king') score += 500;
                 if (targetPiece.type === 'bishop') {
                   if (bishopChaseFatigue) {
                     score -= 700;
