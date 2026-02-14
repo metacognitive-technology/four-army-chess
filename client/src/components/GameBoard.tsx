@@ -60,6 +60,9 @@ interface GameBoardProps {
   attackAnimation?: AttackAnimation | null;
   moveFlashSquares?: Position[];
   gameMode?: 'pvp' | 'pvc' | 'cvc';
+  specialAttackCounts?: { white: { bishop: number; rook: number }; black: { bishop: number; rook: number } };
+  maxBishopAttacks?: number;
+  maxRookAttacks?: number;
 }
 
 export function GameBoard({
@@ -89,6 +92,9 @@ export function GameBoard({
   attackAnimation,
   moveFlashSquares = [],
   gameMode = 'pvc',
+  specialAttackCounts,
+  maxBishopAttacks = 10,
+  maxRookAttacks = 10,
 }: GameBoardProps) {
   const isMyTurn = playerColor === currentTurn;
   const [zoom, setZoom] = useState(1);
@@ -312,6 +318,27 @@ export function GameBoard({
                       {PIECE_SYMBOLS[piece.type][piece.color]}
                     </span>
                   )
+                )}
+                
+                {piece && piece.color === playerColor && phase === 'playing' && (isArrowMode || isAxeMode || isBombMode || isWallBuildMode) && (
+                  (piece.type === 'bishop' || piece.type === 'rook') && (() => {
+                    const counts = specialAttackCounts?.[piece.color];
+                    const used = piece.type === 'bishop' ? (counts?.bishop ?? 0) : (counts?.rook ?? 0);
+                    const max = piece.type === 'bishop' ? maxBishopAttacks : maxRookAttacks;
+                    const remaining = max - used;
+                    return (
+                      <div
+                        className={cn(
+                          "absolute -top-0.5 -right-0.5 z-30 flex items-center justify-center rounded-full border border-white shadow-sm",
+                          "min-w-[14px] h-[14px] px-0.5",
+                          remaining === 0 ? "bg-red-600" : remaining <= 2 ? "bg-orange-500" : "bg-blue-600"
+                        )}
+                        data-testid={`attack-remaining-${rowIndex}-${colIndex}`}
+                      >
+                        <span className="text-white font-bold" style={{ fontSize: '9px', lineHeight: '1' }}>{remaining}</span>
+                      </div>
+                    );
+                  })()
                 )}
                 
                 {isBishop && showSelected && !isArrowMode && !isAxeMode && !isBombMode && (

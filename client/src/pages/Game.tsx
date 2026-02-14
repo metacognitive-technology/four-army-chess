@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.17.5";
+const GAME_VERSION = "1.17.6";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -1303,6 +1303,9 @@ export default function Game() {
                 attackAnimation={attackAnimation}
                 moveFlashSquares={moveFlashSquares}
                 gameMode={gameState.gameMode}
+                specialAttackCounts={gameState.specialAttackCounts}
+                maxBishopAttacks={gameState.maxBishopAttacks}
+                maxRookAttacks={gameState.maxRookAttacks}
               />
             )}
             
