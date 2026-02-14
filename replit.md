@@ -68,6 +68,14 @@ Always update `GAME_VERSION` in `client/src/pages/Game.tsx` whenever code is mod
 - **Client UI**: Budget mode toggle in lobby, budget_setup phase with sliders and submit, attack chances panel during gameplay
 - **WebSocket Messages**: `budget_submit` message type for player budget submissions
 
+### Attack Limits System
+- **Per-Player Limits**: Configurable limits (0-10) for bishop arrow attacks and rook special attacks (bomb/wall build) per player
+- **Server State**: `maxBishopAttacks` and `maxRookAttacks` on GameState, `specialAttackCounts` tracks usage per player `{ white: { bishop: 0, rook: 0 }, black: { bishop: 0, rook: 0 } }`
+- **Enforcement**: Limits checked in all attack handlers (human and AI), AI move generation filters out attacks when limits reached
+- **UI Indicators**: Colored badges on bishop/rook pieces show remaining attacks (blue: plenty, orange: low, red: exhausted)
+- **Exhausted State**: Attack buttons show grayed "0" and cannot be activated when limit reached; piece can still move normally
+- **Attack Results**: Unsuccessful attacks show a 2-second red popup over the target square instead of toast notifications; successful attacks have no popup
+
 ### Shared Wall Layouts System
 - **File Storage**: Layouts saved as JSON in `server/data/layouts.json`
 - **REST API**: `GET /api/layouts`, `POST /api/layouts` (upsert by name), `DELETE /api/layouts/:name`

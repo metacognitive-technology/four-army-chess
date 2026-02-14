@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { BookOpen, Castle, Target, Dice1, Crown, Percent } from "lucide-react";
+import { BookOpen, Castle, Target, Dice1, Crown, Percent, Shield } from "lucide-react";
 
 export function GameRules() {
   return (
@@ -23,6 +23,7 @@ export function GameRules() {
               <p>If walls are enabled, each player places walls on their half of the board before play begins.</p>
               <p>Walls block all piece movement and cannot be passed through.</p>
               <p>Click squares to toggle walls on/off, or use "Place Randomly" / "Generate Maze" for quick setup.</p>
+              <p>Wall layouts can be saved and loaded from a shared library accessible to all players.</p>
               <p>Click "Ready" when done. Play begins once both sides are ready.</p>
               <p>If walls are set to 0, the setup phase is skipped entirely.</p>
             </AccordionContent>
@@ -41,6 +42,23 @@ export function GameRules() {
               <p><strong>Shared mode:</strong> The game creator sets attack percentages for both players.</p>
               <p><strong>Individual mode:</strong> Each player assigns their own percentages before play begins. Your opponent's settings are hidden during the game.</p>
               <p>This lets you choose a strategy: go all-in on one powerful attack, or spread the budget for balanced options.</p>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="limits">
+            <AccordionTrigger className="text-sm py-2">
+              <span className="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                Attack Limits
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="text-xs text-muted-foreground space-y-1">
+              <p>The game creator can set limits on how many special attacks each player may use per game (0-10 each).</p>
+              <p><strong>Bishop Arrow Limit:</strong> Caps the total number of arrow attacks a player can fire. Shared across all of that player's bishops.</p>
+              <p><strong>Rook Special Limit:</strong> Caps the total number of bomb and wall-build attacks a player can use. Shared across all of that player's rooks.</p>
+              <p>When a piece is selected, a colored badge on bishops and rooks shows remaining attacks: blue (plenty), orange (low), or red (exhausted).</p>
+              <p>Once a limit reaches 0, the attack buttons appear grayed out and cannot be activated. The piece can still move normally.</p>
+              <p>These limits apply equally to human players, AI opponents in Player vs Computer, and both sides in Computer vs Computer games.</p>
             </AccordionContent>
           </AccordionItem>
           
@@ -71,18 +89,33 @@ export function GameRules() {
             <AccordionContent className="text-xs text-muted-foreground space-y-1">
               <p>Success chance for each attack depends on the percentage you assigned in the attack budget.</p>
               <p><strong>Pawn Attack:</strong> A pawn can attempt to capture an adjacent enemy. Success is based on a d6 roll against your pawn attack budget.</p>
-              <p><strong>Bishop Arrow:</strong> Select a bishop and click the orange target icon. Fires an arrow at a distant enemy along its diagonal. Roll 2d6 and must meet or exceed the distance. Budget sets the threshold.</p>
-              <p>Knights and Rooks are immune to arrows.</p>
+              <p><strong>Bishop Arrow:</strong> Select a bishop and click the orange target icon. Fires an arrow at a distant enemy along its diagonal. Roll 2d6 and must meet or exceed the distance. Budget sets the threshold. Knights and Rooks are immune to arrows.</p>
               <p><strong>Knight Axe:</strong> Select a knight and click the purple axe icon. Strikes an adjacent enemy. Roll 1d6 against your knight axe budget.</p>
               <p><strong>Rook Bomb:</strong> Select a rook and click the red bomb icon. Destroys an adjacent wall. Roll 1d10 against your bomb budget.</p>
               <p><strong>Rook Wall Build:</strong> Select a rook and click the blue wall icon. Creates a new wall on an adjacent empty square. Roll 1d10 against your wall build budget.</p>
+              <p>Bishop arrows and rook specials are subject to per-player attack limits if configured. A failed attack still counts toward the limit.</p>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="modes">
+            <AccordionTrigger className="text-sm py-2">
+              <span className="flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                Game Modes
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="text-xs text-muted-foreground space-y-1">
+              <p><strong>Player vs Player:</strong> Create a game and share the link. The second player joins as the opponent.</p>
+              <p><strong>Player vs Computer:</strong> Play against an AI opponent with configurable difficulty (AI Depth 0-8). Higher depth means the AI thinks further ahead.</p>
+              <p><strong>Computer vs Computer:</strong> Watch two AIs play each other at full speed. You can load a saved CvC game and take over as either side.</p>
+              <p>AI depth uses minimax with alpha-beta pruning for regular moves. Special attacks (arrows, axes, bombs) are scored with heuristics since they are probabilistic.</p>
             </AccordionContent>
           </AccordionItem>
           
           <AccordionItem value="winning">
             <AccordionTrigger className="text-sm py-2">
               <span className="flex items-center gap-2">
-                <Target className="w-4 h-4" />
+                <Crown className="w-4 h-4" />
                 Winning
               </span>
             </AccordionTrigger>

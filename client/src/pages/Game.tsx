@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.17.7";
+const GAME_VERSION = "1.17.8";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -97,6 +97,7 @@ export default function Game() {
   const [flashColor, setFlashColor] = useState<'red' | 'yellow'>('red');
   const [isCreatingCvC, setIsCreatingCvC] = useState(false);
   const [moveFlashSquares, setMoveFlashSquares] = useState<Position[]>([]);
+  const [targetPopup, setTargetPopup] = useState<{ position: Position; message: string } | null>(null);
   const [isCvCPaused, setIsCvCPaused] = useState(false);
   const lastDiceRollRef = useRef<string | null>(null);
   const lastPhaseRef = useRef<string | null>(null);
@@ -308,33 +309,32 @@ export default function Game() {
           setFlashingSquare(lastMove.from);
         }
         
-        // Build description based on piece type
-        let attackDescription = '';
-        if (pieceType === 'bishop') {
-          attackDescription = `Bishop arrow: rolled ${rolled} on ${diceType} (needed ${distance}+)${success ? ' - target hit!' : ' - missed!'}`;
-        } else if (pieceType === 'knight') {
-          attackDescription = `Knight axe: rolled ${rolled} on ${diceType} (needed 4+)${success ? ' - target slain!' : ' - missed!'}`;
-        } else if (pieceType === 'rook') {
-          attackDescription = `Rook bomb: rolled ${rolled} on ${diceType} (needed 1)${success ? ' - wall destroyed!' : ' - failed!'}`;
-        } else {
-          attackDescription = `Pawn attack: rolled ${rolled} on ${diceType}${success ? ' - captured!' : ' - needed 1 to succeed'}`;
+        if (!success) {
+          let failMessage = '';
+          if (lastMove.isArrowAttack) {
+            failMessage = `Missed! (${rolled})`;
+          } else if (lastMove.isAxeAttack) {
+            failMessage = `Missed! (${rolled})`;
+          } else if (lastMove.isBombAttack) {
+            failMessage = `Failed! (${rolled})`;
+          } else if (lastMove.isWallBuild) {
+            failMessage = `Failed! (${rolled})`;
+          } else {
+            failMessage = `Failed! (${rolled})`;
+          }
+          
+          setTimeout(() => {
+            setTargetPopup({ position: lastMove.to, message: failMessage });
+            setTimeout(() => setTargetPopup(null), 2000);
+          }, 600);
         }
         
-        setTimeout(() => {
-          toast({
-            title: success ? "Attack Successful!" : "Attack Failed!",
-            description: attackDescription,
-            variant: success ? "default" : "destructive",
-          });
-        }, 300);
-        
-        // Clear flash after animation
         setTimeout(() => {
           setFlashingSquare(null);
         }, 600);
       }
     }
-  }, [gameState?.lastDiceRoll, gameState?.moveHistory, toast]);
+  }, [gameState?.lastDiceRoll, gameState?.moveHistory]);
   
   // Play victory/defeat sounds when game ends
   useEffect(() => {
@@ -1318,6 +1318,7 @@ export default function Game() {
                 specialAttackCounts={gameState.specialAttackCounts}
                 maxBishopAttacks={gameState.maxBishopAttacks}
                 maxRookAttacks={gameState.maxRookAttacks}
+                targetPopup={targetPopup}
               />
             )}
             

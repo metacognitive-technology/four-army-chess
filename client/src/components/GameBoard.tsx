@@ -63,6 +63,7 @@ interface GameBoardProps {
   specialAttackCounts?: { white: { bishop: number; rook: number }; black: { bishop: number; rook: number } };
   maxBishopAttacks?: number;
   maxRookAttacks?: number;
+  targetPopup?: { position: Position; message: string } | null;
 }
 
 export function GameBoard({
@@ -95,6 +96,7 @@ export function GameBoard({
   specialAttackCounts,
   maxBishopAttacks = 10,
   maxRookAttacks = 10,
+  targetPopup,
 }: GameBoardProps) {
   const isMyTurn = playerColor === currentTurn;
   const [zoom, setZoom] = useState(1);
@@ -424,6 +426,18 @@ export function GameBoard({
                     </div>
                   );
                 })()}
+                
+                {targetPopup && targetPopup.position.row === rowIndex && targetPopup.position.col === colIndex && (
+                  <div
+                    className="absolute z-40 left-1/2 -translate-x-1/2 -top-1 -translate-y-full pointer-events-none"
+                    data-testid={`target-popup-${rowIndex}-${colIndex}`}
+                  >
+                    <div className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap animate-in fade-in zoom-in-95 duration-200">
+                      {targetPopup.message}
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-red-600" />
+                    </div>
+                  </div>
+                )}
                 
                 {/* Row/Column labels */}
                 {colIndex === 0 && (
