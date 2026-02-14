@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.17.6";
+const GAME_VERSION = "1.17.7";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -556,11 +556,15 @@ export default function Game() {
   }, [gameState, phase, playerColor, currentTurn, isArrowMode, isAxeMode, isBombMode, isWallBuildMode, selectedPosition, arrowTargets, axeTargets, bombTargets, wallBuildTargets, validMoves, board, sendMessage]);
   
   const handleArrowModeToggle = useCallback((position: Position) => {
+    if (!playerColor || !gameState) return;
+    const used = gameState.specialAttackCounts?.[playerColor]?.bishop ?? 0;
+    const max = gameState.maxBishopAttacks ?? 10;
+    if (used >= max) return;
     setIsArrowMode(true);
     setIsAxeMode(false);
     setIsBombMode(false);
     setSelectedPosition(position);
-  }, []);
+  }, [playerColor, gameState]);
   
   const handleAxeModeToggle = useCallback((position: Position) => {
     setIsAxeMode(true);
@@ -570,20 +574,28 @@ export default function Game() {
   }, []);
   
   const handleBombModeToggle = useCallback((position: Position) => {
+    if (!playerColor || !gameState) return;
+    const used = gameState.specialAttackCounts?.[playerColor]?.rook ?? 0;
+    const max = gameState.maxRookAttacks ?? 10;
+    if (used >= max) return;
     setIsBombMode(true);
     setIsArrowMode(false);
     setIsAxeMode(false);
     setIsWallBuildMode(false);
     setSelectedPosition(position);
-  }, []);
+  }, [playerColor, gameState]);
   
   const handleWallBuildModeToggle = useCallback((position: Position) => {
+    if (!playerColor || !gameState) return;
+    const used = gameState.specialAttackCounts?.[playerColor]?.rook ?? 0;
+    const max = gameState.maxRookAttacks ?? 10;
+    if (used >= max) return;
     setIsWallBuildMode(true);
     setIsArrowMode(false);
     setIsAxeMode(false);
     setIsBombMode(false);
     setSelectedPosition(position);
-  }, []);
+  }, [playerColor, gameState]);
   
   const handleReady = useCallback(() => {
     setIsReady(true);

@@ -341,18 +341,30 @@ export function GameBoard({
                   })()
                 )}
                 
-                {isBishop && showSelected && !isArrowMode && !isAxeMode && !isBombMode && (
-                  <div
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-7 h-7 rounded-full bg-orange-500 border-2 border-white shadow-lg cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onArrowModeToggle({ row: rowIndex, col: colIndex });
-                    }}
-                    data-testid={`arrow-button-${rowIndex}-${colIndex}`}
-                  >
-                    <Target className="w-5 h-5 text-white" />
-                  </div>
-                )}
+                {isBishop && showSelected && !isArrowMode && !isAxeMode && !isBombMode && (() => {
+                  const bUsed = specialAttackCounts?.[playerColor!]?.bishop ?? 0;
+                  const bRemaining = maxBishopAttacks - bUsed;
+                  const bExhausted = bRemaining <= 0;
+                  return (
+                    <div
+                      className={cn(
+                        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-7 h-7 rounded-full border-2 border-white shadow-lg",
+                        bExhausted ? "bg-gray-500 cursor-not-allowed opacity-60" : "bg-orange-500 cursor-pointer"
+                      )}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onArrowModeToggle({ row: rowIndex, col: colIndex });
+                      }}
+                      data-testid={`arrow-button-${rowIndex}-${colIndex}`}
+                    >
+                      {bExhausted ? (
+                        <span className="text-white font-bold text-xs">0</span>
+                      ) : (
+                        <Target className="w-5 h-5 text-white" />
+                      )}
+                    </div>
+                  );
+                })()}
                 
                 {isKnight && showSelected && !isArrowMode && !isAxeMode && !isBombMode && (
                   <div
@@ -367,32 +379,51 @@ export function GameBoard({
                   </div>
                 )}
                 
-                {isRook && showSelected && !isArrowMode && !isAxeMode && !isBombMode && !isWallBuildMode && (
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-1">
-                    <div
-                      className="flex items-center justify-center w-6 h-6 rounded-full bg-red-600 border-2 border-white shadow-lg cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onBombModeToggle({ row: rowIndex, col: colIndex });
-                      }}
-                      data-testid={`bomb-button-${rowIndex}-${colIndex}`}
-                      title="Bomb (destroy wall)"
-                    >
-                      <Bomb className="w-4 h-4 text-white" />
+                {isRook && showSelected && !isArrowMode && !isAxeMode && !isBombMode && !isWallBuildMode && (() => {
+                  const rUsed = specialAttackCounts?.[playerColor!]?.rook ?? 0;
+                  const rRemaining = maxRookAttacks - rUsed;
+                  const rExhausted = rRemaining <= 0;
+                  return (
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-1">
+                      <div
+                        className={cn(
+                          "flex items-center justify-center w-6 h-6 rounded-full border-2 border-white shadow-lg",
+                          rExhausted ? "bg-gray-500 cursor-not-allowed opacity-60" : "bg-red-600 cursor-pointer"
+                        )}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onBombModeToggle({ row: rowIndex, col: colIndex });
+                        }}
+                        data-testid={`bomb-button-${rowIndex}-${colIndex}`}
+                        title={rExhausted ? "No attacks remaining" : "Bomb (destroy wall)"}
+                      >
+                        {rExhausted ? (
+                          <span className="text-white font-bold text-xs">0</span>
+                        ) : (
+                          <Bomb className="w-4 h-4 text-white" />
+                        )}
+                      </div>
+                      <div
+                        className={cn(
+                          "flex items-center justify-center w-6 h-6 rounded-full border-2 border-white shadow-lg",
+                          rExhausted ? "bg-gray-500 cursor-not-allowed opacity-60" : "bg-cyan-600 cursor-pointer"
+                        )}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onWallBuildModeToggle({ row: rowIndex, col: colIndex });
+                        }}
+                        data-testid={`wallbuild-button-${rowIndex}-${colIndex}`}
+                        title={rExhausted ? "No attacks remaining" : "Build wall"}
+                      >
+                        {rExhausted ? (
+                          <span className="text-white font-bold text-xs">0</span>
+                        ) : (
+                          <Blocks className="w-4 h-4 text-white" />
+                        )}
+                      </div>
                     </div>
-                    <div
-                      className="flex items-center justify-center w-6 h-6 rounded-full bg-cyan-600 border-2 border-white shadow-lg cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onWallBuildModeToggle({ row: rowIndex, col: colIndex });
-                      }}
-                      data-testid={`wallbuild-button-${rowIndex}-${colIndex}`}
-                      title="Build wall"
-                    >
-                      <Blocks className="w-4 h-4 text-white" />
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
                 
                 {/* Row/Column labels */}
                 {colIndex === 0 && (
