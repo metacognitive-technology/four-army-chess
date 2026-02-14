@@ -25,6 +25,7 @@ export interface Piece {
   type: PieceType;
   color: PlayerColor;
   hasMoved?: boolean;
+  id?: string;
 }
 
 export interface Square {
@@ -107,8 +108,7 @@ export interface GameState {
   maxBishopAttacks?: number;
   maxRookAttacks?: number;
   specialAttackCounts?: {
-    white: { bishop: number; rook: number };
-    black: { bishop: number; rook: number };
+    [pieceId: string]: number;
   };
 }
 

@@ -60,7 +60,7 @@ interface GameBoardProps {
   attackAnimation?: AttackAnimation | null;
   moveFlashSquares?: Position[];
   gameMode?: 'pvp' | 'pvc' | 'cvc';
-  specialAttackCounts?: { white: { bishop: number; rook: number }; black: { bishop: number; rook: number } };
+  specialAttackCounts?: { [pieceId: string]: number };
   maxBishopAttacks?: number;
   maxRookAttacks?: number;
   targetPopup?: { position: Position; message: string } | null;
@@ -324,8 +324,7 @@ export function GameBoard({
                 
                 {piece && piece.color === playerColor && phase === 'playing' && (isArrowMode || isAxeMode || isBombMode || isWallBuildMode) && (
                   (piece.type === 'bishop' || piece.type === 'rook') && (() => {
-                    const counts = specialAttackCounts?.[piece.color];
-                    const used = piece.type === 'bishop' ? (counts?.bishop ?? 0) : (counts?.rook ?? 0);
+                    const used = piece.id ? (specialAttackCounts?.[piece.id] ?? 0) : 0;
                     const max = piece.type === 'bishop' ? maxBishopAttacks : maxRookAttacks;
                     const remaining = max - used;
                     return (
@@ -344,7 +343,7 @@ export function GameBoard({
                 )}
                 
                 {isBishop && showSelected && !isArrowMode && !isAxeMode && !isBombMode && (() => {
-                  const bUsed = specialAttackCounts?.[playerColor!]?.bishop ?? 0;
+                  const bUsed = piece?.id ? (specialAttackCounts?.[piece.id] ?? 0) : 0;
                   const bRemaining = maxBishopAttacks - bUsed;
                   const bExhausted = bRemaining <= 0;
                   return (
@@ -382,7 +381,7 @@ export function GameBoard({
                 )}
                 
                 {isRook && showSelected && !isArrowMode && !isAxeMode && !isBombMode && !isWallBuildMode && (() => {
-                  const rUsed = specialAttackCounts?.[playerColor!]?.rook ?? 0;
+                  const rUsed = piece?.id ? (specialAttackCounts?.[piece.id] ?? 0) : 0;
                   const rRemaining = maxRookAttacks - rUsed;
                   const rExhausted = rRemaining <= 0;
                   return (

@@ -56,7 +56,7 @@ export function DiceRoll({ value, type, success, isVisible, onAnimationEnd }: Di
       )}>
         <CardContent className="flex flex-col items-center gap-4 p-0">
           <div className="text-lg font-medium text-muted-foreground">
-            Rolling {type.toUpperCase()}...
+            Attack Roll...
           </div>
           
           <div className={cn(

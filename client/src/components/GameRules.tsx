@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { BookOpen, Castle, Target, Dice1, Crown, Percent, Shield } from "lucide-react";
+import { BookOpen, Castle, Target, Swords, Crown, Percent, Shield } from "lucide-react";
 
 export function GameRules() {
   return (
@@ -53,11 +53,11 @@ export function GameRules() {
               </span>
             </AccordionTrigger>
             <AccordionContent className="text-xs text-muted-foreground space-y-1">
-              <p>The game creator can set limits on how many special attacks each player may use per game (0-10 each).</p>
-              <p><strong>Bishop Arrow Limit:</strong> Caps the total number of arrow attacks a player can fire. Shared across all of that player's bishops.</p>
-              <p><strong>Rook Special Limit:</strong> Caps the total number of bomb and wall-build attacks a player can use. Shared across all of that player's rooks.</p>
-              <p>When a piece is selected, a colored badge on bishops and rooks shows remaining attacks: blue (plenty), orange (low), or red (exhausted).</p>
-              <p>Once a limit reaches 0, the attack buttons appear grayed out and cannot be activated. The piece can still move normally.</p>
+              <p>The game creator can set limits on how many special attacks each individual bishop or rook may use per game (0-10 each).</p>
+              <p><strong>Bishop Arrow Limit:</strong> Caps the number of arrow attacks each individual bishop can fire. Each bishop tracks its own count independently.</p>
+              <p><strong>Rook Special Limit:</strong> Caps the number of bomb and wall-build attacks each individual rook can use. Each rook tracks its own count independently.</p>
+              <p>When a piece is selected, a colored badge on bishops and rooks shows that piece's remaining attacks: blue (plenty), orange (low), or red (exhausted).</p>
+              <p>Once an individual piece's limit reaches 0, the attack buttons appear grayed out and cannot be activated. The piece can still move normally.</p>
               <p>These limits apply equally to human players, AI opponents in Player vs Computer, and both sides in Computer vs Computer games.</p>
             </AccordionContent>
           </AccordionItem>
@@ -82,18 +82,18 @@ export function GameRules() {
           <AccordionItem value="attacks">
             <AccordionTrigger className="text-sm py-2">
               <span className="flex items-center gap-2">
-                <Dice1 className="w-4 h-4" />
+                <Swords className="w-4 h-4" />
                 Special Attacks
               </span>
             </AccordionTrigger>
             <AccordionContent className="text-xs text-muted-foreground space-y-1">
               <p>Success chance for each attack depends on the percentage you assigned in the attack budget.</p>
-              <p><strong>Pawn Attack:</strong> A pawn can attempt to capture an adjacent enemy. Success is based on a d6 roll against your pawn attack budget.</p>
-              <p><strong>Bishop Arrow:</strong> Select a bishop and click the orange target icon. Fires an arrow at a distant enemy along its diagonal. Roll 2d6 and must meet or exceed the distance. Budget sets the threshold. Knights and Rooks are immune to arrows.</p>
-              <p><strong>Knight Axe:</strong> Select a knight and click the purple axe icon. Strikes an adjacent enemy. Roll 1d6 against your knight axe budget.</p>
-              <p><strong>Rook Bomb:</strong> Select a rook and click the red bomb icon. Destroys an adjacent wall. Roll 1d10 against your bomb budget.</p>
-              <p><strong>Rook Wall Build:</strong> Select a rook and click the blue wall icon. Creates a new wall on an adjacent empty square. Roll 1d10 against your wall build budget.</p>
-              <p>Bishop arrows and rook specials are subject to per-player attack limits if configured. A failed attack still counts toward the limit.</p>
+              <p><strong>Pawn Attack:</strong> A pawn can attempt to capture an adjacent enemy. Success chance is based on your pawn attack budget percentage.</p>
+              <p><strong>Bishop Arrow:</strong> Select a bishop and click the orange target icon. Fires an arrow at a distant enemy along its diagonal. Success chance is based on your bishop attack budget. Knights and Rooks are immune to arrows.</p>
+              <p><strong>Knight Axe:</strong> Select a knight and click the purple axe icon. Strikes an adjacent enemy. Success chance is based on your knight axe budget.</p>
+              <p><strong>Rook Bomb:</strong> Select a rook and click the red bomb icon. Destroys an adjacent wall. Success chance is based on your bomb budget.</p>
+              <p><strong>Rook Wall Build:</strong> Select a rook and click the blue wall icon. Creates a new wall on an adjacent empty square. Success chance is based on your wall build budget.</p>
+              <p>Each bishop and rook tracks its own attack count individually. A failed attack still counts toward that piece's limit.</p>
             </AccordionContent>
           </AccordionItem>
 

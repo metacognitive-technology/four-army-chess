@@ -483,10 +483,7 @@ class GameManager {
       aiDepth: Math.max(0, Math.min(8, aiDepth ?? 0)),
       maxBishopAttacks: Math.max(0, Math.min(10, maxBishopAttacks)),
       maxRookAttacks: Math.max(0, Math.min(10, maxRookAttacks)),
-      specialAttackCounts: {
-        white: { bishop: 0, rook: 0 },
-        black: { bishop: 0, rook: 0 },
-      },
+      specialAttackCounts: {},
     };
     
     if (effectiveBudgetMode === 'individual') {
@@ -564,10 +561,7 @@ class GameManager {
       aiDepth: Math.max(0, Math.min(8, aiDepth ?? 0)),
       maxBishopAttacks: Math.max(0, Math.min(10, finalSettings.maxBishopAttacks ?? 10)),
       maxRookAttacks: Math.max(0, Math.min(10, finalSettings.maxRookAttacks ?? 10)),
-      specialAttackCounts: {
-        white: { bishop: 0, rook: 0 },
-        black: { bishop: 0, rook: 0 },
-      },
+      specialAttackCounts: {},
     };
     
     // Place walls for both sides
@@ -860,9 +854,9 @@ class GameManager {
           }
           
           if (piece.type === 'bishop' && !inCheck) {
-            const cvcBCounts = state.specialAttackCounts?.[color];
+            const cvcBPieceUsed = piece.id ? (state.specialAttackCounts?.[piece.id] ?? 0) : 0;
             const cvcBMax = state.maxBishopAttacks ?? 10;
-            if (!cvcBCounts || cvcBCounts.bishop < cvcBMax) {
+            if (cvcBPieceUsed < cvcBMax) {
             const recentColorMoves = state.moveHistory.slice(-30).filter(m => m.piece.color === color);
             let consecutiveBishopChases = 0;
             let movesAfterChase = 0;
@@ -924,9 +918,9 @@ class GameManager {
           }
           
           if (piece.type === 'rook' && !inCheck) {
-            const cvcRCounts = state.specialAttackCounts?.[color];
+            const cvcRPieceUsed = piece.id ? (state.specialAttackCounts?.[piece.id] ?? 0) : 0;
             const cvcRMax = state.maxRookAttacks ?? 10;
-            if (!cvcRCounts || cvcRCounts.rook < cvcRMax) {
+            if (cvcRPieceUsed < cvcRMax) {
             const bombTargets = this.getBombTargets(board, from);
             const enemyColor = color === 'white' ? 'black' : 'white';
             const enemyKingPos = findKingPosition(board, enemyColor);
@@ -1953,12 +1947,13 @@ class GameManager {
     
     if (room.state.currentTurn !== player.color) return null;
     
-    const counts = room.state.specialAttackCounts?.[player.color];
-    const maxB = room.state.maxBishopAttacks ?? 10;
-    if (counts && counts.bishop >= maxB) return null;
-    
     const board = room.state.board;
     const piece = board[from.row][from.col].piece;
+    if (piece && piece.id) {
+      const pieceUsed = room.state.specialAttackCounts?.[piece.id] ?? 0;
+      const maxB = room.state.maxBishopAttacks ?? 10;
+      if (pieceUsed >= maxB) return null;
+    }
     if (!piece || piece.type !== 'bishop' || piece.color !== player.color) return null;
     
     // Verify straight line (any direction: horizontal, vertical, or diagonal)
@@ -2014,9 +2009,11 @@ class GameManager {
     room.state.moveHistory.push(move);
     
     if (!room.state.specialAttackCounts) {
-      room.state.specialAttackCounts = { white: { bishop: 0, rook: 0 }, black: { bishop: 0, rook: 0 } };
+      room.state.specialAttackCounts = {};
     }
-    room.state.specialAttackCounts[player.color].bishop++;
+    if (piece.id) {
+      room.state.specialAttackCounts[piece.id] = (room.state.specialAttackCounts[piece.id] ?? 0) + 1;
+    }
     
     if (success) {
       room.state.capturedPieces[player.color].push(targetPiece);
@@ -2128,13 +2125,15 @@ class GameManager {
     
     if (room.state.currentTurn !== player.color) return null;
     
-    const rCounts = room.state.specialAttackCounts?.[player.color];
-    const maxR = room.state.maxRookAttacks ?? 10;
-    if (rCounts && rCounts.rook >= maxR) return null;
-    
     const board = room.state.board;
     const piece = board[from.row][from.col].piece;
     if (!piece || piece.type !== 'rook' || piece.color !== player.color) return null;
+    
+    if (piece.id) {
+      const rookUsed = room.state.specialAttackCounts?.[piece.id] ?? 0;
+      const maxR = room.state.maxRookAttacks ?? 10;
+      if (rookUsed >= maxR) return null;
+    }
     
     // Validate target is adjacent (1 square away)
     const rowDiff = Math.abs(to.row - from.row);
@@ -2166,9 +2165,11 @@ class GameManager {
     room.state.moveHistory.push(move);
     
     if (!room.state.specialAttackCounts) {
-      room.state.specialAttackCounts = { white: { bishop: 0, rook: 0 }, black: { bishop: 0, rook: 0 } };
+      room.state.specialAttackCounts = {};
     }
-    room.state.specialAttackCounts[player.color].rook++;
+    if (piece.id) {
+      room.state.specialAttackCounts[piece.id] = (room.state.specialAttackCounts[piece.id] ?? 0) + 1;
+    }
     
     if (success) {
       board[to.row][to.col].isWall = false;
@@ -2195,13 +2196,15 @@ class GameManager {
     
     if (room.state.currentTurn !== player.color) return null;
     
-    const wCounts = room.state.specialAttackCounts?.[player.color];
-    const wMaxR = room.state.maxRookAttacks ?? 10;
-    if (wCounts && wCounts.rook >= wMaxR) return null;
-    
     const board = room.state.board;
     const piece = board[from.row][from.col].piece;
     if (!piece || piece.type !== 'rook' || piece.color !== player.color) return null;
+    
+    if (piece.id) {
+      const wallUsed = room.state.specialAttackCounts?.[piece.id] ?? 0;
+      const wMaxR = room.state.maxRookAttacks ?? 10;
+      if (wallUsed >= wMaxR) return null;
+    }
     
     // Validate target is adjacent (1 square away)
     const rowDiff = Math.abs(to.row - from.row);
@@ -2234,9 +2237,11 @@ class GameManager {
     room.state.moveHistory.push(move);
     
     if (!room.state.specialAttackCounts) {
-      room.state.specialAttackCounts = { white: { bishop: 0, rook: 0 }, black: { bishop: 0, rook: 0 } };
+      room.state.specialAttackCounts = {};
     }
-    room.state.specialAttackCounts[player.color].rook++;
+    if (piece.id) {
+      room.state.specialAttackCounts[piece.id] = (room.state.specialAttackCounts[piece.id] ?? 0) + 1;
+    }
     
     if (success) {
       board[to.row][to.col].isWall = true;
@@ -2716,9 +2721,9 @@ class GameManager {
           }
           
           if (piece.type === 'bishop' && !inCheck) {
-            const pvcBCounts = state.specialAttackCounts?.[aiColor];
+            const pvcBPieceUsed = piece.id ? (state.specialAttackCounts?.[piece.id] ?? 0) : 0;
             const pvcBMax = state.maxBishopAttacks ?? 10;
-            if (!pvcBCounts || pvcBCounts.bishop < pvcBMax) {
+            if (pvcBPieceUsed < pvcBMax) {
             const recentColorMoves = state.moveHistory.slice(-30).filter(m => m.piece.color === aiColor);
             let consecutiveBishopChases = 0;
             let movesAfterChase = 0;
@@ -2781,9 +2786,9 @@ class GameManager {
           }
           
           if (piece.type === 'rook' && !inCheck) {
-            const pvcRCounts = state.specialAttackCounts?.[aiColor];
+            const pvcRPieceUsed = piece.id ? (state.specialAttackCounts?.[piece.id] ?? 0) : 0;
             const pvcRMax = state.maxRookAttacks ?? 10;
-            if (!pvcRCounts || pvcRCounts.rook < pvcRMax) {
+            if (pvcRPieceUsed < pvcRMax) {
             const bombTargets = this.getBombTargets(board, from);
             const enemyColor = aiColor === 'white' ? 'black' : 'white';
             const enemyKingPos = findKingPosition(board, enemyColor);
@@ -3184,12 +3189,13 @@ class GameManager {
     const state = room.state;
     const aiColor = state.aiControlled?.[state.currentTurn] ? state.currentTurn : state.aiColor!;
     
-    const aiBCounts = state.specialAttackCounts?.[aiColor];
-    const aiBMax = state.maxBishopAttacks ?? 10;
-    if (aiBCounts && aiBCounts.bishop >= aiBMax) return null;
-    
     const board = state.board;
     const piece = board[from.row][from.col].piece;
+    if (piece && piece.id) {
+      const aiBUsed = state.specialAttackCounts?.[piece.id] ?? 0;
+      const aiBMax = state.maxBishopAttacks ?? 10;
+      if (aiBUsed >= aiBMax) return null;
+    }
     if (!piece) return null;
 
     const targetPiece = board[to.row][to.col].piece;
@@ -3217,9 +3223,11 @@ class GameManager {
     state.moveHistory.push(move);
     
     if (!state.specialAttackCounts) {
-      state.specialAttackCounts = { white: { bishop: 0, rook: 0 }, black: { bishop: 0, rook: 0 } };
+      state.specialAttackCounts = {};
     }
-    state.specialAttackCounts[aiColor].bishop++;
+    if (piece.id) {
+      state.specialAttackCounts[piece.id] = (state.specialAttackCounts[piece.id] ?? 0) + 1;
+    }
 
     if (success) {
       state.capturedPieces[aiColor].push(targetPiece);
@@ -3307,12 +3315,13 @@ class GameManager {
     const state = room.state;
     const aiColor = state.aiControlled?.[state.currentTurn] ? state.currentTurn : state.aiColor!;
     
-    const aiRCounts = state.specialAttackCounts?.[aiColor];
-    const aiRMax = state.maxRookAttacks ?? 10;
-    if (aiRCounts && aiRCounts.rook >= aiRMax) return null;
-    
     const board = state.board;
     const piece = board[from.row][from.col].piece;
+    if (piece && piece.id) {
+      const aiRUsed = state.specialAttackCounts?.[piece.id] ?? 0;
+      const aiRMax = state.maxRookAttacks ?? 10;
+      if (aiRUsed >= aiRMax) return null;
+    }
     if (!piece) return null;
 
     const roll = Math.floor(Math.random() * 10) + 1;
@@ -3335,9 +3344,11 @@ class GameManager {
     state.moveHistory.push(move);
     
     if (!state.specialAttackCounts) {
-      state.specialAttackCounts = { white: { bishop: 0, rook: 0 }, black: { bishop: 0, rook: 0 } };
+      state.specialAttackCounts = {};
     }
-    state.specialAttackCounts[aiColor].rook++;
+    if (piece.id) {
+      state.specialAttackCounts[piece.id] = (state.specialAttackCounts[piece.id] ?? 0) + 1;
+    }
 
     if (success) {
       board[to.row][to.col].isWall = false;
@@ -3374,13 +3385,13 @@ class GameManager {
     const backRowPieces: PieceType[] = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
     
     for (let i = 0; i < 8; i++) {
-      board[blackBackRow][offset + i].piece = { type: backRowPieces[i], color: 'black' };
-      board[whiteBackRow][offset + i].piece = { type: backRowPieces[i], color: 'white' };
+      board[blackBackRow][offset + i].piece = { type: backRowPieces[i], color: 'black', id: `b_${backRowPieces[i]}_${i}` };
+      board[whiteBackRow][offset + i].piece = { type: backRowPieces[i], color: 'white', id: `w_${backRowPieces[i]}_${i}` };
     }
     
     for (let i = 0; i < 8; i++) {
-      board[blackPawnRow][offset + i].piece = { type: 'pawn', color: 'black' };
-      board[whitePawnRow][offset + i].piece = { type: 'pawn', color: 'white' };
+      board[blackPawnRow][offset + i].piece = { type: 'pawn', color: 'black', id: `b_pawn_${i}` };
+      board[whitePawnRow][offset + i].piece = { type: 'pawn', color: 'white', id: `w_pawn_${i}` };
     }
     
     return board;

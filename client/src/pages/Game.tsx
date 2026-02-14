@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.17.8";
+const GAME_VERSION = "1.18.0";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -112,6 +112,8 @@ export default function Game() {
   const [wallBuildPercent, setWallBuildPercent] = useState(50);
   const [budgetMode, setBudgetMode] = useState<'shared' | 'individual'>('shared');
   const [aiDepth, setAiDepth] = useState(0);
+  const [maxBishopAttacksLobby, setMaxBishopAttacksLobby] = useState(10);
+  const [maxRookAttacksLobby, setMaxRookAttacksLobby] = useState(10);
   const [budgetSubmitted, setBudgetSubmitted] = useState(false);
 
   const totalUsed = pawnAttackPercent + bishopAttackPercent + knightAttackPercent + bombAttackPercent + wallBuildPercent;
@@ -170,6 +172,8 @@ export default function Game() {
         bombSuccessRoll: percentToThreshold(bombAttackPercent, 10, true),
         wallBuildRoll: percentToThreshold(wallBuildPercent, 10, true),
         totalAttackBudget,
+        maxBishopAttacks: maxBishopAttacksLobby,
+        maxRookAttacks: maxRookAttacksLobby,
         pawnAttackPercent,
         bishopAttackPercent,
         knightAttackPercent,
@@ -193,7 +197,7 @@ export default function Game() {
     } finally {
       setIsCreatingCvC(false);
     }
-  }, [maxWalls, toast, watchCvCGame, pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent, totalAttackBudget, percentToThreshold, aiDepth]);
+  }, [maxWalls, toast, watchCvCGame, pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent, totalAttackBudget, percentToThreshold, aiDepth, maxBishopAttacksLobby, maxRookAttacksLobby]);
 
   const handleTakeoverGame = useCallback((gameId: string, color: 'white' | 'black') => {
     takeoverGame(gameId, color);
@@ -557,7 +561,8 @@ export default function Game() {
   
   const handleArrowModeToggle = useCallback((position: Position) => {
     if (!playerColor || !gameState) return;
-    const used = gameState.specialAttackCounts?.[playerColor]?.bishop ?? 0;
+    const piece = gameState.board[position.row]?.[position.col]?.piece;
+    const used = piece?.id ? (gameState.specialAttackCounts?.[piece.id] ?? 0) : 0;
     const max = gameState.maxBishopAttacks ?? 10;
     if (used >= max) return;
     setIsArrowMode(true);
@@ -575,7 +580,8 @@ export default function Game() {
   
   const handleBombModeToggle = useCallback((position: Position) => {
     if (!playerColor || !gameState) return;
-    const used = gameState.specialAttackCounts?.[playerColor]?.rook ?? 0;
+    const piece = gameState.board[position.row]?.[position.col]?.piece;
+    const used = piece?.id ? (gameState.specialAttackCounts?.[piece.id] ?? 0) : 0;
     const max = gameState.maxRookAttacks ?? 10;
     if (used >= max) return;
     setIsBombMode(true);
@@ -587,7 +593,8 @@ export default function Game() {
   
   const handleWallBuildModeToggle = useCallback((position: Position) => {
     if (!playerColor || !gameState) return;
-    const used = gameState.specialAttackCounts?.[playerColor]?.rook ?? 0;
+    const piece = gameState.board[position.row]?.[position.col]?.piece;
+    const used = piece?.id ? (gameState.specialAttackCounts?.[piece.id] ?? 0) : 0;
     const max = gameState.maxRookAttacks ?? 10;
     if (used >= max) return;
     setIsWallBuildMode(true);
@@ -694,7 +701,7 @@ export default function Game() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Battle Chess</CardTitle>
-            <p className="text-muted-foreground">A novel chess variant with walls, dice, and arrows</p>
+            <p className="text-muted-foreground">A novel chess variant with walls and special attacks</p>
             <p className="text-xs text-muted-foreground mt-1">Version {GAME_VERSION}</p>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -775,6 +782,46 @@ export default function Game() {
                 {aiDepth >= 5 && aiDepth <= 6 && `Thinks ${aiDepth} moves ahead. Slow but strong.`}
                 {aiDepth >= 7 && `Thinks ${aiDepth} moves ahead. Very slow, strongest.`}
               </p>
+            </div>
+
+            <div className="space-y-3 pt-2 border-t">
+              <h4 className="text-sm font-medium text-muted-foreground">Attack Limits (per piece)</h4>
+              
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <Label>Bishop Arrow Attacks</Label>
+                  <span className="text-muted-foreground">{maxBishopAttacksLobby}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="10"
+                  step="1"
+                  value={maxBishopAttacksLobby}
+                  onChange={(e) => setMaxBishopAttacksLobby(parseInt(e.target.value))}
+                  className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                  data-testid="slider-max-bishop-attacks"
+                />
+                <p className="text-xs text-muted-foreground">Each bishop can fire up to {maxBishopAttacksLobby} arrow{maxBishopAttacksLobby !== 1 ? 's' : ''}</p>
+              </div>
+              
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <Label>Rook Special Attacks</Label>
+                  <span className="text-muted-foreground">{maxRookAttacksLobby}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="10"
+                  step="1"
+                  value={maxRookAttacksLobby}
+                  onChange={(e) => setMaxRookAttacksLobby(parseInt(e.target.value))}
+                  className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                  data-testid="slider-max-rook-attacks"
+                />
+                <p className="text-xs text-muted-foreground">Each rook can use up to {maxRookAttacksLobby} bomb/wall build attack{maxRookAttacksLobby !== 1 ? 's' : ''}</p>
+              </div>
             </div>
 
             <div className="space-y-3 pt-2 border-t">
@@ -914,6 +961,8 @@ export default function Game() {
                     bombSuccessRoll: percentToThreshold(bombAttackPercent, 10, true),
                     wallBuildRoll: percentToThreshold(wallBuildPercent, 10, true),
                     totalAttackBudget,
+                    maxBishopAttacks: maxBishopAttacksLobby,
+                    maxRookAttacks: maxRookAttacksLobby,
                     ...(budgetMode === 'shared' ? { pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent } : {}),
                   };
                   createGame(maxWalls, 'pvc', as, budgetMode, aiDepth);
@@ -936,6 +985,8 @@ export default function Game() {
                     bombSuccessRoll: percentToThreshold(bombAttackPercent, 10, true),
                     wallBuildRoll: percentToThreshold(wallBuildPercent, 10, true),
                     totalAttackBudget,
+                    maxBishopAttacks: maxBishopAttacksLobby,
+                    maxRookAttacks: maxRookAttacksLobby,
                     ...(budgetMode === 'shared' ? { pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent } : {}),
                   };
                   createGame(maxWalls, 'pvp', as, budgetMode);

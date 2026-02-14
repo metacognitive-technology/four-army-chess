@@ -47,14 +47,14 @@ export function createInitialBoard(): Board {
   
   // Place back row pieces
   for (let i = 0; i < 8; i++) {
-    board[blackBackRow][offset + i].piece = { type: backRowPieces[i], color: 'black' };
-    board[whiteBackRow][offset + i].piece = { type: backRowPieces[i], color: 'white' };
+    board[blackBackRow][offset + i].piece = { type: backRowPieces[i], color: 'black', id: `b_${backRowPieces[i]}_${i}` };
+    board[whiteBackRow][offset + i].piece = { type: backRowPieces[i], color: 'white', id: `w_${backRowPieces[i]}_${i}` };
   }
   
   // Place pawns
   for (let i = 0; i < 8; i++) {
-    board[blackPawnRow][offset + i].piece = { type: 'pawn', color: 'black' };
-    board[whitePawnRow][offset + i].piece = { type: 'pawn', color: 'white' };
+    board[blackPawnRow][offset + i].piece = { type: 'pawn', color: 'black', id: `b_pawn_${i}` };
+    board[whitePawnRow][offset + i].piece = { type: 'pawn', color: 'white', id: `w_pawn_${i}` };
   }
   
   return board;

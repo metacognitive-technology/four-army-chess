@@ -69,11 +69,13 @@ Always update `GAME_VERSION` in `client/src/pages/Game.tsx` whenever code is mod
 - **WebSocket Messages**: `budget_submit` message type for player budget submissions
 
 ### Attack Limits System
-- **Per-Player Limits**: Configurable limits (0-10) for bishop arrow attacks and rook special attacks (bomb/wall build) per player
-- **Server State**: `maxBishopAttacks` and `maxRookAttacks` on GameState, `specialAttackCounts` tracks usage per player `{ white: { bishop: 0, rook: 0 }, black: { bishop: 0, rook: 0 } }`
-- **Enforcement**: Limits checked in all attack handlers (human and AI), AI move generation filters out attacks when limits reached
-- **UI Indicators**: Colored badges on bishop/rook pieces show remaining attacks (blue: plenty, orange: low, red: exhausted)
-- **Exhausted State**: Attack buttons show grayed "0" and cannot be activated when limit reached; piece can still move normally
+- **Per-Piece Limits**: Configurable limits (0-10) for bishop arrow attacks and rook special attacks (bomb/wall build) tracked per individual piece (not pooled per player)
+- **Piece IDs**: Each piece has a unique ID (format: `{color}_{type}_{index}`, e.g., `w_bishop_2`, `b_rook_1`) assigned at board creation
+- **Server State**: `maxBishopAttacks` and `maxRookAttacks` on GameState, `specialAttackCounts` maps piece IDs to usage counts `{ [pieceId: string]: number }`
+- **Enforcement**: Limits checked per individual piece in all attack handlers (human and AI), AI move generation filters out attacks when a specific piece's limit is reached
+- **Promotion**: When a pawn promotes, it keeps its original piece ID but gets a fresh attack count (starts at 0 for the new piece type)
+- **UI Indicators**: Colored badges on individual bishop/rook pieces show that piece's remaining attacks (blue: plenty, orange: low, red: exhausted)
+- **Exhausted State**: Attack buttons show grayed "0" and cannot be activated when that specific piece's limit is reached; piece can still move normally
 - **Attack Results**: Unsuccessful attacks show a 2-second red popup over the target square instead of toast notifications; successful attacks have no popup
 
 ### Shared Wall Layouts System
