@@ -460,6 +460,9 @@ class GameManager {
     const finalAttackSettings = attackSettings || defaultAttackSettings;
     const effectiveBudgetMode = budgetMode || 'shared';
     
+    const maxBishopAttacks = attackSettings?.maxBishopAttacks ?? 10;
+    const maxRookAttacks = attackSettings?.maxRookAttacks ?? 10;
+    
     const state: GameState = {
       id: gameId,
       board: this.createInitialBoard(),
@@ -478,6 +481,12 @@ class GameManager {
       budgetMode: effectiveBudgetMode,
       budgetReadyPlayers: [],
       aiDepth: Math.max(0, Math.min(8, aiDepth ?? 0)),
+      maxBishopAttacks: Math.max(0, Math.min(10, maxBishopAttacks)),
+      maxRookAttacks: Math.max(0, Math.min(10, maxRookAttacks)),
+      specialAttackCounts: {
+        white: { bishop: 0, rook: 0 },
+        black: { bishop: 0, rook: 0 },
+      },
     };
     
     if (effectiveBudgetMode === 'individual') {
@@ -536,13 +545,14 @@ class GameManager {
       wallBuildRoll: 5,
     };
     
+    const finalSettings = attackSettings || defaultAttackSettings;
     const state: GameState = {
       id: gameId,
       board: this.createInitialBoard(),
       currentTurn: 'white',
       phase: 'playing',
       gameMode: 'cvc',
-      aiColor: undefined, // Both are AI, no single "AI" color
+      aiColor: undefined,
       aiControlled: { white: true, black: true },
       setupWallsRemaining: { white: 0, black: 0 },
       maxWallsPerPlayer: maxWalls,
@@ -550,8 +560,14 @@ class GameManager {
       capturedPieces: { white: [], black: [] },
       players: { white: AI_PLAYER_ID, black: AI_PLAYER_ID },
       winner: null,
-      attackSettings: attackSettings || defaultAttackSettings,
+      attackSettings: finalSettings,
       aiDepth: Math.max(0, Math.min(8, aiDepth ?? 0)),
+      maxBishopAttacks: Math.max(0, Math.min(10, finalSettings.maxBishopAttacks ?? 10)),
+      maxRookAttacks: Math.max(0, Math.min(10, finalSettings.maxRookAttacks ?? 10)),
+      specialAttackCounts: {
+        white: { bishop: 0, rook: 0 },
+        black: { bishop: 0, rook: 0 },
+      },
     };
     
     // Place walls for both sides
@@ -843,8 +859,10 @@ class GameManager {
             possibleMoves.push({ from, to, score, escapesCheck });
           }
           
-          // Arrow attacks for bishops - always try to shoot if target available
           if (piece.type === 'bishop' && !inCheck) {
+            const cvcBCounts = state.specialAttackCounts?.[color];
+            const cvcBMax = state.maxBishopAttacks ?? 10;
+            if (!cvcBCounts || cvcBCounts.bishop < cvcBMax) {
             const recentColorMoves = state.moveHistory.slice(-30).filter(m => m.piece.color === color);
             let consecutiveBishopChases = 0;
             let movesAfterChase = 0;
@@ -887,6 +905,7 @@ class GameManager {
                 possibleMoves.push({ from, to, score, isArrow: true });
               }
             }
+            }
           }
           
           // Axe attacks for knights
@@ -904,8 +923,10 @@ class GameManager {
             }
           }
           
-          // Bomb attacks for rooks - prioritize clearing paths through walled areas
           if (piece.type === 'rook' && !inCheck) {
+            const cvcRCounts = state.specialAttackCounts?.[color];
+            const cvcRMax = state.maxRookAttacks ?? 10;
+            if (!cvcRCounts || cvcRCounts.rook < cvcRMax) {
             const bombTargets = this.getBombTargets(board, from);
             const enemyColor = color === 'white' ? 'black' : 'white';
             const enemyKingPos = findKingPosition(board, enemyColor);
@@ -973,6 +994,7 @@ class GameManager {
               }
               
               possibleMoves.push({ from, to, score, isBomb: true });
+            }
             }
           }
         }
@@ -1931,6 +1953,10 @@ class GameManager {
     
     if (room.state.currentTurn !== player.color) return null;
     
+    const counts = room.state.specialAttackCounts?.[player.color];
+    const maxB = room.state.maxBishopAttacks ?? 10;
+    if (counts && counts.bishop >= maxB) return null;
+    
     const board = room.state.board;
     const piece = board[from.row][from.col].piece;
     if (!piece || piece.type !== 'bishop' || piece.color !== player.color) return null;
@@ -1986,6 +2012,11 @@ class GameManager {
       notation: this.getMoveNotation(piece, from, to, success ? targetPiece : undefined, roll, true),
     };
     room.state.moveHistory.push(move);
+    
+    if (!room.state.specialAttackCounts) {
+      room.state.specialAttackCounts = { white: { bishop: 0, rook: 0 }, black: { bishop: 0, rook: 0 } };
+    }
+    room.state.specialAttackCounts[player.color].bishop++;
     
     if (success) {
       room.state.capturedPieces[player.color].push(targetPiece);
@@ -2097,6 +2128,10 @@ class GameManager {
     
     if (room.state.currentTurn !== player.color) return null;
     
+    const rCounts = room.state.specialAttackCounts?.[player.color];
+    const maxR = room.state.maxRookAttacks ?? 10;
+    if (rCounts && rCounts.rook >= maxR) return null;
+    
     const board = room.state.board;
     const piece = board[from.row][from.col].piece;
     if (!piece || piece.type !== 'rook' || piece.color !== player.color) return null;
@@ -2130,8 +2165,12 @@ class GameManager {
     };
     room.state.moveHistory.push(move);
     
+    if (!room.state.specialAttackCounts) {
+      room.state.specialAttackCounts = { white: { bishop: 0, rook: 0 }, black: { bishop: 0, rook: 0 } };
+    }
+    room.state.specialAttackCounts[player.color].rook++;
+    
     if (success) {
-      // Destroy the wall - revert to normal square
       board[to.row][to.col].isWall = false;
     }
     
@@ -2155,6 +2194,10 @@ class GameManager {
     if (!player) return null;
     
     if (room.state.currentTurn !== player.color) return null;
+    
+    const wCounts = room.state.specialAttackCounts?.[player.color];
+    const wMaxR = room.state.maxRookAttacks ?? 10;
+    if (wCounts && wCounts.rook >= wMaxR) return null;
     
     const board = room.state.board;
     const piece = board[from.row][from.col].piece;
@@ -2190,8 +2233,12 @@ class GameManager {
     };
     room.state.moveHistory.push(move);
     
+    if (!room.state.specialAttackCounts) {
+      room.state.specialAttackCounts = { white: { bishop: 0, rook: 0 }, black: { bishop: 0, rook: 0 } };
+    }
+    room.state.specialAttackCounts[player.color].rook++;
+    
     if (success) {
-      // Build a wall on the target square
       board[to.row][to.col].isWall = true;
     }
     
@@ -2668,8 +2715,10 @@ class GameManager {
             possibleMoves.push({ from, to, score, escapesCheck });
           }
           
-          // Add arrow attacks for bishops - always try to shoot if target available
           if (piece.type === 'bishop' && !inCheck) {
+            const pvcBCounts = state.specialAttackCounts?.[aiColor];
+            const pvcBMax = state.maxBishopAttacks ?? 10;
+            if (!pvcBCounts || pvcBCounts.bishop < pvcBMax) {
             const recentColorMoves = state.moveHistory.slice(-30).filter(m => m.piece.color === aiColor);
             let consecutiveBishopChases = 0;
             let movesAfterChase = 0;
@@ -2712,6 +2761,7 @@ class GameManager {
                 possibleMoves.push({ from, to, score, isArrow: true });
               }
             }
+            }
           }
           
           // Add axe attacks for knights - high priority ranged attack
@@ -2730,9 +2780,10 @@ class GameManager {
             }
           }
           
-          // Add bomb attacks for rooks - destroy adjacent walls
-          // Prioritize bombs heavily when paths are blocked through walled areas
           if (piece.type === 'rook' && !inCheck) {
+            const pvcRCounts = state.specialAttackCounts?.[aiColor];
+            const pvcRMax = state.maxRookAttacks ?? 10;
+            if (!pvcRCounts || pvcRCounts.rook < pvcRMax) {
             const bombTargets = this.getBombTargets(board, from);
             const enemyColor = aiColor === 'white' ? 'black' : 'white';
             const enemyKingPos = findKingPosition(board, enemyColor);
@@ -2860,6 +2911,7 @@ class GameManager {
               }
               
               possibleMoves.push({ from, to, score, isBomb: true });
+            }
             }
           }
         }
@@ -3130,8 +3182,12 @@ class GameManager {
     if (!room) return null;
 
     const state = room.state;
-    // Use current turn color when that player is AI-controlled, fallback to legacy aiColor
     const aiColor = state.aiControlled?.[state.currentTurn] ? state.currentTurn : state.aiColor!;
+    
+    const aiBCounts = state.specialAttackCounts?.[aiColor];
+    const aiBMax = state.maxBishopAttacks ?? 10;
+    if (aiBCounts && aiBCounts.bishop >= aiBMax) return null;
+    
     const board = state.board;
     const piece = board[from.row][from.col].piece;
     if (!piece) return null;
@@ -3159,6 +3215,11 @@ class GameManager {
       notation: this.getMoveNotation(piece, from, to, success ? targetPiece : undefined, roll, true),
     };
     state.moveHistory.push(move);
+    
+    if (!state.specialAttackCounts) {
+      state.specialAttackCounts = { white: { bishop: 0, rook: 0 }, black: { bishop: 0, rook: 0 } };
+    }
+    state.specialAttackCounts[aiColor].bishop++;
 
     if (success) {
       state.capturedPieces[aiColor].push(targetPiece);
@@ -3244,13 +3305,16 @@ class GameManager {
     if (!room) return null;
 
     const state = room.state;
-    // Use current turn color when that player is AI-controlled, fallback to legacy aiColor
     const aiColor = state.aiControlled?.[state.currentTurn] ? state.currentTurn : state.aiColor!;
+    
+    const aiRCounts = state.specialAttackCounts?.[aiColor];
+    const aiRMax = state.maxRookAttacks ?? 10;
+    if (aiRCounts && aiRCounts.rook >= aiRMax) return null;
+    
     const board = state.board;
     const piece = board[from.row][from.col].piece;
     if (!piece) return null;
 
-    // Rook bomb attack: roll d10, need <= bombSuccessRoll (default 1)
     const roll = Math.floor(Math.random() * 10) + 1;
     const aiBombSettings = this.getAttackSettingsForColor(state, aiColor);
     const success = this.checkAttackSuccess(aiBombSettings, 'bomb');
@@ -3269,6 +3333,11 @@ class GameManager {
       notation: `R💣${String.fromCharCode(97 + to.col)}${BOARD_SIZE - to.row}(${roll}${success ? '✓' : '✗'})`,
     };
     state.moveHistory.push(move);
+    
+    if (!state.specialAttackCounts) {
+      state.specialAttackCounts = { white: { bishop: 0, rook: 0 }, black: { bishop: 0, rook: 0 } };
+    }
+    state.specialAttackCounts[aiColor].rook++;
 
     if (success) {
       board[to.row][to.col].isWall = false;

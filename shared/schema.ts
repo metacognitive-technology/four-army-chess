@@ -75,6 +75,8 @@ export interface AttackSettings {
   knightAttackPercent?: number;
   bombAttackPercent?: number;
   wallBuildPercent?: number;
+  maxBishopAttacks?: number;
+  maxRookAttacks?: number;
 }
 
 export interface GameState {
@@ -102,6 +104,12 @@ export interface GameState {
   whiteAttackSettings?: AttackSettings;
   blackAttackSettings?: AttackSettings;
   budgetReadyPlayers?: string[];
+  maxBishopAttacks?: number;
+  maxRookAttacks?: number;
+  specialAttackCounts?: {
+    white: { bishop: number; rook: number };
+    black: { bishop: number; rook: number };
+  };
 }
 
 export interface GameMessage {
