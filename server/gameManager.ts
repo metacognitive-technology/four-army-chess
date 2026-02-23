@@ -224,28 +224,65 @@ if (!existsSync(GAMES_DIR)) {
   mkdirSync(GAMES_DIR, { recursive: true });
 }
 
-export interface AttackStats {
-  bishopArrowAttacks: number;
-  rookBombAttacks: number;
+export interface PerGameStats {
+  bishopArrows: number;
+  rookBombs: number;
   rookWallBuilds: number;
-  gamesPlayed: number;
 }
 
-function loadAttackStats(): AttackStats {
+export interface AttackStatsFile {
+  games: PerGameStats[];
+}
+
+export interface AttackStatsResponse {
+  gamesPlayed: number;
+  bishopArrows: { min: number; avg: number; max: number };
+  rookBombs: { min: number; avg: number; max: number };
+  rookWallBuilds: { min: number; avg: number; max: number };
+}
+
+function loadAttackStatsFile(): AttackStatsFile {
   try {
     if (existsSync(STATS_FILE)) {
-      return JSON.parse(readFileSync(STATS_FILE, 'utf-8'));
+      const data = JSON.parse(readFileSync(STATS_FILE, 'utf-8'));
+      if (Array.isArray(data.games)) return data;
     }
   } catch {}
-  return { bishopArrowAttacks: 0, rookBombAttacks: 0, rookWallBuilds: 0, gamesPlayed: 0 };
+  return { games: [] };
 }
 
-function saveAttackStats(stats: AttackStats): void {
+function saveAttackStatsFile(stats: AttackStatsFile): void {
   try {
     writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2), 'utf-8');
   } catch (error) {
     console.error('Failed to save attack stats:', error);
   }
+}
+
+function computeAttackStats(file: AttackStatsFile): AttackStatsResponse {
+  const g = file.games;
+  if (g.length === 0) {
+    return {
+      gamesPlayed: 0,
+      bishopArrows: { min: 0, avg: 0, max: 0 },
+      rookBombs: { min: 0, avg: 0, max: 0 },
+      rookWallBuilds: { min: 0, avg: 0, max: 0 },
+    };
+  }
+  const stat = (key: keyof PerGameStats) => {
+    const vals = g.map(x => x[key]);
+    return {
+      min: Math.min(...vals),
+      avg: Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10,
+      max: Math.max(...vals),
+    };
+  };
+  return {
+    gamesPlayed: g.length,
+    bishopArrows: stat('bishopArrows'),
+    rookBombs: stat('rookBombs'),
+    rookWallBuilds: stat('rookWallBuilds'),
+  };
 }
 
 export interface SavedGameInfo {
@@ -270,32 +307,35 @@ interface GameRoom {
   state: GameState;
   players: Map<string, Player>;
   readyPlayers: Set<string>;
+  attackCounts: PerGameStats;
 }
 
 class GameManager {
   private games: Map<string, GameRoom> = new Map();
   private playerToGame: Map<string, string> = new Map();
   private trackedGameIds: Set<string> = new Set();
+  private flushedGameIds: Set<string> = new Set();
 
-  recordAttackStat(type: 'bishopArrow' | 'rookBomb' | 'rookWallBuild'): void {
-    const stats = loadAttackStats();
-    if (type === 'bishopArrow') stats.bishopArrowAttacks++;
-    else if (type === 'rookBomb') stats.rookBombAttacks++;
-    else if (type === 'rookWallBuild') stats.rookWallBuilds++;
-    saveAttackStats(stats);
+  recordAttackStat(gameId: string, type: 'bishopArrow' | 'rookBomb' | 'rookWallBuild'): void {
+    const room = this.games.get(gameId);
+    if (!room) return;
+    if (type === 'bishopArrow') room.attackCounts.bishopArrows++;
+    else if (type === 'rookBomb') room.attackCounts.rookBombs++;
+    else if (type === 'rookWallBuild') room.attackCounts.rookWallBuilds++;
   }
 
-  recordGamePlayed(gameId: string): void {
-    if (!this.trackedGameIds.has(gameId)) {
-      this.trackedGameIds.add(gameId);
-      const stats = loadAttackStats();
-      stats.gamesPlayed++;
-      saveAttackStats(stats);
-    }
+  flushGameStats(gameId: string): void {
+    if (this.flushedGameIds.has(gameId)) return;
+    const room = this.games.get(gameId);
+    if (!room) return;
+    this.flushedGameIds.add(gameId);
+    const file = loadAttackStatsFile();
+    file.games.push({ ...room.attackCounts });
+    saveAttackStatsFile(file);
   }
 
-  getAttackStats(): AttackStats {
-    return loadAttackStats();
+  getAttackStats(): AttackStatsResponse {
+    return computeAttackStats(loadAttackStatsFile());
   }
 
   getAttackSettingsForColor(state: GameState, color: PlayerColor): AttackSettings {
@@ -344,6 +384,9 @@ class GameManager {
       writeFileSync(filePath, data, 'utf-8');
     } catch (error) {
       console.error(`Failed to save game ${state.id}:`, error);
+    }
+    if (state.winner) {
+      this.flushGameStats(state.id);
     }
   }
 
@@ -484,6 +527,7 @@ class GameManager {
       state,
       players: new Map(),
       readyPlayers: new Set(),
+      attackCounts: { bishopArrows: 0, rookBombs: 0, rookWallBuilds: 0 },
     };
 
     this.games.set(gameId, room);
@@ -550,6 +594,7 @@ class GameManager {
       state,
       players: new Map([[playerId, { ws, id: playerId, color: 'white' }]]),
       readyPlayers: new Set(),
+      attackCounts: { bishopArrows: 0, rookBombs: 0, rookWallBuilds: 0 },
     };
     
     // For vs computer, auto-ready the AI and place random walls
@@ -563,10 +608,6 @@ class GameManager {
     
     // Save game to file
     this.saveGame(state);
-    
-    if (state.phase === 'playing') {
-      this.recordGamePlayed(gameId);
-    }
     
     return { gameId, playerId, color: 'white' };
   }
@@ -619,16 +660,15 @@ class GameManager {
     this.placeCvCWalls(state, maxWalls, 'white');
     this.placeCvCWalls(state, maxWalls, 'black');
     
-    // Create game room
     const room: GameRoom = {
       state,
       players: new Map(),
       readyPlayers: new Set(),
+      attackCounts: { bishopArrows: 0, rookBombs: 0, rookWallBuilds: 0 },
     };
     
     this.games.set(gameId, room);
     this.saveGame(state);
-    this.recordGamePlayed(gameId);
     
     // Start the game with visible moves (500ms between moves)
     this.startCvCGameLoop(gameId);
@@ -742,6 +782,7 @@ class GameManager {
         state,
         players: new Map(),
         readyPlayers: new Set(),
+        attackCounts: { bishopArrows: 0, rookBombs: 0, rookWallBuilds: 0 },
       };
       this.games.set(gameId, room);
       
@@ -1317,13 +1358,13 @@ class GameManager {
       }
     }
     
-    // Create/update room
     let room = this.games.get(gameId);
     if (!room) {
       room = {
         state,
         players: new Map(),
         readyPlayers: new Set(),
+        attackCounts: { bishopArrows: 0, rookBombs: 0, rookWallBuilds: 0 },
       };
       this.games.set(gameId, room);
     }
@@ -1381,6 +1422,7 @@ class GameManager {
           state,
           players: new Map(),
           readyPlayers: new Set(),
+          attackCounts: { bishopArrows: 0, rookBombs: 0, rookWallBuilds: 0 },
         };
         this.games.set(gameId, room);
       } else {
@@ -1403,7 +1445,6 @@ class GameManager {
       room.state.phase = 'setup';
     } else {
       room.state.phase = 'playing';
-      this.recordGamePlayed(room.state.id);
     }
     
     this.saveGame(room.state);
@@ -1491,7 +1532,6 @@ class GameManager {
         room.state.phase = 'setup';
       } else {
         room.state.phase = 'playing';
-        this.recordGamePlayed(room.state.id);
       }
     }
     
@@ -1509,6 +1549,7 @@ class GameManager {
           state,
           players: new Map(),
           readyPlayers: new Set(),
+          attackCounts: { bishopArrows: 0, rookBombs: 0, rookWallBuilds: 0 },
         };
         this.games.set(gameId, room);
       } else {
@@ -1853,7 +1894,6 @@ class GameManager {
     // If both players ready, start the game
     if (room.readyPlayers.size >= 2) {
       room.state.phase = 'playing';
-      this.recordGamePlayed(room.state.id);
     }
     
     // Save game to file
@@ -2069,7 +2109,7 @@ class GameManager {
     if (piece.id) {
       room.state.specialAttackCounts[piece.id] = (room.state.specialAttackCounts[piece.id] ?? 0) + 1;
     }
-    this.recordAttackStat('bishopArrow');
+    this.recordAttackStat(gameId!, 'bishopArrow');
     
     if (success) {
       room.state.capturedPieces[player.color].push(targetPiece);
@@ -2226,7 +2266,7 @@ class GameManager {
     if (piece.id) {
       room.state.specialAttackCounts[piece.id] = (room.state.specialAttackCounts[piece.id] ?? 0) + 1;
     }
-    this.recordAttackStat('rookBomb');
+    this.recordAttackStat(gameId!, 'rookBomb');
     
     if (success) {
       board[to.row][to.col].isWall = false;
@@ -2299,7 +2339,7 @@ class GameManager {
     if (piece.id) {
       room.state.specialAttackCounts[piece.id] = (room.state.specialAttackCounts[piece.id] ?? 0) + 1;
     }
-    this.recordAttackStat('rookWallBuild');
+    this.recordAttackStat(gameId!, 'rookWallBuild');
     
     if (success) {
       board[to.row][to.col].isWall = true;
@@ -3286,7 +3326,7 @@ class GameManager {
     if (piece.id) {
       state.specialAttackCounts[piece.id] = (state.specialAttackCounts[piece.id] ?? 0) + 1;
     }
-    this.recordAttackStat('bishopArrow');
+    this.recordAttackStat(gameId, 'bishopArrow');
 
     if (success) {
       state.capturedPieces[aiColor].push(targetPiece);
@@ -3408,7 +3448,7 @@ class GameManager {
     if (piece.id) {
       state.specialAttackCounts[piece.id] = (state.specialAttackCounts[piece.id] ?? 0) + 1;
     }
-    this.recordAttackStat('rookBomb');
+    this.recordAttackStat(gameId, 'rookBomb');
 
     if (success) {
       board[to.row][to.col].isWall = false;

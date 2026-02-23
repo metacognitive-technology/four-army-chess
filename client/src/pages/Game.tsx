@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.19.1";
+const GAME_VERSION = "1.20.0";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -114,7 +114,7 @@ export default function Game() {
   const [aiDepth, setAiDepth] = useState(0);
   const [maxBishopAttacksLobby, setMaxBishopAttacksLobby] = useState(10);
   const [maxRookAttacksLobby, setMaxRookAttacksLobby] = useState(10);
-  const [attackStats, setAttackStats] = useState<{ bishopArrowAttacks: number; rookBombAttacks: number; rookWallBuilds: number; gamesPlayed: number } | null>(null);
+  const [attackStats, setAttackStats] = useState<{ gamesPlayed: number; bishopArrows: { min: number; avg: number; max: number }; rookBombs: { min: number; avg: number; max: number }; rookWallBuilds: { min: number; avg: number; max: number } } | null>(null);
   const [budgetSubmitted, setBudgetSubmitted] = useState(false);
 
   const totalUsed = pawnAttackPercent + bishopAttackPercent + knightAttackPercent + bombAttackPercent + wallBuildPercent;
@@ -711,18 +711,26 @@ export default function Game() {
             <CardTitle className="text-2xl font-bold">Battle Chess</CardTitle>
             <p className="text-muted-foreground">A novel chess variant with walls and special attacks</p>
             <p className="text-xs text-muted-foreground mt-1">Version {GAME_VERSION}</p>
-            {attackStats && (attackStats.gamesPlayed > 0 || attackStats.bishopArrowAttacks > 0) && (
+            {attackStats && attackStats.gamesPlayed > 0 && (
               <div className="mt-3 p-3 bg-muted/50 rounded-lg text-xs space-y-1" data-testid="attack-stats-panel">
-                <p className="font-medium text-sm text-foreground">All-Time Stats</p>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
-                  <span>Games played:</span>
-                  <span className="text-right font-mono" data-testid="stat-games-played">{attackStats.gamesPlayed}</span>
+                <p className="font-medium text-sm text-foreground">Per-Game Attack Stats ({attackStats.gamesPlayed} games)</p>
+                <div className="grid grid-cols-4 gap-x-3 gap-y-1 text-muted-foreground">
+                  <span></span>
+                  <span className="text-center font-semibold text-foreground">Low</span>
+                  <span className="text-center font-semibold text-foreground">Avg</span>
+                  <span className="text-center font-semibold text-foreground">High</span>
                   <span>Bishop arrows:</span>
-                  <span className="text-right font-mono" data-testid="stat-bishop-arrows">{attackStats.bishopArrowAttacks}</span>
+                  <span className="text-center font-mono" data-testid="stat-bishop-min">{attackStats.bishopArrows.min}</span>
+                  <span className="text-center font-mono" data-testid="stat-bishop-avg">{attackStats.bishopArrows.avg}</span>
+                  <span className="text-center font-mono" data-testid="stat-bishop-max">{attackStats.bishopArrows.max}</span>
                   <span>Rook bombs:</span>
-                  <span className="text-right font-mono" data-testid="stat-rook-bombs">{attackStats.rookBombAttacks}</span>
-                  <span>Rook wall builds:</span>
-                  <span className="text-right font-mono" data-testid="stat-rook-walls">{attackStats.rookWallBuilds}</span>
+                  <span className="text-center font-mono" data-testid="stat-bomb-min">{attackStats.rookBombs.min}</span>
+                  <span className="text-center font-mono" data-testid="stat-bomb-avg">{attackStats.rookBombs.avg}</span>
+                  <span className="text-center font-mono" data-testid="stat-bomb-max">{attackStats.rookBombs.max}</span>
+                  <span>Rook walls:</span>
+                  <span className="text-center font-mono" data-testid="stat-wall-min">{attackStats.rookWallBuilds.min}</span>
+                  <span className="text-center font-mono" data-testid="stat-wall-avg">{attackStats.rookWallBuilds.avg}</span>
+                  <span className="text-center font-mono" data-testid="stat-wall-max">{attackStats.rookWallBuilds.max}</span>
                 </div>
               </div>
             )}
