@@ -219,7 +219,7 @@ export function GameBoard({
       >
         <div 
           ref={boardRef}
-          className="grid gap-0 border-2 border-foreground/20 rounded-md overflow-hidden shadow-lg relative"
+          className="grid gap-0 border-2 border-foreground/20 rounded-md overflow-hidden shadow-lg relative select-none"
           style={{ 
             gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
             aspectRatio: '1 / 1',
@@ -227,6 +227,7 @@ export function GameBoard({
             maxWidth: '100%',
             transform: `scale(${zoom})`,
             transformOrigin: 'top left',
+            caretColor: 'transparent',
           }}
           data-testid="game-board"
         >
