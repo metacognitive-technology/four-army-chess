@@ -69,7 +69,7 @@ Always update `GAME_VERSION` in `client/src/pages/Game.tsx` whenever code is mod
 - **WebSocket Messages**: `budget_submit` message type for player budget submissions
 
 ### Attack Limits System
-- **Per-Piece Limits**: Configurable limits (0-10) for bishop arrow attacks and rook special attacks (bomb/wall build) tracked per individual piece (not pooled per player)
+- **Per-Piece Limits**: Configurable limits (0-75) for bishop arrow attacks and rook special attacks (bomb/wall build) tracked per individual piece (not pooled per player)
 - **Piece IDs**: Each piece has a unique ID (format: `{color}_{type}_{index}`, e.g., `w_bishop_2`, `b_rook_1`) assigned at board creation
 - **Server State**: `maxBishopAttacks` and `maxRookAttacks` on GameState, `specialAttackCounts` maps piece IDs to usage counts `{ [pieceId: string]: number }`
 - **Enforcement**: Limits checked per individual piece in all attack handlers (human and AI), AI move generation filters out attacks when a specific piece's limit is reached
@@ -77,6 +77,13 @@ Always update `GAME_VERSION` in `client/src/pages/Game.tsx` whenever code is mod
 - **UI Indicators**: Colored badges on individual bishop/rook pieces show that piece's remaining attacks (blue: plenty, orange: low, red: exhausted)
 - **Exhausted State**: Attack buttons show grayed "0" and cannot be activated when that specific piece's limit is reached; piece can still move normally
 - **Attack Results**: Unsuccessful attacks show a 2-second red popup over the target square instead of toast notifications; successful attacks have no popup
+
+### Attack Statistics System
+- **File Storage**: Persistent stats saved as JSON in `server/data/attack_stats.json`
+- **Tracked Metrics**: `bishopArrowAttacks`, `rookBombAttacks`, `rookWallBuilds`, `gamesPlayed`
+- **Recording**: Stats incremented server-side every time a special attack is used (both human and AI), games counted when phase transitions to 'playing'
+- **REST API**: `GET /api/attack-stats` returns current stats
+- **Client Display**: Stats shown on lobby/setup page in the card header when any games have been played
 
 ### Shared Wall Layouts System
 - **File Storage**: Layouts saved as JSON in `server/data/layouts.json`

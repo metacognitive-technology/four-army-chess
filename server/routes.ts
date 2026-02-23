@@ -153,6 +153,15 @@ export async function registerRoutes(
     }
   });
 
+  app.get('/api/attack-stats', (_req, res) => {
+    try {
+      res.json(gameManager.getAttackStats());
+    } catch (error) {
+      console.error('Failed to get attack stats:', error);
+      res.status(500).json({ error: 'Failed to get attack stats' });
+    }
+  });
+
   // Create a computer vs computer game
   app.post('/api/games/cvc', (req, res) => {
     try {

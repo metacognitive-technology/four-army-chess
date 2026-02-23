@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { playAttackSound, playSuccessSound, playFailSound, playVictoryFanfare, playDefeatSound } from "@/lib/sounds";
 
-const GAME_VERSION = "1.18.0";
+const GAME_VERSION = "1.19.0";
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -114,6 +114,7 @@ export default function Game() {
   const [aiDepth, setAiDepth] = useState(0);
   const [maxBishopAttacksLobby, setMaxBishopAttacksLobby] = useState(10);
   const [maxRookAttacksLobby, setMaxRookAttacksLobby] = useState(10);
+  const [attackStats, setAttackStats] = useState<{ bishopArrowAttacks: number; rookBombAttacks: number; rookWallBuilds: number; gamesPlayed: number } | null>(null);
   const [budgetSubmitted, setBudgetSubmitted] = useState(false);
 
   const totalUsed = pawnAttackPercent + bishopAttackPercent + knightAttackPercent + bombAttackPercent + wallBuildPercent;
@@ -135,6 +136,13 @@ export default function Game() {
     queryKey: ['/api/games'],
     refetchOnWindowFocus: true,
   });
+
+  useEffect(() => {
+    fetch('/api/attack-stats')
+      .then(r => r.json())
+      .then(data => setAttackStats(data))
+      .catch(() => {});
+  }, []);
   
   const handleDeleteGame = useCallback(async (gameId: string) => {
     try {
@@ -703,6 +711,21 @@ export default function Game() {
             <CardTitle className="text-2xl font-bold">Battle Chess</CardTitle>
             <p className="text-muted-foreground">A novel chess variant with walls and special attacks</p>
             <p className="text-xs text-muted-foreground mt-1">Version {GAME_VERSION}</p>
+            {attackStats && (attackStats.gamesPlayed > 0 || attackStats.bishopArrowAttacks > 0) && (
+              <div className="mt-3 p-3 bg-muted/50 rounded-lg text-xs space-y-1" data-testid="attack-stats-panel">
+                <p className="font-medium text-sm text-foreground">All-Time Stats</p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
+                  <span>Games played:</span>
+                  <span className="text-right font-mono" data-testid="stat-games-played">{attackStats.gamesPlayed}</span>
+                  <span>Bishop arrows:</span>
+                  <span className="text-right font-mono" data-testid="stat-bishop-arrows">{attackStats.bishopArrowAttacks}</span>
+                  <span>Rook bombs:</span>
+                  <span className="text-right font-mono" data-testid="stat-rook-bombs">{attackStats.rookBombAttacks}</span>
+                  <span>Rook wall builds:</span>
+                  <span className="text-right font-mono" data-testid="stat-rook-walls">{attackStats.rookWallBuilds}</span>
+                </div>
+              </div>
+            )}
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center gap-2 justify-center text-sm">
@@ -795,7 +818,7 @@ export default function Game() {
                 <input
                   type="range"
                   min="0"
-                  max="10"
+                  max="75"
                   step="1"
                   value={maxBishopAttacksLobby}
                   onChange={(e) => setMaxBishopAttacksLobby(parseInt(e.target.value))}
@@ -813,7 +836,7 @@ export default function Game() {
                 <input
                   type="range"
                   min="0"
-                  max="10"
+                  max="75"
                   step="1"
                   value={maxRookAttacksLobby}
                   onChange={(e) => setMaxRookAttacksLobby(parseInt(e.target.value))}
