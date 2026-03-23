@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "GROwentvKb6JoWfLCUV56"
+uri = "file://docs/BATTLE_CHESS_SPEC.md"
+type = "text"
+title = "Battle Chess — Complete Application Specification"
