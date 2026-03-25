@@ -89,7 +89,8 @@ Always update `GAME_VERSION` in `client/src/pages/Game.tsx` whenever code is mod
 - **File Storage**: Layouts saved as JSON in `server/data/layouts.json`
 - **REST API**: `GET /api/layouts`, `POST /api/layouts` (upsert by name), `DELETE /api/layouts/:name`
 - **Shared Across Users**: All players see the same layout list; any player can add or remove layouts
-- **Client Integration**: GameControls fetches layouts on mount and when opening the layout manager panel
+- **Client Integration**: GameControls fetches layouts on mount, when opening the layout manager panel, and whenever `phase` transitions to `'setup'` (ensures freshness across game launches)
+- **Path Resolution**: `LAYOUTS_FILE` in `routes.ts` uses the same `__dirname`/`import.meta.url` resolution as `gameManager.ts` for consistency across dev and production
 
 ### Game Persistence System
 - **File Storage**: Games are saved as JSON files in `server/data/games/{gameId}.json`

@@ -86,6 +86,12 @@ export function GameControls({
     fetchLayouts();
   }, []);
 
+  useEffect(() => {
+    if (phase === 'setup') {
+      fetchLayouts();
+    }
+  }, [phase]);
+
   const saveLayout = async () => {
     const name = layoutName.trim();
     if (!name) {

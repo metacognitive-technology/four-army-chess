@@ -5,13 +5,24 @@ import { gameManager } from "./gameManager";
 import type { GameMessage } from "@shared/schema";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
 interface SavedLayout {
   name: string;
   walls: { row: number; col: number }[];
 }
 
-const LAYOUTS_FILE = path.join(process.cwd(), 'server', 'data', 'layouts.json');
+function getRoutesDir(): string {
+  try {
+    if (typeof __dirname !== 'undefined') return __dirname;
+  } catch {}
+  try {
+    return path.dirname(fileURLToPath(import.meta.url));
+  } catch {}
+  return process.cwd();
+}
+
+const LAYOUTS_FILE = path.join(getRoutesDir(), 'data', 'layouts.json');
 
 function loadLayouts(): SavedLayout[] {
   try {
