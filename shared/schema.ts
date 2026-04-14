@@ -19,7 +19,7 @@ export type User = typeof users.$inferSelect;
 
 // Game Types
 export type PieceType = 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'pawn';
-export type PlayerColor = 'white' | 'black';
+export type PlayerColor = 'white' | 'black' | 'red' | 'blue';
 
 export interface Piece {
   type: PieceType;

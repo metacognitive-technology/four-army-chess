@@ -87,7 +87,11 @@ export function PlayerPanel({
                   className={cn(
                     "text-lg",
                     piece.color === 'white' 
-                      ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] [text-shadow:_0_0_3px_rgba(0,0,0,0.8)]" 
+                      ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] [text-shadow:_0_0_3px_rgba(0,0,0,0.8)]"
+                      : piece.color === 'red'
+                      ? "text-red-500 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]"
+                      : piece.color === 'blue'
+                      ? "text-blue-500 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]"
                       : "text-gray-800 dark:text-gray-300"
                   )}
                 >

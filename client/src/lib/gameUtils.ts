@@ -5,13 +5,13 @@ export const MAX_MOVE_DISTANCE = 8;
 
 // Standard chess Unicode symbols - outline for white, filled for black
 // Using variation selector-15 (U+FE0E) to force text rendering instead of emoji
-export const PIECE_SYMBOLS: Record<PieceType, { white: string; black: string }> = {
-  king: { white: '♔\uFE0E', black: '♚\uFE0E' },
-  queen: { white: '♛\uFE0E', black: '♛\uFE0E' },
-  rook: { white: '♜\uFE0E', black: '♜\uFE0E' },
-  bishop: { white: '♗\uFE0E', black: '♝\uFE0E' },
-  knight: { white: '♞\uFE0E', black: '♞\uFE0E' },
-  pawn: { white: '♟\uFE0E', black: '♟\uFE0E' },
+export const PIECE_SYMBOLS: Record<PieceType, Record<string, string>> = {
+  king: { white: '♔\uFE0E', black: '♚\uFE0E', red: '♚\uFE0E', blue: '♚\uFE0E' },
+  queen: { white: '♛\uFE0E', black: '♛\uFE0E', red: '♛\uFE0E', blue: '♛\uFE0E' },
+  rook: { white: '♜\uFE0E', black: '♜\uFE0E', red: '♜\uFE0E', blue: '♜\uFE0E' },
+  bishop: { white: '♗\uFE0E', black: '♝\uFE0E', red: '♝\uFE0E', blue: '♝\uFE0E' },
+  knight: { white: '♞\uFE0E', black: '♞\uFE0E', red: '♞\uFE0E', blue: '♞\uFE0E' },
+  pawn: { white: '♟\uFE0E', black: '♟\uFE0E', red: '♟\uFE0E', blue: '♟\uFE0E' },
 };
 
 export function createInitialBoard(): Board {
@@ -29,32 +29,54 @@ export function createInitialBoard(): Board {
     }
     board.push(boardRow);
   }
-  
-  // Place pieces centered on the 12x12 board
-  // Traditional layout offset by 2 columns to center
-  const offset = 2;
-  
-  // Black pieces (rows 0-1, centered)
-  const blackBackRow = 0;
-  const blackPawnRow = 1;
-  
-  // White pieces (rows 10-11, centered)
-  const whiteBackRow = 11;
-  const whitePawnRow = 10;
-  
-  // Back row piece order
-  const backRowPieces: PieceType[] = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
-  
-  // Place back row pieces
-  for (let i = 0; i < 8; i++) {
-    board[blackBackRow][offset + i].piece = { type: backRowPieces[i], color: 'black', id: `b_${backRowPieces[i]}_${i}` };
-    board[whiteBackRow][offset + i].piece = { type: backRowPieces[i], color: 'white', id: `w_${backRowPieces[i]}_${i}` };
+
+  // Pre-place center walls (rows 3-8, cols 3-8) — the blocked center zone
+  for (let r = 3; r <= 8; r++) {
+    for (let c = 3; c <= 8; c++) {
+      board[r][c].isWall = true;
+    }
   }
-  
-  // Place pawns
-  for (let i = 0; i < 8; i++) {
-    board[blackPawnRow][offset + i].piece = { type: 'pawn', color: 'black', id: `b_pawn_${i}` };
-    board[whitePawnRow][offset + i].piece = { type: 'pawn', color: 'white', id: `w_pawn_${i}` };
+
+  // White pieces — bottom center (cols 3-6, rows 9-11)
+  // Row 11 (back): Rook, King, Queen, Rook
+  const whiteBackRow: PieceType[] = ['rook', 'king', 'queen', 'rook'];
+  const whiteMidRow: PieceType[] = ['knight', 'bishop', 'bishop', 'knight'];
+  for (let i = 0; i < 4; i++) {
+    board[11][3 + i].piece = { type: whiteBackRow[i], color: 'white', id: `w_${whiteBackRow[i]}_${i}` };
+    board[10][3 + i].piece = { type: whiteMidRow[i], color: 'white', id: `w_${whiteMidRow[i]}_${i}` };
+    board[9][3 + i].piece = { type: 'pawn', color: 'white', id: `w_pawn_${i}` };
+  }
+
+  // Black pieces — top center (cols 3-6, rows 0-2)
+  // Row 0 (back): Rook, Queen, King, Rook
+  const blackBackRow: PieceType[] = ['rook', 'queen', 'king', 'rook'];
+  const blackMidRow: PieceType[] = ['knight', 'bishop', 'bishop', 'knight'];
+  for (let i = 0; i < 4; i++) {
+    board[0][3 + i].piece = { type: blackBackRow[i], color: 'black', id: `b_${blackBackRow[i]}_${i}` };
+    board[1][3 + i].piece = { type: blackMidRow[i], color: 'black', id: `b_${blackMidRow[i]}_${i}` };
+    board[2][3 + i].piece = { type: 'pawn', color: 'black', id: `b_pawn_${i}` };
+  }
+
+  // Red pieces — left side (cols 0-2, rows 4-7)
+  // Col 0 = Rook/Queen/King/Rook, Col 1 = Knight/Bishop/Bishop/Knight, Col 2 = Pawns
+  const redColA: PieceType[] = ['rook', 'queen', 'king', 'rook'];   // rows 4,5,6,7
+  const redColB: PieceType[] = ['knight', 'bishop', 'bishop', 'knight'];
+  for (let i = 0; i < 4; i++) {
+    const r = 4 + i;
+    board[r][0].piece = { type: redColA[i], color: 'red', id: `r_${redColA[i]}_${i}` };
+    board[r][1].piece = { type: redColB[i], color: 'red', id: `r_${redColB[i]}_${i}` };
+    board[r][2].piece = { type: 'pawn', color: 'red', id: `r_pawn_${i}` };
+  }
+
+  // Blue pieces — right side (cols 9-11, rows 4-7)
+  // Col 11 = Rook/King/Queen/Rook, Col 10 = Knight/Bishop/Bishop/Knight, Col 9 = Pawns
+  const blueColL: PieceType[] = ['rook', 'king', 'queen', 'rook'];  // rows 4,5,6,7
+  const blueColK: PieceType[] = ['knight', 'bishop', 'bishop', 'knight'];
+  for (let i = 0; i < 4; i++) {
+    const r = 4 + i;
+    board[r][11].piece = { type: blueColL[i], color: 'blue', id: `bl_${blueColL[i]}_${i}` };
+    board[r][10].piece = { type: blueColK[i], color: 'blue', id: `bl_${blueColK[i]}_${i}` };
+    board[r][9].piece = { type: 'pawn', color: 'blue', id: `bl_pawn_${i}` };
   }
   
   return board;

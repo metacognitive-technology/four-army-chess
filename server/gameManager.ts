@@ -3475,23 +3475,50 @@ class GameManager {
       }
       board.push(boardRow);
     }
-    
-    const offset = 2;
-    const blackBackRow = 0;
-    const blackPawnRow = 1;
-    const whiteBackRow = 11;
-    const whitePawnRow = 10;
-    
-    const backRowPieces: PieceType[] = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
-    
-    for (let i = 0; i < 8; i++) {
-      board[blackBackRow][offset + i].piece = { type: backRowPieces[i], color: 'black', id: `b_${backRowPieces[i]}_${i}` };
-      board[whiteBackRow][offset + i].piece = { type: backRowPieces[i], color: 'white', id: `w_${backRowPieces[i]}_${i}` };
+
+    // Pre-place center walls (rows 3-8, cols 3-8)
+    for (let r = 3; r <= 8; r++) {
+      for (let c = 3; c <= 8; c++) {
+        board[r][c].isWall = true;
+      }
     }
-    
-    for (let i = 0; i < 8; i++) {
-      board[blackPawnRow][offset + i].piece = { type: 'pawn', color: 'black', id: `b_pawn_${i}` };
-      board[whitePawnRow][offset + i].piece = { type: 'pawn', color: 'white', id: `w_pawn_${i}` };
+
+    // White pieces — bottom center (cols 3-6, rows 9-11)
+    const whiteBackRow: PieceType[] = ['rook', 'king', 'queen', 'rook'];
+    const whiteMidRow: PieceType[] = ['knight', 'bishop', 'bishop', 'knight'];
+    for (let i = 0; i < 4; i++) {
+      board[11][3 + i].piece = { type: whiteBackRow[i], color: 'white', id: `w_${whiteBackRow[i]}_${i}` };
+      board[10][3 + i].piece = { type: whiteMidRow[i], color: 'white', id: `w_${whiteMidRow[i]}_${i}` };
+      board[9][3 + i].piece = { type: 'pawn', color: 'white', id: `w_pawn_${i}` };
+    }
+
+    // Black pieces — top center (cols 3-6, rows 0-2)
+    const blackBackRow: PieceType[] = ['rook', 'queen', 'king', 'rook'];
+    const blackMidRow: PieceType[] = ['knight', 'bishop', 'bishop', 'knight'];
+    for (let i = 0; i < 4; i++) {
+      board[0][3 + i].piece = { type: blackBackRow[i], color: 'black', id: `b_${blackBackRow[i]}_${i}` };
+      board[1][3 + i].piece = { type: blackMidRow[i], color: 'black', id: `b_${blackMidRow[i]}_${i}` };
+      board[2][3 + i].piece = { type: 'pawn', color: 'black', id: `b_pawn_${i}` };
+    }
+
+    // Red pieces — left side (cols 0-2, rows 4-7)
+    const redColA: PieceType[] = ['rook', 'queen', 'king', 'rook'];
+    const redColB: PieceType[] = ['knight', 'bishop', 'bishop', 'knight'];
+    for (let i = 0; i < 4; i++) {
+      const r = 4 + i;
+      board[r][0].piece = { type: redColA[i], color: 'red', id: `r_${redColA[i]}_${i}` };
+      board[r][1].piece = { type: redColB[i], color: 'red', id: `r_${redColB[i]}_${i}` };
+      board[r][2].piece = { type: 'pawn', color: 'red', id: `r_pawn_${i}` };
+    }
+
+    // Blue pieces — right side (cols 9-11, rows 4-7)
+    const blueColL: PieceType[] = ['rook', 'king', 'queen', 'rook'];
+    const blueColK: PieceType[] = ['knight', 'bishop', 'bishop', 'knight'];
+    for (let i = 0; i < 4; i++) {
+      const r = 4 + i;
+      board[r][11].piece = { type: blueColL[i], color: 'blue', id: `bl_${blueColL[i]}_${i}` };
+      board[r][10].piece = { type: blueColK[i], color: 'blue', id: `bl_${blueColK[i]}_${i}` };
+      board[r][9].piece = { type: 'pawn', color: 'blue', id: `bl_pawn_${i}` };
     }
     
     return board;

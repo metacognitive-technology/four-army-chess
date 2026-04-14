@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils";
 import { Target, ZoomIn, ZoomOut, RotateCcw, Axe, Bomb, Blocks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-function PawnIcon({ color, size }: { color: 'white' | 'black'; size: string }) {
-  const fill = color === 'white' ? '#ffffff' : '#000000';
-  const stroke = color === 'white' ? '#000000' : '#ffffff';
+function PawnIcon({ color, size }: { color: string; size: string }) {
+  const fill = color === 'white' ? '#ffffff' : color === 'red' ? '#ef4444' : color === 'blue' ? '#3b82f6' : '#000000';
+  const stroke = color === 'white' || color === 'red' || color === 'blue' ? '#000000' : '#ffffff';
   return (
     <svg 
       viewBox="0 0 45 45" 
@@ -309,12 +309,12 @@ export function GameBoard({
                     <span 
                       className={cn(
                         "select-none transition-transform duration-200 leading-none",
-                        piece.color === 'white' ? "text-white" : "text-black",
                         showSelected && "scale-105",
                       )}
                       style={{
                         fontSize: 'min(calc(560px / 12 * 0.85), calc((min(90vw, calc(100vh - 280px)) / 12) * 0.85))',
-                        WebkitTextStroke: piece.color === 'white' ? '1px black' : '1px white',
+                        color: piece.color === 'white' ? '#ffffff' : piece.color === 'red' ? '#ef4444' : piece.color === 'blue' ? '#3b82f6' : '#000000',
+                        WebkitTextStroke: (piece.color === 'white' || piece.color === 'red' || piece.color === 'blue') ? '1px black' : '1px white',
                         paintOrder: 'stroke fill',
                       }}
                     >
