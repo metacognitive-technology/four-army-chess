@@ -62,6 +62,7 @@ export type PromotionPieceType = 'queen' | 'rook' | 'bishop' | 'knight';
 
 export type GamePhase = 'waiting' | 'budget_setup' | 'setup' | 'playing' | 'finished';
 export type GameMode = 'pvp' | 'pvc' | 'cvc';
+export type PlayerCount = 1 | 2 | 3 | 4;
 export type BudgetMode = 'shared' | 'individual';
 
 export interface AttackSettings {
@@ -87,13 +88,15 @@ export interface GameState {
   phase: GamePhase;
   gameMode: GameMode;
   aiColor?: PlayerColor;
-  aiControlled?: { white: boolean; black: boolean };
+  aiControlled?: { white: boolean; black: boolean; red: boolean; blue: boolean };
   aiDepth?: number;
-  setupWallsRemaining: { white: number; black: number };
+  setupWallsRemaining: { white: number; black: number; red: number; blue: number };
   maxWallsPerPlayer: number;
   moveHistory: Move[];
-  capturedPieces: { white: Piece[]; black: Piece[] };
-  players: { white: string | null; black: string | null };
+  capturedPieces: { white: Piece[]; black: Piece[]; red: Piece[]; blue: Piece[] };
+  players: { white: string | null; black: string | null; red: string | null; blue: string | null };
+  activePlayers: PlayerColor[];
+  numHumanPlayers?: number;
   winner: PlayerColor | 'draw' | null;
   lastDiceRoll?: { value: number; type: 'd4' | 'd6' | '2d6' | 'd10'; success: boolean };
   aiThinkingPly?: number;
@@ -144,7 +147,10 @@ export interface SavedGameInfo {
   moveCount: number;
   whitePlayer: string | null;
   blackPlayer: string | null;
+  redPlayer: string | null;
+  bluePlayer: string | null;
   winner: PlayerColor | 'draw' | null;
   updatedAt: string;
   gameMode?: GameMode;
+  numHumanPlayers?: number;
 }

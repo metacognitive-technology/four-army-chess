@@ -30,6 +30,31 @@ function isInPlayerTerritory(r: number, c: number, color: PlayerColor): boolean 
   }
 }
 
+const ALL_COLORS: PlayerColor[] = ['white', 'black', 'red', 'blue'];
+
+function nextActiveColor(state: GameState, after: PlayerColor): PlayerColor {
+  const active = state.activePlayers && state.activePlayers.length > 0 ? state.activePlayers : ALL_COLORS;
+  const idx = active.indexOf(after);
+  return active[(idx + 1) % active.length] ?? after;
+}
+
+function primaryEnemy(state: GameState, color: PlayerColor): PlayerColor {
+  const active = state.activePlayers && state.activePlayers.length > 0 ? state.activePlayers : ALL_COLORS;
+  const others = active.filter(c => c !== color);
+  return others[0] ?? (color === 'white' ? 'black' : 'white');
+}
+
+function eliminatePlayer(state: GameState, color: PlayerColor): void {
+  for (let r = 0; r < 12; r++) {
+    for (let c = 0; c < 12; c++) {
+      if (state.board[r][c].piece?.color === color) {
+        state.board[r][c].piece = null;
+      }
+    }
+  }
+  state.activePlayers = (state.activePlayers || ALL_COLORS).filter(p => p !== color);
+}
+
 function generateShortId(length = 9): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz';
   const bytes = randomBytes(length);
@@ -453,9 +478,12 @@ class GameManager {
             moveCount: state.moveHistory.length,
             whitePlayer: state.players.white,
             blackPlayer: state.players.black,
+            redPlayer: state.players.red ?? null,
+            bluePlayer: state.players.blue ?? null,
             winner: state.winner,
             updatedAt: stat.mtime.toISOString(),
             gameMode: state.gameMode,
+            numHumanPlayers: state.numHumanPlayers,
           });
         } catch (e) {
           // Skip invalid files
@@ -555,11 +583,19 @@ class GameManager {
     return state;
   }
 
-  createGame(ws: WebSocket, maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual', aiDepth?: number): { gameId: string; playerId: string; color: PlayerColor } {
+  createGame(ws: WebSocket, maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual', aiDepth?: number, numHumanPlayers?: number): { gameId: string; playerId: string; color: PlayerColor } {
     const gameId = generateShortId();
     const playerId = generateShortId();
-    
-    const isVsComputer = gameMode === 'pvc';
+
+    // Derive human count from gameMode if not explicitly set
+    const humanCount: number = numHumanPlayers ?? (gameMode === 'cvc' ? 0 : gameMode === 'pvc' ? 1 : 2);
+    // Clamp to valid range
+    const effectiveHumanCount = Math.max(0, Math.min(4, humanCount));
+
+    // Derive effective game mode
+    const effectiveGameMode: GameMode = effectiveHumanCount === 0 ? 'cvc' : effectiveHumanCount === 1 ? 'pvc' : 'pvp';
+
+    const hasHumanPlayer = effectiveHumanCount >= 1;
     
     const defaultAttackSettings: AttackSettings = {
       pawnSuccessRoll: 1,
@@ -574,20 +610,41 @@ class GameManager {
     
     const maxBishopAttacks = attackSettings?.maxBishopAttacks ?? 10;
     const maxRookAttacks = attackSettings?.maxRookAttacks ?? 10;
-    
+
+    // Assign colors: first effectiveHumanCount colors go to humans, rest to AI
+    const aiControlled: { white: boolean; black: boolean; red: boolean; blue: boolean } = {
+      white: effectiveHumanCount < 1,
+      black: effectiveHumanCount < 2,
+      red: effectiveHumanCount < 3,
+      blue: effectiveHumanCount < 4,
+    };
+
+    const statePlayersMap: { white: string | null; black: string | null; red: string | null; blue: string | null } = {
+      white: hasHumanPlayer ? playerId : AI_PLAYER_ID,
+      black: effectiveHumanCount >= 2 ? null : AI_PLAYER_ID,
+      red: effectiveHumanCount >= 3 ? null : AI_PLAYER_ID,
+      blue: effectiveHumanCount >= 4 ? null : AI_PLAYER_ID,
+    };
+
+    const startPhase: GameState['phase'] = !hasHumanPlayer
+      ? 'playing'
+      : (maxWalls > 0 ? 'setup' : 'waiting');
+
     const state: GameState = {
       id: gameId,
       board: this.createInitialBoard(),
       currentTurn: 'white',
-      phase: isVsComputer ? (maxWalls > 0 ? 'setup' : 'playing') : 'waiting',
-      gameMode,
-      aiColor: isVsComputer ? 'black' : undefined,
-      aiControlled: { white: false, black: isVsComputer },
-      setupWallsRemaining: { white: maxWalls, black: maxWalls },
+      phase: startPhase,
+      gameMode: effectiveGameMode,
+      aiColor: effectiveHumanCount === 1 ? 'black' : undefined,
+      aiControlled,
+      activePlayers: [...ALL_COLORS],
+      numHumanPlayers: effectiveHumanCount,
+      setupWallsRemaining: { white: maxWalls, black: maxWalls, red: maxWalls, blue: maxWalls },
       maxWallsPerPlayer: maxWalls,
       moveHistory: [],
-      capturedPieces: { white: [], black: [] },
-      players: { white: playerId, black: isVsComputer ? AI_PLAYER_ID : null },
+      capturedPieces: { white: [], black: [], red: [], blue: [] },
+      players: statePlayersMap,
       winner: null,
       attackSettings: finalAttackSettings,
       budgetMode: effectiveBudgetMode,
@@ -606,26 +663,34 @@ class GameManager {
       state.blackAttackSettings = { ...finalAttackSettings };
     }
     
-    if (isVsComputer && effectiveBudgetMode === 'individual') {
-      state.blackAttackSettings = this.generateAIBudgetSettings(finalAttackSettings.totalAttackBudget || 250);
-      state.budgetReadyPlayers = [AI_PLAYER_ID];
+    if (effectiveBudgetMode === 'individual') {
+      // All AI players get auto-generated budget settings
+      if (aiControlled.black) state.blackAttackSettings = this.generateAIBudgetSettings(finalAttackSettings.totalAttackBudget || 250);
+      if (aiControlled.red) (state as any).redAttackSettings = this.generateAIBudgetSettings(finalAttackSettings.totalAttackBudget || 250);
+      if (aiControlled.blue) (state as any).blueAttackSettings = this.generateAIBudgetSettings(finalAttackSettings.totalAttackBudget || 250);
     }
+
+    // Mark all AI player IDs as ready for budget and walls
+    if (aiControlled.white) state.budgetReadyPlayers!.push(AI_PLAYER_ID);
+    else if (aiControlled.black || aiControlled.red || aiControlled.blue) state.budgetReadyPlayers!.push(AI_PLAYER_ID);
     
     const room: GameRoom = {
       state,
-      players: new Map([[playerId, { ws, id: playerId, color: 'white' }]]),
+      players: new Map(hasHumanPlayer ? [[playerId, { ws, id: playerId, color: 'white' }]] : []),
       readyPlayers: new Set(),
       attackCounts: { bishopArrows: 0, rookBombs: 0, rookWallBuilds: 0 },
     };
-    
-    // For vs computer, auto-ready the AI and place random walls
-    if (isVsComputer) {
-      room.readyPlayers.add(AI_PLAYER_ID);
-      this.placeAIWalls(state, maxWalls);
+
+    // Place walls for all AI colors, mark AI as ready
+    for (const color of ALL_COLORS) {
+      if (aiControlled[color]) {
+        this.placeAIWalls(state, maxWalls, color);
+        room.readyPlayers.add(AI_PLAYER_ID);
+      }
     }
     
     this.games.set(gameId, room);
-    this.playerToGame.set(playerId, gameId);
+    if (hasHumanPlayer) this.playerToGame.set(playerId, gameId);
     
     // Save game to file
     this.saveGame(state);
@@ -663,12 +728,14 @@ class GameManager {
       phase: 'playing',
       gameMode: 'cvc',
       aiColor: undefined,
-      aiControlled: { white: true, black: true },
-      setupWallsRemaining: { white: 0, black: 0 },
+      aiControlled: { white: true, black: true, red: true, blue: true },
+      setupWallsRemaining: { white: 0, black: 0, red: 0, blue: 0 },
       maxWallsPerPlayer: maxWalls,
       moveHistory: [],
-      capturedPieces: { white: [], black: [] },
-      players: { white: AI_PLAYER_ID, black: AI_PLAYER_ID },
+      capturedPieces: { white: [], black: [], red: [], blue: [] },
+      players: { white: AI_PLAYER_ID, black: AI_PLAYER_ID, red: AI_PLAYER_ID, blue: AI_PLAYER_ID },
+      activePlayers: [...ALL_COLORS],
+      numHumanPlayers: 0,
       winner: null,
       attackSettings: finalSettings,
       aiDepth: Math.max(0, Math.min(8, aiDepth ?? 0)),
@@ -677,9 +744,10 @@ class GameManager {
       specialAttackCounts: {},
     };
     
-    // Place walls for both sides
-    this.placeCvCWalls(state, maxWalls, 'white');
-    this.placeCvCWalls(state, maxWalls, 'black');
+    // Place walls for all four sides
+    for (const color of ALL_COLORS) {
+      this.placeCvCWalls(state, maxWalls, color);
+    }
     
     const room: GameRoom = {
       state,
@@ -720,17 +788,33 @@ class GameManager {
       const moveResult = this.makeCvCMove(state, currentColor);
       
       if (!moveResult) {
-        const inCheck = this.isInCheck(state.board, currentColor);
-        if (inCheck) {
-          state.winner = currentColor === 'white' ? 'black' : 'white';
+        // Current player has no legal moves — eliminate or declare draw
+        const active = state.activePlayers || ALL_COLORS;
+        if (active.length <= 2) {
+          // 2-player or last pair: checkmate or stalemate ends game
+          const inCheck = this.isInCheck(state.board, currentColor);
+          if (inCheck) {
+            eliminatePlayer(state, currentColor);
+            state.winner = state.activePlayers.length === 1 ? state.activePlayers[0] : null;
+          } else {
+            state.winner = 'draw';
+          }
+          state.phase = 'finished';
         } else {
-          state.winner = 'draw';
+          // 3-4 player: eliminate the stuck player and continue
+          eliminatePlayer(state, currentColor);
+          state.currentTurn = nextActiveColor(state, currentColor);
+          if (state.activePlayers.length <= 1) {
+            state.winner = state.activePlayers[0] ?? null;
+            state.phase = 'finished';
+          }
         }
-        state.phase = 'finished';
         this.saveGame(state);
         this.onCvCStateUpdate?.(gameId, state);
-        this.cvcIntervals.delete(gameId);
-        return;
+        if (state.phase === 'finished') {
+          this.cvcIntervals.delete(gameId);
+          return;
+        }
       }
       
       this.saveGame(state);
@@ -1211,11 +1295,17 @@ class GameManager {
     
     // Check for king capture
     if (actualCaptured && actualCaptured.type === 'king') {
-      state.winner = color;
-      state.phase = 'finished';
+      eliminatePlayer(state, actualCaptured.color);
+      if (state.activePlayers.length <= 1) {
+        state.winner = state.activePlayers[0] ?? color;
+        state.phase = 'finished';
+      } else {
+        state.currentTurn = nextActiveColor(state, color);
+        this.checkGameEnd(state, color);
+      }
     } else {
       // Switch turns
-      state.currentTurn = color === 'white' ? 'black' : 'white';
+      state.currentTurn = nextActiveColor(state, color);
       
       // Check for checkmate or stalemate
       this.checkGameEnd(state, color);
@@ -1253,15 +1343,16 @@ class GameManager {
       board[to.row][to.col].piece = null;
       
       if (targetPiece.type === 'king') {
-        state.winner = color;
-        state.phase = 'finished';
-        return;
+        eliminatePlayer(state, targetPiece.color);
+        if (state.activePlayers.length <= 1) {
+          state.winner = state.activePlayers[0] ?? color;
+          state.phase = 'finished';
+          return;
+        }
       }
     }
     
-    const enemyColor = color === 'white' ? 'black' : 'white';
-    state.currentTurn = enemyColor;
-    
+    state.currentTurn = nextActiveColor(state, color);
     this.checkGameEnd(state, color);
   }
   
@@ -1295,15 +1386,16 @@ class GameManager {
       board[to.row][to.col].piece = null;
       
       if (targetPiece.type === 'king') {
-        state.winner = color;
-        state.phase = 'finished';
-        return;
+        eliminatePlayer(state, targetPiece.color);
+        if (state.activePlayers.length <= 1) {
+          state.winner = state.activePlayers[0] ?? color;
+          state.phase = 'finished';
+          return;
+        }
       }
     }
     
-    const enemyColor = color === 'white' ? 'black' : 'white';
-    state.currentTurn = enemyColor;
-    
+    state.currentTurn = nextActiveColor(state, color);
     this.checkGameEnd(state, color);
   }
   
@@ -1335,8 +1427,7 @@ class GameManager {
     
     state.lastDiceRoll = { value: roll, type: 'd10', success };
     
-    const enemyColor = color === 'white' ? 'black' : 'white';
-    state.currentTurn = enemyColor;
+    state.currentTurn = nextActiveColor(state, color);
     
     // Destroying a wall can open lines of attack - check for checkmate/stalemate
     if (success) {
@@ -1358,22 +1449,23 @@ class GameManager {
     // Update the game state
     state.players[color] = playerId;
     
-    // If CvC game being taken over, change to PvC or PvP
-    if (state.gameMode === 'cvc') {
-      const otherColor = color === 'white' ? 'black' : 'white';
-      if (state.players[otherColor] === AI_PLAYER_ID) {
-        state.gameMode = 'pvc';
-        state.aiColor = otherColor;
-      } else {
-        state.gameMode = 'pvp';
-      }
-    } else if (state.gameMode === 'pvc') {
-      // If taking over the AI color
-      if (state.aiColor === color) {
-        state.gameMode = 'pvp';
-        state.aiColor = undefined;
-      }
+    // Update AI control: this color is now human-controlled
+    if (!state.aiControlled) {
+      state.aiControlled = { white: false, black: false, red: false, blue: false };
     }
+    state.aiControlled[color] = false;
+
+    // Recalculate numHumanPlayers
+    const humanCount = ALL_COLORS.filter(c => !state.aiControlled![c]).length;
+    state.numHumanPlayers = humanCount as 1 | 2 | 3 | 4;
+
+    // Derive gameMode from human count
+    if (state.numHumanPlayers === 4) state.gameMode = 'pvp';
+    else if (state.numHumanPlayers === 0) state.gameMode = 'cvc';
+    else state.gameMode = 'pvc';
+
+    // Legacy aiColor: first AI-controlled color (for 1v1 compatibility)
+    state.aiColor = ALL_COLORS.find(c => state.aiControlled![c]) as PlayerColor | undefined;
     
     let room = this.games.get(gameId);
     if (!room) {
@@ -1395,8 +1487,8 @@ class GameManager {
     return { playerId, state };
   }
   
-  private placeAIWalls(state: GameState, count: number): void {
-    const aiColor = state.aiColor;
+  private placeAIWalls(state: GameState, count: number, color?: PlayerColor): void {
+    const aiColor = color ?? state.aiColor;
     if (!aiColor) return;
 
     let placed = 0;
@@ -1443,26 +1535,37 @@ class GameManager {
       }
     }
     
-    if (room.state.players.black) {
-      return null;
+    // Find next open human slot (null = not yet assigned a human)
+    const assignColor = ALL_COLORS.find(c => room!.state.players[c] === null) ?? null;
+    if (!assignColor) {
+      return null; // Game is full
     }
     
     const playerId = generateShortId();
-    room.state.players.black = playerId;
-    room.players.set(playerId, { ws, id: playerId, color: 'black' });
+    room.state.players[assignColor] = playerId;
+    room.players.set(playerId, { ws, id: playerId, color: assignColor });
     this.playerToGame.set(playerId, gameId);
+
+    // Update aiControlled for this newly human-taken slot
+    if (room.state.aiControlled) {
+      room.state.aiControlled[assignColor] = false;
+    }
     
-    if (room.state.budgetMode === 'individual') {
-      room.state.phase = 'budget_setup';
-    } else if (room.state.maxWallsPerPlayer > 0) {
-      room.state.phase = 'setup';
-    } else {
-      room.state.phase = 'playing';
+    // Check if all human slots are now filled to transition phase
+    const openSlots = ALL_COLORS.filter(c => room!.state.players[c] === null);
+    if (openSlots.length === 0) {
+      if (room.state.budgetMode === 'individual') {
+        room.state.phase = 'budget_setup';
+      } else if (room.state.maxWallsPerPlayer > 0) {
+        room.state.phase = 'setup';
+      } else {
+        room.state.phase = 'playing';
+      }
     }
     
     this.saveGame(room.state);
     
-    return { playerId, color: 'black' };
+    return { playerId, color: assignColor };
   }
   
   private generateAIBudgetSettings(totalBudget: number): AttackSettings {
@@ -1535,7 +1638,7 @@ class GameManager {
       room.state.budgetReadyPlayers.push(playerId);
     }
     
-    const neededCount = room.state.gameMode === 'pvc' ? 1 : 2;
+    const neededCount = room.state.numHumanPlayers ?? (room.state.gameMode === 'pvc' ? 1 : 2);
     const humanReady = room.state.budgetReadyPlayers.filter(id => id !== AI_PLAYER_ID).length;
     const aiReady = room.state.budgetReadyPlayers.includes(AI_PLAYER_ID) ? 1 : 0;
     const totalReady = humanReady + aiReady;
@@ -1873,8 +1976,10 @@ class GameManager {
     
     room.readyPlayers.add(playerId);
     
-    // If both players ready, start the game
-    if (room.readyPlayers.size >= 2) {
+    // Start the game when all human players (those with WebSocket connections) are ready
+    const humanPlayerIds = Array.from(room.players.keys());
+    const allHumansReady = humanPlayerIds.every(id => room.readyPlayers.has(id));
+    if (allHumansReady) {
       room.state.phase = 'playing';
     }
     
@@ -1896,8 +2001,13 @@ class GameManager {
     
     // Handle resignation
     if (resign) {
-      room.state.winner = player.color === 'white' ? 'black' : 'white';
-      room.state.phase = 'finished';
+      eliminatePlayer(room.state, player.color);
+      if (room.state.activePlayers.length <= 1) {
+        room.state.winner = room.state.activePlayers[0] ?? null;
+        room.state.phase = 'finished';
+      } else {
+        room.state.currentTurn = nextActiveColor(room.state, player.color);
+      }
       this.saveGame(room.state);
       return { state: room.state };
     }
@@ -1928,7 +2038,7 @@ class GameManager {
       room.state.lastDiceRoll = diceRoll;
       
       if (!success) {
-        room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
+        room.state.currentTurn = nextActiveColor(room.state, player.color);
         this.saveGame(room.state);
         return { state: room.state, diceRoll };
       }
@@ -1937,19 +2047,24 @@ class GameManager {
     // Execute move
     board[from.row][from.col].piece = null;
     
+    let kingCaptured = false;
     if (targetPiece) {
       room.state.capturedPieces[player.color].push(targetPiece);
       
-      // Check for king capture (win condition)
+      // Check for king capture (elimination or win condition)
       if (targetPiece.type === 'king') {
-        room.state.winner = player.color;
-        room.state.phase = 'finished';
+        eliminatePlayer(room.state, targetPiece.color);
+        if (room.state.activePlayers.length <= 1) {
+          room.state.winner = room.state.activePlayers[0] ?? player.color;
+          room.state.phase = 'finished';
+        }
+        kingCaptured = true;
       }
     }
     
-    // Check for pawn promotion
-    const isPromotion = piece.type === 'pawn' && 
-      ((player.color === 'white' && to.row === 0) || (player.color === 'black' && to.row === 11));
+    // Check for pawn promotion — any color promotes when reaching the far row
+    const promotionRows: Partial<Record<PlayerColor, number>> = { white: 0, black: 11, red: 5, blue: 6 };
+    const isPromotion = piece.type === 'pawn' && to.row === promotionRows[player.color];
     
     if (isPromotion && !promotionPiece) {
       // Need to ask client for promotion choice - don't execute move yet
@@ -1997,13 +2112,21 @@ class GameManager {
     };
     room.state.moveHistory.push(move);
     
-    // Swap turns
-    room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
-    
-    // Check for checkmate
-    if (this.isCheckmate(board, room.state.currentTurn)) {
-      room.state.winner = player.color;
-      room.state.phase = 'finished';
+    // Swap turns (only if game is still going)
+    if (room.state.phase === 'playing') {
+      room.state.currentTurn = nextActiveColor(room.state, player.color);
+      
+      // Check for checkmate of next player
+      if (!kingCaptured && this.isCheckmate(board, room.state.currentTurn)) {
+        const checkmatedColor = room.state.currentTurn;
+        eliminatePlayer(room.state, checkmatedColor);
+        if (room.state.activePlayers.length <= 1) {
+          room.state.winner = room.state.activePlayers[0] ?? player.color;
+          room.state.phase = 'finished';
+        } else {
+          room.state.currentTurn = nextActiveColor(room.state, checkmatedColor);
+        }
+      }
     }
     
     // Save game to file
@@ -2098,18 +2221,29 @@ class GameManager {
       board[to.row][to.col].piece = null;
       
       if (targetPiece.type === 'king') {
-        room.state.winner = player.color;
-        room.state.phase = 'finished';
+        eliminatePlayer(room.state, targetPiece.color);
+        if (room.state.activePlayers.length <= 1) {
+          room.state.winner = room.state.activePlayers[0] ?? player.color;
+          room.state.phase = 'finished';
+        }
       }
     }
     
     // Swap turns
-    room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
-    
-    // Check for checkmate after attack
-    if (room.state.phase !== 'finished' && this.isCheckmate(board, room.state.currentTurn)) {
-      room.state.winner = player.color;
-      room.state.phase = 'finished';
+    if (room.state.phase === 'playing') {
+      room.state.currentTurn = nextActiveColor(room.state, player.color);
+      
+      // Check for checkmate after attack
+      if (this.isCheckmate(board, room.state.currentTurn)) {
+        const checkmatedColor = room.state.currentTurn;
+        eliminatePlayer(room.state, checkmatedColor);
+        if (room.state.activePlayers.length <= 1) {
+          room.state.winner = room.state.activePlayers[0] ?? player.color;
+          room.state.phase = 'finished';
+        } else {
+          room.state.currentTurn = nextActiveColor(room.state, checkmatedColor);
+        }
+      }
     }
     
     // Save game to file
@@ -2171,18 +2305,29 @@ class GameManager {
       board[to.row][to.col].piece = null;
       
       if (targetPiece.type === 'king') {
-        room.state.winner = player.color;
-        room.state.phase = 'finished';
+        eliminatePlayer(room.state, targetPiece.color);
+        if (room.state.activePlayers.length <= 1) {
+          room.state.winner = room.state.activePlayers[0] ?? player.color;
+          room.state.phase = 'finished';
+        }
       }
     }
     
     // Swap turns
-    room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
-    
-    // Check for checkmate after attack
-    if (room.state.phase !== 'finished' && this.isCheckmate(board, room.state.currentTurn)) {
-      room.state.winner = player.color;
-      room.state.phase = 'finished';
+    if (room.state.phase === 'playing') {
+      room.state.currentTurn = nextActiveColor(room.state, player.color);
+      
+      // Check for checkmate after attack
+      if (this.isCheckmate(board, room.state.currentTurn)) {
+        const checkmatedColor = room.state.currentTurn;
+        eliminatePlayer(room.state, checkmatedColor);
+        if (room.state.activePlayers.length <= 1) {
+          room.state.winner = room.state.activePlayers[0] ?? player.color;
+          room.state.phase = 'finished';
+        } else {
+          room.state.currentTurn = nextActiveColor(room.state, checkmatedColor);
+        }
+      }
     }
     
     // Save game to file
@@ -2255,7 +2400,7 @@ class GameManager {
     }
     
     // Swap turns
-    room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
+    room.state.currentTurn = nextActiveColor(room.state, player.color);
     
     // Save game to file
     this.saveGame(room.state);
@@ -2328,7 +2473,7 @@ class GameManager {
     }
     
     // Swap turns
-    room.state.currentTurn = player.color === 'white' ? 'black' : 'white';
+    room.state.currentTurn = nextActiveColor(room.state, player.color);
     
     // Save game to file
     this.saveGame(room.state);
@@ -2384,7 +2529,7 @@ class GameManager {
     
     // Initialize aiControlled if not present
     if (!room.state.aiControlled) {
-      room.state.aiControlled = { white: false, black: false };
+      room.state.aiControlled = { white: false, black: false, red: false, blue: false };
     }
     
     room.state.aiControlled[player.color] = true;
@@ -2404,7 +2549,7 @@ class GameManager {
     
     // Initialize aiControlled if not present
     if (!room.state.aiControlled) {
-      room.state.aiControlled = { white: false, black: false };
+      room.state.aiControlled = { white: false, black: false, red: false, blue: false };
     }
     
     room.state.aiControlled[player.color] = false;
@@ -2655,7 +2800,8 @@ class GameManager {
             
             // Bonus for advancing pawns toward promotion
             if (piece.type === 'pawn') {
-              const promotionRow = aiColor === 'white' ? 0 : BOARD_SIZE - 1;
+              const promotionRows: Record<PlayerColor, number> = { white: 0, black: BOARD_SIZE - 1, red: 5, blue: 6 };
+              const promotionRow = promotionRows[aiColor] ?? (aiColor === 'white' ? 0 : BOARD_SIZE - 1);
               const distToPromotion = Math.abs(to.row - promotionRow);
               const advancement = BOARD_SIZE - 1 - distToPromotion;
               
@@ -2682,7 +2828,7 @@ class GameManager {
             
             // Bishop safety and development
             if (piece.type === 'bishop') {
-              const enemyColorForBishop = aiColor === 'white' ? 'black' : 'white';
+              const enemyColorForBishop = primaryEnemy(state, aiColor);
               
               const destThreatened = this.isSquareAttackedBy(newBoard, to, enemyColorForBishop);
               
@@ -2729,7 +2875,7 @@ class GameManager {
             score += (BOARD_SIZE - centerDist) * 0.05;
             
             // A* pathfinding: bonus for moves that get closer to enemy king
-            const enemyColor = aiColor === 'white' ? 'black' : 'white';
+            const enemyColor = primaryEnemy(state, aiColor);
             const enemyKingPos = findKingPosition(board, enemyColor);
             if (enemyKingPos && !targetPiece) {
               // For non-capture moves, prefer moves that reduce path distance to enemy king
@@ -2870,7 +3016,7 @@ class GameManager {
             const pvcRMax = state.maxRookAttacks ?? 10;
             if (pvcRPieceUsed < pvcRMax) {
             const bombTargets = this.getBombTargets(board, from);
-            const enemyColor = aiColor === 'white' ? 'black' : 'white';
+            const enemyColor = primaryEnemy(state, aiColor);
             const enemyKingPos = findKingPosition(board, enemyColor);
             
             // Count total walls to determine if board is heavily walled
@@ -3021,7 +3167,7 @@ class GameManager {
       const regularMoves = possibleMoves.filter(m => !m.isArrow && !m.isAxe && !m.isBomb);
       const specialMoves = possibleMoves.filter(m => m.isArrow || m.isAxe || m.isBomb);
       
-      const enemyColor = aiColor === 'white' ? 'black' : 'white';
+      const enemyColor = primaryEnemy(state, aiColor);
       
       for (let currentPly = 1; currentPly <= aiDepth; currentPly++) {
         state.aiThinkingPly = currentPly;
@@ -3211,7 +3357,7 @@ class GameManager {
       state.lastDiceRoll = diceRoll;
 
       if (!success) {
-        state.currentTurn = aiColor === 'white' ? 'black' : 'white';
+        state.currentTurn = nextActiveColor(state, aiColor);
         this.saveGame(state);
         return { state, diceRoll };
       }
@@ -3223,13 +3369,17 @@ class GameManager {
     if (targetPiece) {
       state.capturedPieces[aiColor].push(targetPiece);
       if (targetPiece.type === 'king') {
-        state.winner = aiColor;
-        state.phase = 'finished';
+        eliminatePlayer(state, targetPiece.color);
+        if (state.activePlayers.length <= 1) {
+          state.winner = state.activePlayers[0] ?? aiColor;
+          state.phase = 'finished';
+        }
       }
     }
 
     // Handle pawn promotion
-    const promotionRow = aiColor === 'white' ? 0 : BOARD_SIZE - 1;
+    const promotionRowMap: Record<PlayerColor, number> = { white: 0, black: BOARD_SIZE - 1, red: 5, blue: 6 };
+    const promotionRow = promotionRowMap[aiColor];
     let promotionPiece: PieceType | undefined;
     if (piece.type === 'pawn' && to.row === promotionRow) {
       promotionPiece = 'queen'; // AI always promotes to queen
@@ -3251,11 +3401,21 @@ class GameManager {
     };
     state.moveHistory.push(move);
 
-    state.currentTurn = aiColor === 'white' ? 'black' : 'white';
+    if (state.phase === 'playing') {
+      state.currentTurn = nextActiveColor(state, aiColor);
+      if (this.isCheckmate(board, state.currentTurn)) {
+        const checkmatedColor = state.currentTurn;
+        eliminatePlayer(state, checkmatedColor);
+        if (state.activePlayers.length <= 1) {
+          state.winner = state.activePlayers[0] ?? aiColor;
+          state.phase = 'finished';
+        } else {
+          state.currentTurn = nextActiveColor(state, checkmatedColor);
+        }
+      }
+    }
 
-    if (this.isCheckmate(board, state.currentTurn)) {
-      state.winner = aiColor;
-      state.phase = 'finished';
+    if (false) { // placeholder to maintain structure
     }
 
     this.saveGame(state);
@@ -3315,17 +3475,26 @@ class GameManager {
       board[to.row][to.col].piece = null;
 
       if (targetPiece.type === 'king') {
-        state.winner = aiColor;
-        state.phase = 'finished';
+        eliminatePlayer(state, targetPiece.color);
+        if (state.activePlayers.length <= 1) {
+          state.winner = state.activePlayers[0] ?? aiColor;
+          state.phase = 'finished';
+        }
       }
     }
 
-    state.currentTurn = aiColor === 'white' ? 'black' : 'white';
-
-    // Check for checkmate after attack
-    if (state.phase !== 'finished' && this.isCheckmate(board, state.currentTurn)) {
-      state.winner = aiColor;
-      state.phase = 'finished';
+    if (state.phase === 'playing') {
+      state.currentTurn = nextActiveColor(state, aiColor);
+      if (this.isCheckmate(board, state.currentTurn)) {
+        const checkmatedColor = state.currentTurn;
+        eliminatePlayer(state, checkmatedColor);
+        if (state.activePlayers.length <= 1) {
+          state.winner = state.activePlayers[0] ?? aiColor;
+          state.phase = 'finished';
+        } else {
+          state.currentTurn = nextActiveColor(state, checkmatedColor);
+        }
+      }
     }
 
     this.saveGame(state);
@@ -3372,17 +3541,26 @@ class GameManager {
       board[to.row][to.col].piece = null;
 
       if (targetPiece.type === 'king') {
-        state.winner = aiColor;
-        state.phase = 'finished';
+        eliminatePlayer(state, targetPiece.color);
+        if (state.activePlayers.length <= 1) {
+          state.winner = state.activePlayers[0] ?? aiColor;
+          state.phase = 'finished';
+        }
       }
     }
 
-    state.currentTurn = aiColor === 'white' ? 'black' : 'white';
-
-    // Check for checkmate after attack
-    if (state.phase !== 'finished' && this.isCheckmate(board, state.currentTurn)) {
-      state.winner = aiColor;
-      state.phase = 'finished';
+    if (state.phase === 'playing') {
+      state.currentTurn = nextActiveColor(state, aiColor);
+      if (this.isCheckmate(board, state.currentTurn)) {
+        const checkmatedColor = state.currentTurn;
+        eliminatePlayer(state, checkmatedColor);
+        if (state.activePlayers.length <= 1) {
+          state.winner = state.activePlayers[0] ?? aiColor;
+          state.phase = 'finished';
+        } else {
+          state.currentTurn = nextActiveColor(state, checkmatedColor);
+        }
+      }
     }
 
     this.saveGame(state);
@@ -3436,7 +3614,7 @@ class GameManager {
       board[to.row][to.col].isWall = false;
     }
 
-    state.currentTurn = aiColor === 'white' ? 'black' : 'white';
+    state.currentTurn = nextActiveColor(state, aiColor);
 
     this.saveGame(state);
     return { state, diceRoll };
@@ -3822,14 +4000,24 @@ class GameManager {
 
   private checkGameEnd(state: GameState, movingColor: PlayerColor): void {
     if (state.phase === 'finished') return;
-    const opponentColor = movingColor === 'white' ? 'black' : 'white';
-    if (!this.hasLegalMoves(state.board, opponentColor)) {
-      if (this.isInCheck(state.board, opponentColor)) {
-        state.winner = movingColor;
-      } else {
+    const nextColor = state.currentTurn;
+    if (nextColor === movingColor) return; // turn already advanced
+    if (!this.hasLegalMoves(state.board, nextColor)) {
+      if (this.isInCheck(state.board, nextColor)) {
+        // Checkmate: eliminate that player
+        eliminatePlayer(state, nextColor);
+        if (state.activePlayers.length <= 1) {
+          state.winner = state.activePlayers[0] ?? movingColor;
+          state.phase = 'finished';
+        } else {
+          state.currentTurn = nextActiveColor(state, nextColor);
+        }
+      } else if ((state.activePlayers || ALL_COLORS).length <= 2) {
+        // Stalemate in 2-player ends in draw
         state.winner = 'draw';
+        state.phase = 'finished';
       }
-      state.phase = 'finished';
+      // In 3-4 player: stalemate just skips that player's turns
     }
   }
 

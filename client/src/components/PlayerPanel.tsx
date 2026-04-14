@@ -12,7 +12,16 @@ interface PlayerPanelProps {
   capturedPieces: Piece[];
   isYou: boolean;
   isConnected: boolean;
+  compact?: boolean;
+  eliminated?: boolean;
 }
+
+const COLOR_CLASSES: Record<PlayerColor, { avatar: string; text: string; label: string }> = {
+  white: { avatar: 'bg-white border-gray-300', text: 'text-gray-800', label: 'White' },
+  black: { avatar: 'bg-gray-800 border-gray-600', text: 'text-white', label: 'Black' },
+  red:   { avatar: 'bg-red-600 border-red-400',   text: 'text-white', label: 'Red' },
+  blue:  { avatar: 'bg-blue-600 border-blue-400',  text: 'text-white', label: 'Blue' },
+};
 
 export function PlayerPanel({
   color,
@@ -21,25 +30,55 @@ export function PlayerPanel({
   capturedPieces,
   isYou,
   isConnected,
+  compact = false,
+  eliminated = false,
 }: PlayerPanelProps) {
   const score = calculateScore(capturedPieces);
   const displayName = playerName || (isYou ? 'You' : 'Waiting...');
-  
+  const colorInfo = COLOR_CLASSES[color];
+
+  if (compact) {
+    return (
+      <Card
+        className={cn(
+          "transition-all duration-300",
+          isCurrentTurn && !eliminated && "ring-2 ring-primary shadow-md",
+          eliminated && "opacity-50",
+        )}
+        data-testid={`player-panel-${color}`}
+      >
+        <CardContent className="p-2 flex items-center gap-2">
+          <Avatar className={cn("w-6 h-6 border-2 shrink-0", colorInfo.avatar)}>
+            <AvatarFallback className={colorInfo.text}>
+              <User className="w-3 h-3" />
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-semibold truncate flex items-center gap-1">
+              <span className="text-muted-foreground">{colorInfo.label}</span>
+              {eliminated && <span className="text-destructive text-xs">✗</span>}
+            </div>
+            <div className="text-xs text-muted-foreground truncate">{displayName}</div>
+          </div>
+          <span className="text-sm font-bold tabular-nums" data-testid={`score-${color}`}>{score}</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card 
       className={cn(
         "transition-all duration-300",
-        isCurrentTurn && "ring-2 ring-primary shadow-md",
+        isCurrentTurn && !eliminated && "ring-2 ring-primary shadow-md",
+        eliminated && "opacity-50",
       )}
       data-testid={`player-panel-${color}`}
     >
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 p-3 sm:p-6 pb-2 sm:pb-2">
         <div className="flex items-center gap-2 sm:gap-3">
-          <Avatar className={cn(
-            "w-8 h-8 sm:w-10 sm:h-10 border-2",
-            color === 'white' ? "bg-white border-gray-300" : "bg-gray-800 border-gray-600"
-          )}>
-            <AvatarFallback className={color === 'white' ? "text-gray-800" : "text-white"}>
+          <Avatar className={cn("w-8 h-8 sm:w-10 sm:h-10 border-2", colorInfo.avatar)}>
+            <AvatarFallback className={colorInfo.text}>
               <User className="w-4 h-4 sm:w-5 sm:h-5" />
             </AvatarFallback>
           </Avatar>
@@ -48,6 +87,9 @@ export function PlayerPanel({
               {displayName}
               {isYou && (
                 <span className="text-xs text-muted-foreground font-normal">(You)</span>
+              )}
+              {eliminated && (
+                <span className="text-xs text-destructive font-normal">Eliminated</span>
               )}
             </CardTitle>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">

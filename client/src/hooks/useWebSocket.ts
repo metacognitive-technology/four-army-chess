@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { GameMessage, GameState, GameMode, Position, AttackSettings } from "@shared/schema";
+import type { GameMessage, GameState, GameMode, Position, AttackSettings, PlayerColor } from "@shared/schema";
 import { queryClient } from "@/lib/queryClient";
 
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
@@ -20,10 +20,10 @@ interface UseWebSocketReturn {
   playerColor: 'white' | 'black' | null;
   connectionStatus: ConnectionStatus;
   sendMessage: (message: GameMessage) => void;
-  createGame: (maxWalls: number, gameMode?: GameMode, attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual', aiDepth?: number) => void;
+  createGame: (maxWalls: number, gameMode?: GameMode, attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual', aiDepth?: number, numHumanPlayers?: number) => void;
   joinGame: (gameId: string) => void;
   reconnectGame: (gameId: string, storedPlayerId: string | null) => void;
-  takeoverGame: (gameId: string, color: 'white' | 'black') => void;
+  takeoverGame: (gameId: string, color: PlayerColor) => void;
   watchCvCGame: (gameId: string) => void;
   pauseCvCGame: (paused: boolean) => void;
   offerDraw: () => void;
@@ -191,14 +191,14 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     }
   }, [playerId]);
   
-  const createGame = useCallback((maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual', aiDepth?: number) => {
+  const createGame = useCallback((maxWalls: number, gameMode: GameMode = 'pvp', attackSettings?: AttackSettings, budgetMode?: 'shared' | 'individual', aiDepth?: number, numHumanPlayers?: number) => {
     connect();
     
     const checkAndSend = () => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({
           type: 'join',
-          payload: { action: 'create', maxWalls, gameMode, attackSettings, budgetMode, aiDepth },
+          payload: { action: 'create', maxWalls, gameMode, attackSettings, budgetMode, aiDepth, numHumanPlayers },
         }));
       } else {
         setTimeout(checkAndSend, 100);
@@ -249,7 +249,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     }
   }, [connect, joinGame]);
   
-  const takeoverGame = useCallback((gameId: string, color: 'white' | 'black') => {
+  const takeoverGame = useCallback((gameId: string, color: PlayerColor) => {
     gameIdRef.current = gameId;
     setIsObserver(false);
     connect();

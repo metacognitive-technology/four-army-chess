@@ -217,7 +217,8 @@ export async function registerRoutes(
         switch (message.type) {
           case 'join': {
             if (message.payload.action === 'create') {
-              const result = gameManager.createGame(ws, message.payload.maxWalls ?? 8, message.payload.gameMode || 'pvp', message.payload.attackSettings, message.payload.budgetMode, message.payload.aiDepth);
+              const numHumans = message.payload.numHumanPlayers ?? (message.payload.gameMode === 'cvc' ? 0 : message.payload.gameMode === 'pvp' ? 2 : 1);
+              const result = gameManager.createGame(ws, message.payload.maxWalls ?? 8, message.payload.gameMode || 'pvp', message.payload.attackSettings, message.payload.budgetMode, message.payload.aiDepth, numHumans);
               currentPlayerId = result.playerId;
               currentGameId = result.gameId;
 

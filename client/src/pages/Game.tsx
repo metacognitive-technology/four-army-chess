@@ -10,7 +10,7 @@ import { GameRules } from "@/components/GameRules";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useToast } from "@/hooks/use-toast";
 import { getValidMoves, getCheckSafeMoves, getArrowTargets, getAxeTargets, getBombTargets, getWallBuildTargets, findHangingPieces, isInCheck, isCheckmate, createInitialBoard, PIECE_SYMBOLS } from "@/lib/gameUtils";
-import type { Position, GameState, SavedGameInfo, PromotionPieceType } from "@shared/schema";
+import type { Position, GameState, SavedGameInfo, PromotionPieceType, PlayerColor } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Wifi, WifiOff, Plus, Link2, Bot, Users, History, Trash2, MonitorPlay, Play, ArrowLeft, ArrowRight, User, Brain } from "lucide-react";
@@ -96,6 +96,7 @@ export default function Game() {
   const [attackAnimation, setAttackAnimation] = useState<AttackAnimation | null>(null);
   const [flashColor, setFlashColor] = useState<'red' | 'yellow'>('red');
   const [isCreatingCvC, setIsCreatingCvC] = useState(false);
+  const [numHumanPlayers, setNumHumanPlayers] = useState(1);
   const [moveFlashSquares, setMoveFlashSquares] = useState<Position[]>([]);
   const [targetPopup, setTargetPopup] = useState<{ position: Position; message: string } | null>(null);
   const [isCvCPaused, setIsCvCPaused] = useState(false);
@@ -207,7 +208,7 @@ export default function Game() {
     }
   }, [maxWalls, toast, watchCvCGame, pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent, totalAttackBudget, percentToThreshold, aiDepth, maxBishopAttacksLobby, maxRookAttacksLobby]);
 
-  const handleTakeoverGame = useCallback((gameId: string, color: 'white' | 'black') => {
+  const handleTakeoverGame = useCallback((gameId: string, color: PlayerColor) => {
     takeoverGame(gameId, color);
   }, [takeoverGame]);
 
@@ -981,8 +982,36 @@ export default function Game() {
             </div>
             
             <div className="space-y-4">
-              <Button 
-                className="w-full gap-2" 
+              {/* Human player count selector */}
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Human Players</Label>
+                <div className="grid grid-cols-5 gap-1" data-testid="human-player-selector">
+                  {[0, 1, 2, 3, 4].map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => setNumHumanPlayers(n)}
+                      data-testid={`button-human-count-${n}`}
+                      className={`py-2 text-sm font-medium rounded border transition-colors ${
+                        numHumanPlayers === n
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'bg-background text-foreground border-border hover:bg-accent'
+                      }`}
+                    >
+                      {n === 0 ? 'AI' : n}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {numHumanPlayers === 0 ? 'Watch 4 AIs play' :
+                   numHumanPlayers === 1 ? 'You vs 3 computers' :
+                   numHumanPlayers === 2 ? '2 humans + 2 computers' :
+                   numHumanPlayers === 3 ? '3 humans + 1 computer' :
+                   '4 human players'}
+                </p>
+              </div>
+
+              <Button
+                className="w-full gap-2"
                 size="lg"
                 onClick={() => {
                   const as = {
@@ -996,52 +1025,29 @@ export default function Game() {
                     maxRookAttacks: maxRookAttacksLobby,
                     ...(budgetMode === 'shared' ? { pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent } : {}),
                   };
-                  createGame(maxWalls, 'pvc', as, budgetMode, aiDepth);
+                  if (numHumanPlayers === 0) {
+                    handleCreateCvCGame();
+                  } else {
+                    const gm = numHumanPlayers >= 2 ? 'pvp' : 'pvc';
+                    createGame(maxWalls, gm, as, budgetMode, aiDepth, numHumanPlayers);
+                  }
                 }}
-                data-testid="button-play-computer"
-              >
-                <Bot className="w-5 h-5" />
-                Play vs Computer
-              </Button>
-              
-              <Button 
-                className="w-full gap-2" 
-                size="lg"
-                variant="outline"
-                onClick={() => {
-                  const as = {
-                    pawnSuccessRoll: percentToThreshold(pawnAttackPercent, 6, true),
-                    bishopMinRoll: 0,
-                    knightMinRoll: percentToThreshold(knightAttackPercent, 6, false),
-                    bombSuccessRoll: percentToThreshold(bombAttackPercent, 10, true),
-                    wallBuildRoll: percentToThreshold(wallBuildPercent, 10, true),
-                    totalAttackBudget,
-                    maxBishopAttacks: maxBishopAttacksLobby,
-                    maxRookAttacks: maxRookAttacksLobby,
-                    ...(budgetMode === 'shared' ? { pawnAttackPercent, bishopAttackPercent, knightAttackPercent, bombAttackPercent, wallBuildPercent } : {}),
-                  };
-                  createGame(maxWalls, 'pvp', as, budgetMode);
-                }}
-                data-testid="button-create-game"
-              >
-                <Users className="w-5 h-5" />
-                Create Multiplayer Game
-              </Button>
-              
-              <Button 
-                className="w-full gap-2" 
-                size="lg"
-                variant="secondary"
-                onClick={handleCreateCvCGame}
                 disabled={isCreatingCvC}
-                data-testid="button-cvc-game"
+                data-testid="button-create-game"
               >
                 {isCreatingCvC ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
+                ) : numHumanPlayers === 0 ? (
                   <MonitorPlay className="w-5 h-5" />
+                ) : numHumanPlayers === 1 ? (
+                  <Bot className="w-5 h-5" />
+                ) : (
+                  <Users className="w-5 h-5" />
                 )}
-                {isCreatingCvC ? 'Running...' : 'Computer vs Computer'}
+                {isCreatingCvC ? 'Starting...' :
+                 numHumanPlayers === 0 ? 'Watch AI vs AI' :
+                 numHumanPlayers === 1 ? 'Play vs Computer' :
+                 'Create Game'}
               </Button>
               
               <div className="relative">
@@ -1200,7 +1206,11 @@ export default function Game() {
   
   const isVsComputer = gameState.gameMode === 'pvc';
   const whitePlayer = gameState.players.white;
-  const blackPlayer = isVsComputer && gameState.aiColor === 'black' ? 'Computer' : gameState.players.black;
+  const blackPlayer = gameState.aiControlled?.black ? 'Computer' : gameState.players.black;
+  const redPlayer = gameState.aiControlled?.red ? 'Computer' : (gameState.players.red ?? null);
+  const bluePlayer = gameState.aiControlled?.blue ? 'Computer' : (gameState.players.blue ?? null);
+  const isRedActive = gameState.activePlayers?.includes('red') ?? true;
+  const isBlueActive = gameState.activePlayers?.includes('blue') ?? true;
   
   return (
     <div className="min-h-screen bg-background p-2 sm:p-4">
@@ -1265,25 +1275,21 @@ export default function Game() {
                 </div>
               )}
               {gameState.gameMode === 'cvc' && phase === 'playing' && (
-                <div className="flex justify-center gap-2 mt-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleTakeoverGame(gameState.id, 'white')}
-                    data-testid="button-cvc-takeover-white"
-                  >
-                    <User className="w-3 h-3 mr-1" />
-                    Play White
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleTakeoverGame(gameState.id, 'black')}
-                    data-testid="button-cvc-takeover-black"
-                  >
-                    <User className="w-3 h-3 mr-1" />
-                    Play Black
-                  </Button>
+                <div className="flex flex-wrap justify-center gap-2 mt-1">
+                  {(['white', 'black', 'red', 'blue'] as const).map((c) => (
+                    gameState.activePlayers?.includes(c) !== false && (
+                      <Button
+                        key={c}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleTakeoverGame(gameState.id, c)}
+                        data-testid={`button-cvc-takeover-${c}`}
+                      >
+                        <User className="w-3 h-3 mr-1" />
+                        Play {c.charAt(0).toUpperCase() + c.slice(1)}
+                      </Button>
+                    )
+                  ))}
                 </div>
               )}
             </div>
@@ -1370,6 +1376,32 @@ export default function Game() {
                 <p className="text-sm text-muted-foreground">Waiting for opponent to submit their budget...</p>
               </Card>
             ) : (
+              <>
+              {/* Red / Blue player panels above board */}
+              {(isRedActive || isBlueActive) && (
+                <div className="w-full grid grid-cols-2 gap-2 mb-1">
+                  <PlayerPanel
+                    color="red"
+                    playerName={redPlayer}
+                    isCurrentTurn={currentTurn === 'red'}
+                    capturedPieces={gameState.capturedPieces.red ?? []}
+                    isYou={playerColor === 'red'}
+                    isConnected={!!redPlayer}
+                    compact
+                    eliminated={!isRedActive}
+                  />
+                  <PlayerPanel
+                    color="blue"
+                    playerName={bluePlayer}
+                    isCurrentTurn={currentTurn === 'blue'}
+                    capturedPieces={gameState.capturedPieces.blue ?? []}
+                    isYou={playerColor === 'blue'}
+                    isConnected={!!bluePlayer}
+                    compact
+                    eliminated={!isBlueActive}
+                  />
+                </div>
+              )}
               <GameBoard
                 board={board}
                 currentTurn={currentTurn}
@@ -1402,6 +1434,7 @@ export default function Game() {
                 maxRookAttacks={gameState.maxRookAttacks}
                 targetPopup={targetPopup}
               />
+              </>
             )}
             
             {pendingPromotion && (
