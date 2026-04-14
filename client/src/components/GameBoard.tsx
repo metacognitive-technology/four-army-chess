@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { Board, Position, PlayerColor, PieceType } from "@shared/schema";
-import { PIECE_SYMBOLS, BOARD_SIZE, getValidMoves, getArrowTargets, findHangingPieces } from "@/lib/gameUtils";
+import { PIECE_SYMBOLS, BOARD_SIZE, getValidMoves, getArrowTargets, findHangingPieces, isInPlayerTerritory, isPrePlacedWall } from "@/lib/gameUtils";
 import { cn } from "@/lib/utils";
 import { Target, ZoomIn, ZoomOut, RotateCcw, Axe, Bomb, Blocks } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -149,23 +149,19 @@ export function GameBoard({
   const isWallPlacementAvailable = useCallback((row: number, col: number) => {
     if (phase !== 'setup') return false;
     const square = board[row][col];
-    // Can only place walls on empty squares in own half
-    if (square.piece || square.isWall) return false;
-    if (playerColor === 'white') {
-      return row >= BOARD_SIZE / 2;
-    } else {
-      return row < BOARD_SIZE / 2;
-    }
+    if (!playerColor) return false;
+    // Can only place walls on empty squares (not pieces, not pre-placed permanent walls)
+    if (square.piece) return false;
+    if (square.isWall && isPrePlacedWall(row, col)) return false;
+    // Must be within the player's triangular territory
+    return isInPlayerTerritory(row, col, playerColor);
   }, [phase, board, playerColor]);
 
   const canInteract = (row: number, col: number) => {
     if (phase === 'setup') {
-      // In setup, can only click on own half
-      if (playerColor === 'white') {
-        return row >= BOARD_SIZE / 2;
-      } else {
-        return row < BOARD_SIZE / 2;
-      }
+      if (!playerColor) return false;
+      // In setup, can only click within own triangular territory
+      return isInPlayerTerritory(row, col, playerColor);
     }
     return phase === 'playing' && isMyTurn;
   };

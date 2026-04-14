@@ -4,6 +4,21 @@
       "bishopArrows": 0,
       "rookBombs": 0,
       "rookWallBuilds": 0
+    },
+    {
+      "bishopArrows": 0,
+      "rookBombs": 0,
+      "rookWallBuilds": 0
+    },
+    {
+      "bishopArrows": 0,
+      "rookBombs": 10,
+      "rookWallBuilds": 0
+    },
+    {
+      "bishopArrows": 0,
+      "rookBombs": 0,
+      "rookWallBuilds": 0
     }
   ]
 }

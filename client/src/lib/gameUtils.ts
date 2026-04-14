@@ -14,6 +14,27 @@ export const PIECE_SYMBOLS: Record<PieceType, Record<string, string>> = {
   pawn: { white: '♟\uFE0E', black: '♟\uFE0E', red: '♟\uFE0E', blue: '♟\uFE0E' },
 };
 
+export function isPrePlacedWall(r: number, c: number): boolean {
+  const N = BOARD_SIZE - 1;
+  if (r + c <= 3) return true;
+  if (r + (N - c) <= 3) return true;
+  if ((N - r) + c <= 3) return true;
+  if ((N - r) + (N - c) <= 3) return true;
+  if (r >= 4 && r <= 7 && c >= 4 && c <= 7) return true;
+  return false;
+}
+
+export function isInPlayerTerritory(r: number, c: number, color: PlayerColor): boolean {
+  const N = BOARD_SIZE - 1;
+  switch (color) {
+    case 'white': return r > c && r > (N - c);
+    case 'black': return r < c && r < (N - c);
+    case 'red':   return c < r && c < (N - r);
+    case 'blue':  return c > r && c > (N - r);
+    default: return false;
+  }
+}
+
 export function createInitialBoard(): Board {
   const board: Board = [];
   
@@ -30,31 +51,31 @@ export function createInitialBoard(): Board {
     board.push(boardRow);
   }
 
-  // Pre-place center walls (rows 3-8, cols 3-8) — the blocked center zone
-  for (let r = 3; r <= 8; r++) {
-    for (let c = 3; c <= 8; c++) {
-      board[r][c].isWall = true;
+  // Pre-place walls: triangular staircase corners + center 4×4 block
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (isPrePlacedWall(r, c)) board[r][c].isWall = true;
     }
   }
 
-  // White pieces — bottom center (cols 3-6, rows 9-11)
+  // White pieces — bottom center (cols 4-7 = e-h, rows 9-11)
   // Row 11 (back): Rook, King, Queen, Rook
   const whiteBackRow: PieceType[] = ['rook', 'king', 'queen', 'rook'];
   const whiteMidRow: PieceType[] = ['knight', 'bishop', 'bishop', 'knight'];
   for (let i = 0; i < 4; i++) {
-    board[11][3 + i].piece = { type: whiteBackRow[i], color: 'white', id: `w_${whiteBackRow[i]}_${i}` };
-    board[10][3 + i].piece = { type: whiteMidRow[i], color: 'white', id: `w_${whiteMidRow[i]}_${i}` };
-    board[9][3 + i].piece = { type: 'pawn', color: 'white', id: `w_pawn_${i}` };
+    board[11][4 + i].piece = { type: whiteBackRow[i], color: 'white', id: `w_${whiteBackRow[i]}_${i}` };
+    board[10][4 + i].piece = { type: whiteMidRow[i], color: 'white', id: `w_${whiteMidRow[i]}_${i}` };
+    board[9][4 + i].piece = { type: 'pawn', color: 'white', id: `w_pawn_${i}` };
   }
 
-  // Black pieces — top center (cols 3-6, rows 0-2)
+  // Black pieces — top center (cols 4-7 = e-h, rows 0-2)
   // Row 0 (back): Rook, Queen, King, Rook
   const blackBackRow: PieceType[] = ['rook', 'queen', 'king', 'rook'];
   const blackMidRow: PieceType[] = ['knight', 'bishop', 'bishop', 'knight'];
   for (let i = 0; i < 4; i++) {
-    board[0][3 + i].piece = { type: blackBackRow[i], color: 'black', id: `b_${blackBackRow[i]}_${i}` };
-    board[1][3 + i].piece = { type: blackMidRow[i], color: 'black', id: `b_${blackMidRow[i]}_${i}` };
-    board[2][3 + i].piece = { type: 'pawn', color: 'black', id: `b_pawn_${i}` };
+    board[0][4 + i].piece = { type: blackBackRow[i], color: 'black', id: `b_${blackBackRow[i]}_${i}` };
+    board[1][4 + i].piece = { type: blackMidRow[i], color: 'black', id: `b_${blackMidRow[i]}_${i}` };
+    board[2][4 + i].piece = { type: 'pawn', color: 'black', id: `b_pawn_${i}` };
   }
 
   // Red pieces — left side (cols 0-2, rows 4-7)
@@ -109,7 +130,7 @@ export function getValidMoves(board: Board, position: Position, includeAttacks: 
       if (!piece.hasMoved) {
         const row = position.row;
         // Kingside castling (to column 11)
-        const kingsideRookCol = 9; // Initial rook position (offset 2 + 7)
+        const kingsideRookCol = 7; // Initial rook position (offset 4 + 3)
         const kingsideRook = board[row][kingsideRookCol]?.piece;
         if (kingsideRook?.type === 'rook' && kingsideRook.color === piece.color && !kingsideRook.hasMoved) {
           // Check path is clear from king to end (columns 7 to 11)
@@ -126,7 +147,7 @@ export function getValidMoves(board: Board, position: Position, includeAttacks: 
           }
         }
         // Queenside castling (to column 0)
-        const queensideRookCol = 2; // Initial rook position (offset 2 + 0)
+        const queensideRookCol = 4; // Initial rook position (offset 4 + 0)
         const queensideRook = board[row][queensideRookCol]?.piece;
         if (queensideRook?.type === 'rook' && queensideRook.color === piece.color && !queensideRook.hasMoved) {
           // Check path is clear from king to column 0 (columns 5 to 0)

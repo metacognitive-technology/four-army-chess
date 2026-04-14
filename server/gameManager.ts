@@ -9,6 +9,27 @@ const BOARD_SIZE = 12;
 const MAX_MOVE_DISTANCE = 8;
 const AI_PLAYER_ID = 'ai-player';
 
+function isPrePlacedWall(r: number, c: number): boolean {
+  const N = BOARD_SIZE - 1;
+  if (r + c <= 3) return true;
+  if (r + (N - c) <= 3) return true;
+  if ((N - r) + c <= 3) return true;
+  if ((N - r) + (N - c) <= 3) return true;
+  if (r >= 4 && r <= 7 && c >= 4 && c <= 7) return true;
+  return false;
+}
+
+function isInPlayerTerritory(r: number, c: number, color: PlayerColor): boolean {
+  const N = BOARD_SIZE - 1;
+  switch (color) {
+    case 'white': return r > c && r > (N - c);
+    case 'black': return r < c && r < (N - c);
+    case 'red':   return c < r && c < (N - r);
+    case 'blue':  return c > r && c > (N - r);
+    default: return false;
+  }
+}
+
 function generateShortId(length = 9): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz';
   const bytes = randomBytes(length);
@@ -800,16 +821,12 @@ class GameManager {
   }
   
   private placeCvCWalls(state: GameState, count: number, color: PlayerColor): void {
-    const isWhite = color === 'white';
-    const startRow = isWhite ? BOARD_SIZE / 2 : 0;
-    const endRow = isWhite ? BOARD_SIZE : BOARD_SIZE / 2;
-    
     let placed = 0;
     const attempts: Position[] = [];
-    
-    for (let row = startRow; row < endRow; row++) {
+
+    for (let row = 0; row < BOARD_SIZE; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
-        if (!state.board[row][col].piece && !state.board[row][col].isWall) {
+        if (isInPlayerTerritory(row, col, color) && !state.board[row][col].piece && !state.board[row][col].isWall) {
           attempts.push({ row, col });
         }
       }
@@ -1381,18 +1398,14 @@ class GameManager {
   private placeAIWalls(state: GameState, count: number): void {
     const aiColor = state.aiColor;
     if (!aiColor) return;
-    
-    const isWhiteAI = aiColor === 'white';
-    const startRow = isWhiteAI ? BOARD_SIZE / 2 : 0;
-    const endRow = isWhiteAI ? BOARD_SIZE : BOARD_SIZE / 2;
-    
+
     let placed = 0;
     const attempts: Position[] = [];
-    
-    // Collect valid positions
-    for (let row = startRow; row < endRow; row++) {
+
+    // Collect valid positions within AI's triangular territory
+    for (let row = 0; row < BOARD_SIZE; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
-        if (!state.board[row][col].piece && !state.board[row][col].isWall) {
+        if (isInPlayerTerritory(row, col, aiColor) && !state.board[row][col].piece && !state.board[row][col].isWall) {
           attempts.push({ row, col });
         }
       }
@@ -1584,15 +1597,14 @@ class GameManager {
     if (!player) return null;
     
     const color = player.color;
-    const isOwnHalf = color === 'white' 
-      ? position.row >= BOARD_SIZE / 2 
-      : position.row < BOARD_SIZE / 2;
-    
-    if (!isOwnHalf) return null;
-    
-    const square = room.state.board[position.row][position.col];
+    const { row, col } = position;
+    if (!isInPlayerTerritory(row, col, color)) return null;
+
+    const square = room.state.board[row][col];
     if (square.piece) return null;
-    
+    // Prevent removing permanent pre-placed walls
+    if (square.isWall && isPrePlacedWall(row, col)) return null;
+
     // Toggle wall
     if (square.isWall) {
       square.isWall = false;
@@ -1622,16 +1634,12 @@ class GameManager {
     const color = player.color;
     const remaining = room.state.setupWallsRemaining[color];
     if (remaining <= 0) return room.state;
-    
-    // Determine the player's half of the board
-    const isWhite = color === 'white';
-    const startRow = isWhite ? BOARD_SIZE / 2 : 0;
-    const endRow = isWhite ? BOARD_SIZE : BOARD_SIZE / 2;
-    
-    // Collect valid positions (empty squares without walls or pieces)
+
+    // Collect valid positions within the player's triangular territory
     const validPositions: Position[] = [];
-    for (let row = startRow; row < endRow; row++) {
+    for (let row = 0; row < BOARD_SIZE; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
+        if (!isInPlayerTerritory(row, col, color)) continue;
         const square = room.state.board[row][col];
         if (!square.piece && !square.isWall) {
           validPositions.push({ row, col });
@@ -1674,124 +1682,100 @@ class GameManager {
     const color = player.color;
     
     // First clear existing walls for this player
-    const isWhite = color === 'white';
-    const startRow = isWhite ? BOARD_SIZE / 2 : 0;
-    const endRow = isWhite ? BOARD_SIZE : BOARD_SIZE / 2;
-    
+    // Clear only player-placed (non-permanent) walls within territory
     let wallCount = 0;
-    for (let row = startRow; row < endRow; row++) {
+    for (let row = 0; row < BOARD_SIZE; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
-        if (room.state.board[row][col].isWall) {
+        if (!isInPlayerTerritory(row, col, color)) continue;
+        if (room.state.board[row][col].isWall && !isPrePlacedWall(row, col)) {
           room.state.board[row][col].isWall = false;
           wallCount++;
         }
       }
     }
-    
+
     // Restore wall count
     const totalWalls = room.state.setupWallsRemaining[color] + wallCount;
-    const halfHeight = BOARD_SIZE / 2;
-    
+
     // Generate maze using recursive division with corridors
     const generateMazePattern = (): Position[] => {
       const positions: Position[] = [];
       const validSquares: Position[] = [];
-      
-      // Collect all valid positions (no pieces)
-      for (let row = startRow; row < endRow; row++) {
+
+      // Collect all valid territory positions (no pieces, not pre-placed walls)
+      for (let row = 0; row < BOARD_SIZE; row++) {
         for (let col = 0; col < BOARD_SIZE; col++) {
-          if (!room.state.board[row][col].piece) {
+          if (isInPlayerTerritory(row, col, color) && !room.state.board[row][col].piece && !isPrePlacedWall(row, col)) {
             validSquares.push({ row, col });
           }
         }
       }
-      
-      // Create maze structure with chambers and corridors
-      // Divide the half into chambers using walls with passage gaps
-      
-      // Vertical dividers at different columns with 2-cell gaps
-      const dividerCols = [3, 7, 11];
+
+      // Create maze structure within territory — dividers with passage gaps
+      const dividerCols = [3, 6, 9];
       for (const col of dividerCols) {
         if (col >= BOARD_SIZE) continue;
-        // Create gap positions (2-3 squares wide)
-        const gapStart = startRow + Math.floor(Math.random() * (halfHeight - 2));
-        const gapSize = 2 + Math.floor(Math.random() * 2);
-        
-        for (let row = startRow; row < endRow; row++) {
-          // Skip the gap area
-          if (row >= gapStart && row < gapStart + gapSize) continue;
+        const territoryRows = validSquares.filter(sq => sq.col === col).map(sq => sq.row);
+        if (territoryRows.length < 3) continue;
+        const gapIdx = Math.floor(Math.random() * (territoryRows.length - 1));
+        for (let ri = 0; ri < territoryRows.length; ri++) {
+          if (ri === gapIdx || ri === gapIdx + 1) continue;
+          const row = territoryRows[ri];
           if (!room.state.board[row][col].piece) {
             positions.push({ row, col });
           }
         }
       }
       
-      // Horizontal dividers with gaps
-      const midRow = startRow + Math.floor(halfHeight / 2);
-      const horizontalRows = [midRow];
-      if (halfHeight > 4) {
-        horizontalRows.push(startRow + 1);
-        horizontalRows.push(endRow - 2);
-      }
-      
-      for (const row of horizontalRows) {
-        if (row < startRow || row >= endRow) continue;
-        // Create multiple gaps in horizontal walls
-        const numGaps = 2 + Math.floor(Math.random() * 2);
-        const gaps: number[] = [];
-        for (let g = 0; g < numGaps; g++) {
-          gaps.push(Math.floor(Math.random() * BOARD_SIZE));
-        }
-        
-        for (let col = 0; col < BOARD_SIZE; col++) {
-          // Skip gap areas (2 squares wide)
-          const nearGap = gaps.some(g => Math.abs(col - g) <= 1);
-          if (nearGap) continue;
-          if (!room.state.board[row][col].piece) {
-            positions.push({ row, col });
-          }
+      // Horizontal dividers within territory — pick unique rows with gaps
+      const territoryRowSet = new Set(validSquares.map(sq => sq.row));
+      const territoryRows = Array.from(territoryRowSet).sort((a, b) => a - b);
+      const midRows = territoryRows.length > 2
+        ? [territoryRows[Math.floor(territoryRows.length / 2)]]
+        : [];
+      for (const row of midRows) {
+        const colsInRow = validSquares.filter(sq => sq.row === row).map(sq => sq.col);
+        if (colsInRow.length < 3) continue;
+        const gapCol = colsInRow[Math.floor(Math.random() * colsInRow.length)];
+        for (const col of colsInRow) {
+          if (Math.abs(col - gapCol) <= 1) continue;
+          if (!room.state.board[row][col].piece) positions.push({ row, col });
         }
       }
-      
-      // Add some L-shaped and corner pieces for visual interest
+
+      // Corner L-pieces for visual interest
       const cornerPatterns = [
-        [[0, 0], [0, 1], [1, 0]], // L top-left
-        [[0, 0], [0, 1], [-1, 0]], // L bottom-left
-        [[0, 0], [1, 0], [1, 1]], // corner
+        [[0, 0], [0, 1], [1, 0]],
+        [[0, 0], [1, 0], [1, 1]],
       ];
-      
       for (let i = 0; i < Math.floor(totalWalls * 0.15); i++) {
+        const base = validSquares[Math.floor(Math.random() * validSquares.length)];
+        if (!base) continue;
         const pattern = cornerPatterns[Math.floor(Math.random() * cornerPatterns.length)];
-        const baseRow = startRow + 1 + Math.floor(Math.random() * (halfHeight - 2));
-        const baseCol = 1 + Math.floor(Math.random() * (BOARD_SIZE - 2));
-        
         for (const [dr, dc] of pattern) {
-          const r = baseRow + dr;
-          const c = baseCol + dc;
-          if (r >= startRow && r < endRow && c >= 0 && c < BOARD_SIZE) {
-            if (!room.state.board[r][c].piece) {
-              positions.push({ row: r, col: c });
-            }
+          const r = base.row + dr, c = base.col + dc;
+          if (isInPlayerTerritory(r, c, color) && !room.state.board[r]?.[c]?.piece) {
+            positions.push({ row: r, col: c });
           }
         }
       }
-      
+
       return positions;
     };
-    
+
     const allPositions = generateMazePattern();
-    
+
     // Remove duplicates
-    const uniquePositions = allPositions.filter((pos, idx) => 
+    const uniquePositions = allPositions.filter((pos, idx) =>
       allPositions.findIndex(p => p.row === pos.row && p.col === pos.col) === idx
     );
-    
-    // Shuffle positions for variety
+
+    // Shuffle
     for (let i = uniquePositions.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [uniquePositions[i], uniquePositions[j]] = [uniquePositions[j], uniquePositions[i]];
     }
-    
+
     // Place walls up to the limit
     let placed = 0;
     for (const pos of uniquePositions) {
@@ -1801,31 +1785,29 @@ class GameManager {
         placed++;
       }
     }
-    
-    // If we haven't placed all walls, fill remaining randomly
+
+    // Fill remaining randomly in territory if needed
     if (placed < totalWalls) {
       const remaining: Position[] = [];
-      for (let row = startRow; row < endRow; row++) {
+      for (let row = 0; row < BOARD_SIZE; row++) {
         for (let col = 0; col < BOARD_SIZE; col++) {
-          if (!room.state.board[row][col].piece && !room.state.board[row][col].isWall) {
+          if (isInPlayerTerritory(row, col, color) && !isPrePlacedWall(row, col) &&
+              !room.state.board[row][col].piece && !room.state.board[row][col].isWall) {
             remaining.push({ row, col });
           }
         }
       }
-      
-      // Shuffle remaining
       for (let i = remaining.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
       }
-      
       for (const pos of remaining) {
         if (placed >= totalWalls) break;
         room.state.board[pos.row][pos.col].isWall = true;
         placed++;
       }
     }
-    
+
     room.state.setupWallsRemaining[color] = totalWalls - placed;
     
     // Save game to file
@@ -3476,29 +3458,29 @@ class GameManager {
       board.push(boardRow);
     }
 
-    // Pre-place center walls (rows 3-8, cols 3-8)
-    for (let r = 3; r <= 8; r++) {
-      for (let c = 3; c <= 8; c++) {
-        board[r][c].isWall = true;
+    // Pre-place walls: triangular staircase corners + center 4×4 block
+    for (let r = 0; r < BOARD_SIZE; r++) {
+      for (let c = 0; c < BOARD_SIZE; c++) {
+        if (isPrePlacedWall(r, c)) board[r][c].isWall = true;
       }
     }
 
-    // White pieces — bottom center (cols 3-6, rows 9-11)
+    // White pieces — bottom center (cols 4-7 = e-h, rows 9-11)
     const whiteBackRow: PieceType[] = ['rook', 'king', 'queen', 'rook'];
     const whiteMidRow: PieceType[] = ['knight', 'bishop', 'bishop', 'knight'];
     for (let i = 0; i < 4; i++) {
-      board[11][3 + i].piece = { type: whiteBackRow[i], color: 'white', id: `w_${whiteBackRow[i]}_${i}` };
-      board[10][3 + i].piece = { type: whiteMidRow[i], color: 'white', id: `w_${whiteMidRow[i]}_${i}` };
-      board[9][3 + i].piece = { type: 'pawn', color: 'white', id: `w_pawn_${i}` };
+      board[11][4 + i].piece = { type: whiteBackRow[i], color: 'white', id: `w_${whiteBackRow[i]}_${i}` };
+      board[10][4 + i].piece = { type: whiteMidRow[i], color: 'white', id: `w_${whiteMidRow[i]}_${i}` };
+      board[9][4 + i].piece = { type: 'pawn', color: 'white', id: `w_pawn_${i}` };
     }
 
-    // Black pieces — top center (cols 3-6, rows 0-2)
+    // Black pieces — top center (cols 4-7 = e-h, rows 0-2)
     const blackBackRow: PieceType[] = ['rook', 'queen', 'king', 'rook'];
     const blackMidRow: PieceType[] = ['knight', 'bishop', 'bishop', 'knight'];
     for (let i = 0; i < 4; i++) {
-      board[0][3 + i].piece = { type: blackBackRow[i], color: 'black', id: `b_${blackBackRow[i]}_${i}` };
-      board[1][3 + i].piece = { type: blackMidRow[i], color: 'black', id: `b_${blackMidRow[i]}_${i}` };
-      board[2][3 + i].piece = { type: 'pawn', color: 'black', id: `b_pawn_${i}` };
+      board[0][4 + i].piece = { type: blackBackRow[i], color: 'black', id: `b_${blackBackRow[i]}_${i}` };
+      board[1][4 + i].piece = { type: blackMidRow[i], color: 'black', id: `b_${blackMidRow[i]}_${i}` };
+      board[2][4 + i].piece = { type: 'pawn', color: 'black', id: `b_pawn_${i}` };
     }
 
     // Red pieces — left side (cols 0-2, rows 4-7)
@@ -3556,7 +3538,7 @@ class GameManager {
         if (!piece.hasMoved && !this.isInCheck(board, piece.color)) {
           const row = position.row;
           // Kingside castling (to column 11)
-          const kingsideRookCol = 9; // Initial rook position (offset 2 + 7)
+          const kingsideRookCol = 7; // Initial rook position (offset 4 + 3)
           const kingsideRook = board[row][kingsideRookCol]?.piece;
           if (kingsideRook?.type === 'rook' && kingsideRook.color === piece.color && !kingsideRook.hasMoved) {
             let pathClear = true;
@@ -3585,7 +3567,7 @@ class GameManager {
             }
           }
           // Queenside castling (to column 0)
-          const queensideRookCol = 2; // Initial rook position (offset 2 + 0)
+          const queensideRookCol = 4; // Initial rook position (offset 4 + 0)
           const queensideRook = board[row][queensideRookCol]?.piece;
           if (queensideRook?.type === 'rook' && queensideRook.color === piece.color && !queensideRook.hasMoved) {
             let pathClear = true;
