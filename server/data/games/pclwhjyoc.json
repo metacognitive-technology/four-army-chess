@@ -29,41 +29,25 @@
       {
         "row": 0,
         "col": 4,
-        "piece": {
-          "type": "rook",
-          "color": "black",
-          "id": "b_rook_0"
-        },
+        "piece": null,
         "isWall": false
       },
       {
         "row": 0,
         "col": 5,
-        "piece": {
-          "type": "queen",
-          "color": "black",
-          "id": "b_queen_1"
-        },
+        "piece": null,
         "isWall": false
       },
       {
         "row": 0,
         "col": 6,
-        "piece": {
-          "type": "king",
-          "color": "black",
-          "id": "b_king_2"
-        },
+        "piece": null,
         "isWall": false
       },
       {
         "row": 0,
         "col": 7,
-        "piece": {
-          "type": "rook",
-          "color": "black",
-          "id": "b_rook_3"
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -137,11 +121,7 @@
       {
         "row": 1,
         "col": 7,
-        "piece": {
-          "type": "knight",
-          "color": "black",
-          "id": "b_knight_3"
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -197,11 +177,7 @@
       {
         "row": 2,
         "col": 4,
-        "piece": {
-          "type": "pawn",
-          "color": "black",
-          "id": "b_pawn_0"
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -219,12 +195,7 @@
       {
         "row": 2,
         "col": 7,
-        "piece": {
-          "type": "bishop",
-          "color": "black",
-          "id": "b_bishop_2",
-          "hasMoved": true
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -293,7 +264,7 @@
         "row": 3,
         "col": 6,
         "piece": null,
-        "isWall": true
+        "isWall": false
       },
       {
         "row": 3,
@@ -368,12 +339,7 @@
       {
         "row": 4,
         "col": 5,
-        "piece": {
-          "type": "rook",
-          "color": "blue",
-          "id": "bl_rook_0",
-          "hasMoved": true
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -424,9 +390,9 @@
         "row": 5,
         "col": 1,
         "piece": {
-          "type": "queen",
+          "type": "pawn",
           "color": "red",
-          "id": "r_queen_1",
+          "id": "r_pawn_1",
           "hasMoved": true
         },
         "isWall": false
@@ -434,11 +400,7 @@
       {
         "row": 5,
         "col": 2,
-        "piece": {
-          "type": "pawn",
-          "color": "red",
-          "id": "r_pawn_1"
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -462,12 +424,7 @@
       {
         "row": 5,
         "col": 6,
-        "piece": {
-          "type": "knight",
-          "color": "blue",
-          "id": "bl_knight_3",
-          "hasMoved": true
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -479,12 +436,7 @@
       {
         "row": 5,
         "col": 8,
-        "piece": {
-          "type": "pawn",
-          "color": "blue",
-          "id": "bl_pawn_0",
-          "hasMoved": true
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -496,21 +448,13 @@
       {
         "row": 5,
         "col": 10,
-        "piece": {
-          "type": "bishop",
-          "color": "blue",
-          "id": "bl_bishop_1"
-        },
+        "piece": null,
         "isWall": false
       },
       {
         "row": 5,
         "col": 11,
-        "piece": {
-          "type": "king",
-          "color": "blue",
-          "id": "bl_king_1"
-        },
+        "piece": null,
         "isWall": false
       }
     ],
@@ -534,12 +478,7 @@
       {
         "row": 6,
         "col": 2,
-        "piece": {
-          "type": "bishop",
-          "color": "red",
-          "id": "r_bishop_1",
-          "hasMoved": true
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -552,7 +491,7 @@
         "row": 6,
         "col": 4,
         "piece": null,
-        "isWall": true
+        "isWall": false
       },
       {
         "row": 6,
@@ -581,11 +520,7 @@
       {
         "row": 6,
         "col": 9,
-        "piece": {
-          "type": "pawn",
-          "color": "blue",
-          "id": "bl_pawn_2"
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -597,11 +532,7 @@
       {
         "row": 6,
         "col": 11,
-        "piece": {
-          "type": "queen",
-          "color": "blue",
-          "id": "bl_queen_2"
-        },
+        "piece": null,
         "isWall": false
       }
     ],
@@ -619,387 +550,344 @@
       {
         "row": 7,
         "col": 1,
-        "piece": {
-          "type": "knight",
-          "color": "red",
-          "id": "r_knight_3"
-        },
+        "piece": null,
         "isWall": false
       },
       {
         "row": 7,
         "col": 2,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 7,
+        "col": 4,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 7,
+        "col": 5,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 7,
+        "col": 6,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 7,
+        "col": 7,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 7,
+        "col": 8,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 7,
+        "col": 9,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 7,
+        "col": 10,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 7,
+        "col": 11,
+        "piece": null,
+        "isWall": false
+      }
+    ],
+    [
+      {
+        "row": 8,
+        "col": 0,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 8,
+        "col": 1,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 8,
+        "col": 2,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 8,
+        "col": 4,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 8,
+        "col": 5,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 8,
+        "col": 6,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 8,
+        "col": 7,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 8,
+        "col": 8,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 8,
+        "col": 9,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 8,
+        "col": 10,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 8,
+        "col": 11,
+        "piece": null,
+        "isWall": false
+      }
+    ],
+    [
+      {
+        "row": 9,
+        "col": 0,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 9,
+        "col": 1,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 9,
+        "col": 2,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 9,
+        "col": 4,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 9,
+        "col": 5,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 9,
+        "col": 6,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 9,
+        "col": 7,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 9,
+        "col": 8,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 9,
+        "col": 9,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 9,
+        "col": 10,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 9,
+        "col": 11,
+        "piece": null,
+        "isWall": true
+      }
+    ],
+    [
+      {
+        "row": 10,
+        "col": 0,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 10,
+        "col": 1,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 10,
+        "col": 2,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 10,
+        "col": 4,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 10,
+        "col": 5,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 10,
+        "col": 6,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 10,
+        "col": 7,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 10,
+        "col": 8,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 10,
+        "col": 9,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 10,
+        "col": 10,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 10,
+        "col": 11,
+        "piece": null,
+        "isWall": true
+      }
+    ],
+    [
+      {
+        "row": 11,
+        "col": 0,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 11,
+        "col": 1,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 11,
+        "col": 2,
+        "piece": null,
+        "isWall": true
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 11,
+        "col": 4,
+        "piece": null,
+        "isWall": false
+      },
+      {
+        "row": 11,
+        "col": 5,
         "piece": {
           "type": "bishop",
           "color": "red",
-          "id": "r_bishop_2",
+          "id": "r_bishop_1",
           "hasMoved": true
         },
         "isWall": false
       },
       {
-        "row": 7,
-        "col": 3,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 7,
-        "col": 4,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 7,
-        "col": 5,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 7,
-        "col": 6,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 7,
-        "col": 7,
-        "piece": {
-          "type": "pawn",
-          "color": "white",
-          "id": "w_pawn_1",
-          "hasMoved": true
-        },
-        "isWall": false
-      },
-      {
-        "row": 7,
-        "col": 8,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 7,
-        "col": 9,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 7,
-        "col": 10,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 7,
-        "col": 11,
-        "piece": null,
-        "isWall": false
-      }
-    ],
-    [
-      {
-        "row": 8,
-        "col": 0,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 8,
-        "col": 1,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 8,
-        "col": 2,
-        "piece": {
-          "type": "pawn",
-          "color": "red",
-          "id": "r_pawn_2",
-          "hasMoved": true
-        },
-        "isWall": false
-      },
-      {
-        "row": 8,
-        "col": 3,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 8,
-        "col": 4,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 8,
-        "col": 5,
-        "piece": {
-          "type": "knight",
-          "color": "white",
-          "id": "w_knight_0",
-          "hasMoved": true
-        },
-        "isWall": false
-      },
-      {
-        "row": 8,
-        "col": 6,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 8,
-        "col": 7,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 8,
-        "col": 8,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 8,
-        "col": 9,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 8,
-        "col": 10,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 8,
-        "col": 11,
-        "piece": null,
-        "isWall": false
-      }
-    ],
-    [
-      {
-        "row": 9,
-        "col": 0,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 9,
-        "col": 1,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 9,
-        "col": 2,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 9,
-        "col": 3,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 9,
-        "col": 4,
-        "piece": {
-          "type": "pawn",
-          "color": "white",
-          "id": "w_pawn_0"
-        },
-        "isWall": false
-      },
-      {
-        "row": 9,
-        "col": 5,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 9,
-        "col": 6,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 9,
-        "col": 7,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 9,
-        "col": 8,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 9,
-        "col": 9,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 9,
-        "col": 10,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 9,
-        "col": 11,
-        "piece": null,
-        "isWall": true
-      }
-    ],
-    [
-      {
-        "row": 10,
-        "col": 0,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 10,
-        "col": 1,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 10,
-        "col": 2,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 10,
-        "col": 3,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 10,
-        "col": 4,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 10,
-        "col": 5,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 10,
-        "col": 6,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 10,
-        "col": 7,
-        "piece": {
-          "type": "knight",
-          "color": "white",
-          "id": "w_knight_3"
-        },
-        "isWall": false
-      },
-      {
-        "row": 10,
-        "col": 8,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 10,
-        "col": 9,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 10,
-        "col": 10,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 10,
-        "col": 11,
-        "piece": null,
-        "isWall": true
-      }
-    ],
-    [
-      {
-        "row": 11,
-        "col": 0,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 11,
-        "col": 1,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 11,
-        "col": 2,
-        "piece": null,
-        "isWall": true
-      },
-      {
-        "row": 11,
-        "col": 3,
-        "piece": null,
-        "isWall": false
-      },
-      {
-        "row": 11,
-        "col": 4,
-        "piece": {
-          "type": "rook",
-          "color": "white",
-          "id": "w_rook_0"
-        },
-        "isWall": false
-      },
-      {
-        "row": 11,
-        "col": 5,
-        "piece": {
-          "type": "king",
-          "color": "white",
-          "id": "w_king_1"
-        },
-        "isWall": false
-      },
-      {
         "row": 11,
         "col": 6,
-        "piece": {
-          "type": "queen",
-          "color": "white",
-          "id": "w_queen_2"
-        },
+        "piece": null,
         "isWall": false
       },
       {
         "row": 11,
         "col": 7,
-        "piece": {
-          "type": "rook",
-          "color": "white",
-          "id": "w_rook_3"
-        },
+        "piece": null,
         "isWall": false
       },
       {
@@ -1028,8 +916,8 @@
       }
     ]
   ],
-  "currentTurn": "white",
-  "phase": "playing",
+  "currentTurn": "red",
+  "phase": "finished",
   "gameMode": "cvc",
   "aiControlled": {
     "white": true,
@@ -2179,6 +2067,1140 @@
         "hasMoved": true
       },
       "notation": "Rl8xf8"
+    },
+    {
+      "from": {
+        "row": 11,
+        "col": 6
+      },
+      "to": {
+        "row": 5,
+        "col": 6
+      },
+      "piece": {
+        "type": "queen",
+        "color": "white",
+        "id": "w_queen_2"
+      },
+      "captured": {
+        "type": "knight",
+        "color": "blue",
+        "id": "bl_knight_3",
+        "hasMoved": true
+      },
+      "notation": "Qg1xg7"
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 7
+      },
+      "to": {
+        "row": 0,
+        "col": 9
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "id": "b_bishop_2",
+        "hasMoved": true
+      },
+      "notation": "Bh10j12"
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 2
+      },
+      "to": {
+        "row": 4,
+        "col": 4
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bc6e8"
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 5
+      },
+      "to": {
+        "row": 3,
+        "col": 6
+      },
+      "piece": {
+        "type": "rook",
+        "color": "blue",
+        "id": "bl_rook_0",
+        "hasMoved": true
+      },
+      "isBombAttack": true,
+      "diceRoll": 2,
+      "diceRequired": 10,
+      "success": true,
+      "notation": "R💣g9(2✓)"
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 6
+      },
+      "to": {
+        "row": 4,
+        "col": 5
+      },
+      "piece": {
+        "type": "queen",
+        "color": "white",
+        "id": "w_queen_2",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "rook",
+        "color": "blue",
+        "id": "bl_rook_0",
+        "hasMoved": true
+      },
+      "notation": "Qg7xf8"
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 9
+      },
+      "to": {
+        "row": 4,
+        "col": 5
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "id": "b_bishop_2",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "queen",
+        "color": "white",
+        "id": "w_queen_2",
+        "hasMoved": true
+      },
+      "notation": "Bj12xf8"
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 4
+      },
+      "to": {
+        "row": 7,
+        "col": 7
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "pawn",
+        "color": "white",
+        "id": "w_pawn_1",
+        "hasMoved": true
+      },
+      "isArrowAttack": true,
+      "diceRoll": 2,
+      "diceRequired": 4,
+      "success": true,
+      "notation": "Be8x→h5[d4:2]"
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 10
+      },
+      "to": {
+        "row": 4,
+        "col": 11
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "blue",
+        "id": "bl_bishop_1"
+      },
+      "notation": "Bk7l8"
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 7
+      },
+      "to": {
+        "row": 8,
+        "col": 6
+      },
+      "piece": {
+        "type": "knight",
+        "color": "white",
+        "id": "w_knight_3"
+      },
+      "notation": "Kh2g4"
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 5
+      },
+      "to": {
+        "row": 3,
+        "col": 6
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "id": "b_bishop_2",
+        "hasMoved": true
+      },
+      "notation": "Bf8g9"
+    },
+    {
+      "from": {
+        "row": 8,
+        "col": 2
+      },
+      "to": {
+        "row": 9,
+        "col": 3
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "red",
+        "id": "r_pawn_2",
+        "hasMoved": true
+      },
+      "notation": "c4d3"
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 8
+      },
+      "to": {
+        "row": 6,
+        "col": 7
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "blue",
+        "id": "bl_pawn_0",
+        "hasMoved": true
+      },
+      "notation": "i7h6"
+    },
+    {
+      "from": {
+        "row": 11,
+        "col": 4
+      },
+      "to": {
+        "row": 10,
+        "col": 4
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_0"
+      },
+      "notation": "Re1e2"
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 6
+      },
+      "to": {
+        "row": 6,
+        "col": 9
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "black",
+        "id": "b_bishop_2",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "pawn",
+        "color": "blue",
+        "id": "bl_pawn_2"
+      },
+      "notation": "Bg9xj6"
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 3
+      },
+      "to": {
+        "row": 9,
+        "col": 4
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "red",
+        "id": "r_pawn_2",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "pawn",
+        "color": "white",
+        "id": "w_pawn_0"
+      },
+      "notation": "d3xe3[d6:2]",
+      "diceRoll": 2,
+      "diceRequired": 1,
+      "success": true
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 11
+      },
+      "to": {
+        "row": 6,
+        "col": 9
+      },
+      "piece": {
+        "type": "queen",
+        "color": "blue",
+        "id": "bl_queen_2"
+      },
+      "captured": {
+        "type": "bishop",
+        "color": "black",
+        "id": "b_bishop_2",
+        "hasMoved": true
+      },
+      "notation": "Ql6xj6"
+    },
+    {
+      "from": {
+        "row": 8,
+        "col": 6
+      },
+      "to": {
+        "row": 9,
+        "col": 4
+      },
+      "piece": {
+        "type": "knight",
+        "color": "white",
+        "id": "w_knight_3",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "pawn",
+        "color": "red",
+        "id": "r_pawn_2",
+        "hasMoved": true
+      },
+      "notation": "Kg4xe3"
+    },
+    {
+      "from": {
+        "row": 1,
+        "col": 7
+      },
+      "to": {
+        "row": 3,
+        "col": 6
+      },
+      "piece": {
+        "type": "knight",
+        "color": "black",
+        "id": "b_knight_3"
+      },
+      "notation": "Kh11g9"
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 4
+      },
+      "to": {
+        "row": 5,
+        "col": 5
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Be8f7"
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 11
+      },
+      "to": {
+        "row": 5,
+        "col": 10
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "blue",
+        "id": "bl_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bl8k7"
+    },
+    {
+      "from": {
+        "row": 11,
+        "col": 7
+      },
+      "to": {
+        "row": 9,
+        "col": 7
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3"
+      },
+      "notation": "Rh1h3"
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 7
+      },
+      "to": {
+        "row": 4,
+        "col": 7
+      },
+      "piece": {
+        "type": "rook",
+        "color": "black",
+        "id": "b_rook_3"
+      },
+      "notation": "Rh12h8"
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 5
+      },
+      "to": {
+        "row": 2,
+        "col": 8
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bf7i10"
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 9
+      },
+      "to": {
+        "row": 4,
+        "col": 7
+      },
+      "piece": {
+        "type": "queen",
+        "color": "blue",
+        "id": "bl_queen_2",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "rook",
+        "color": "black",
+        "id": "b_rook_3",
+        "hasMoved": true
+      },
+      "notation": "Qj6xh8"
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 7
+      },
+      "to": {
+        "row": 9,
+        "col": 8
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      "isBombAttack": true,
+      "diceRoll": 2,
+      "diceRequired": 10,
+      "success": true,
+      "notation": "R💣i3(2✓)"
+    },
+    {
+      "from": {
+        "row": 3,
+        "col": 6
+      },
+      "to": {
+        "row": 4,
+        "col": 7
+      },
+      "piece": {
+        "type": "knight",
+        "color": "black",
+        "id": "b_knight_3",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "queen",
+        "color": "blue",
+        "id": "bl_queen_2",
+        "hasMoved": true
+      },
+      "isAxeAttack": true,
+      "diceRoll": 2,
+      "diceRequired": 1,
+      "success": true,
+      "notation": "N🪓h8(2✓)"
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 8
+      },
+      "to": {
+        "row": 5,
+        "col": 11
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "king",
+        "color": "blue",
+        "id": "bl_king_1"
+      },
+      "notation": "Bi10xl7"
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 4
+      },
+      "to": {
+        "row": 7,
+        "col": 5
+      },
+      "piece": {
+        "type": "knight",
+        "color": "white",
+        "id": "w_knight_3",
+        "hasMoved": true
+      },
+      "notation": "Ke3f5"
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 5
+      },
+      "to": {
+        "row": 2,
+        "col": 7
+      },
+      "piece": {
+        "type": "queen",
+        "color": "black",
+        "id": "b_queen_1"
+      },
+      "notation": "Qf12h10"
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 11
+      },
+      "to": {
+        "row": 7,
+        "col": 9
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bl7j5"
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 7
+      },
+      "to": {
+        "row": 8,
+        "col": 7
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      "isBombAttack": true,
+      "diceRoll": 1,
+      "diceRequired": 10,
+      "success": true,
+      "notation": "R💣h4(1✓)"
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 4
+      },
+      "to": {
+        "row": 2,
+        "col": 5
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "black",
+        "id": "b_pawn_0"
+      },
+      "notation": "e10f10"
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 9
+      },
+      "to": {
+        "row": 5,
+        "col": 11
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bj5l7"
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 7
+      },
+      "to": {
+        "row": 8,
+        "col": 8
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      "isBombAttack": true,
+      "diceRoll": 1,
+      "diceRequired": 10,
+      "success": true,
+      "notation": "R💣i4(1✓)"
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 7
+      },
+      "to": {
+        "row": 4,
+        "col": 7
+      },
+      "piece": {
+        "type": "queen",
+        "color": "black",
+        "id": "b_queen_1",
+        "hasMoved": true
+      },
+      "notation": "Qh10h8"
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 11
+      },
+      "to": {
+        "row": 2,
+        "col": 8
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bl7i10"
+    },
+    {
+      "from": {
+        "row": 8,
+        "col": 5
+      },
+      "to": {
+        "row": 6,
+        "col": 6
+      },
+      "piece": {
+        "type": "knight",
+        "color": "white",
+        "id": "w_knight_0",
+        "hasMoved": true
+      },
+      "notation": "Kf4g6"
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 7
+      },
+      "to": {
+        "row": 7,
+        "col": 4
+      },
+      "piece": {
+        "type": "queen",
+        "color": "black",
+        "id": "b_queen_1",
+        "hasMoved": true
+      },
+      "notation": "Qh8e5"
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 8
+      },
+      "to": {
+        "row": 0,
+        "col": 6
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "king",
+        "color": "black",
+        "id": "b_king_2"
+      },
+      "isArrowAttack": true,
+      "diceRoll": 2,
+      "diceRequired": 4,
+      "success": true,
+      "notation": "Bi10x→g12[d4:2]"
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 5
+      },
+      "to": {
+        "row": 5,
+        "col": 6
+      },
+      "piece": {
+        "type": "knight",
+        "color": "white",
+        "id": "w_knight_3",
+        "hasMoved": true
+      },
+      "notation": "Kf5g7"
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 8
+      },
+      "to": {
+        "row": 5,
+        "col": 11
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bi10l7"
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 7
+      },
+      "to": {
+        "row": 9,
+        "col": 5
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      "notation": "Rh3f3"
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 11
+      },
+      "to": {
+        "row": 2,
+        "col": 8
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bl7i10"
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 5
+      },
+      "to": {
+        "row": 7,
+        "col": 5
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      "notation": "Rf3f5"
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 8
+      },
+      "to": {
+        "row": 0,
+        "col": 6
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bi10g12"
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 5
+      },
+      "to": {
+        "row": 6,
+        "col": 4
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      "isBombAttack": true,
+      "diceRoll": 10,
+      "diceRequired": 10,
+      "success": true,
+      "notation": "R💣e6(10✓)"
+    },
+    {
+      "from": {
+        "row": 0,
+        "col": 6
+      },
+      "to": {
+        "row": 4,
+        "col": 10
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bg12k8"
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 5
+      },
+      "to": {
+        "row": 8,
+        "col": 4
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      "isBombAttack": true,
+      "diceRoll": 5,
+      "diceRequired": 10,
+      "success": true,
+      "notation": "R💣e4(5✓)"
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 10
+      },
+      "to": {
+        "row": 2,
+        "col": 8
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bk8i10"
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 5
+      },
+      "to": {
+        "row": 7,
+        "col": 2
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_2",
+        "hasMoved": true
+      },
+      "notation": "Rf5xc5"
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 8
+      },
+      "to": {
+        "row": 4,
+        "col": 6
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bi10g8"
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 2
+      },
+      "to": {
+        "row": 8,
+        "col": 3
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      "isBombAttack": true,
+      "diceRoll": 7,
+      "diceRequired": 10,
+      "success": true,
+      "notation": "R💣d4(7✓)"
+    },
+    {
+      "from": {
+        "row": 4,
+        "col": 6
+      },
+      "to": {
+        "row": 2,
+        "col": 8
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bg8i10"
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 2
+      },
+      "to": {
+        "row": 7,
+        "col": 1
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "knight",
+        "color": "red",
+        "id": "r_knight_3"
+      },
+      "notation": "Rc5xb5"
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 8
+      },
+      "to": {
+        "row": 5,
+        "col": 11
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "notation": "Bi10l7"
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 1
+      },
+      "to": {
+        "row": 5,
+        "col": 1
+      },
+      "piece": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "queen",
+        "color": "red",
+        "id": "r_queen_1",
+        "hasMoved": true
+      },
+      "notation": "Rb5xb7"
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 2
+      },
+      "to": {
+        "row": 5,
+        "col": 1
+      },
+      "piece": {
+        "type": "pawn",
+        "color": "red",
+        "id": "r_pawn_1"
+      },
+      "captured": {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      "notation": "c7xb7[d6:4]",
+      "diceRoll": 4,
+      "diceRequired": 1,
+      "success": true
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 6
+      },
+      "to": {
+        "row": 7,
+        "col": 7
+      },
+      "piece": {
+        "type": "knight",
+        "color": "white",
+        "id": "w_knight_3",
+        "hasMoved": true
+      },
+      "notation": "Kg7h5"
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 11
+      },
+      "to": {
+        "row": 11,
+        "col": 5
+      },
+      "piece": {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_1",
+        "hasMoved": true
+      },
+      "captured": {
+        "type": "king",
+        "color": "white",
+        "id": "w_king_1"
+      },
+      "notation": "Bl7xf1"
     }
   ],
   "capturedPieces": {
@@ -2200,6 +3222,41 @@
         "color": "red",
         "id": "r_pawn_3",
         "hasMoved": true
+      },
+      {
+        "type": "knight",
+        "color": "blue",
+        "id": "bl_knight_3",
+        "hasMoved": true
+      },
+      {
+        "type": "rook",
+        "color": "blue",
+        "id": "bl_rook_0",
+        "hasMoved": true
+      },
+      {
+        "type": "pawn",
+        "color": "red",
+        "id": "r_pawn_2",
+        "hasMoved": true
+      },
+      {
+        "type": "bishop",
+        "color": "red",
+        "id": "r_bishop_2",
+        "hasMoved": true
+      },
+      {
+        "type": "knight",
+        "color": "red",
+        "id": "r_knight_3"
+      },
+      {
+        "type": "queen",
+        "color": "red",
+        "id": "r_queen_1",
+        "hasMoved": true
       }
     ],
     "black": [
@@ -2220,6 +3277,23 @@
         "color": "blue",
         "id": "bl_knight_0",
         "hasMoved": true
+      },
+      {
+        "type": "queen",
+        "color": "white",
+        "id": "w_queen_2",
+        "hasMoved": true
+      },
+      {
+        "type": "pawn",
+        "color": "blue",
+        "id": "bl_pawn_2"
+      },
+      {
+        "type": "queen",
+        "color": "blue",
+        "id": "bl_queen_2",
+        "hasMoved": true
       }
     ],
     "red": [
@@ -2228,6 +3302,38 @@
         "color": "black",
         "id": "b_knight_0",
         "hasMoved": true
+      },
+      {
+        "type": "pawn",
+        "color": "white",
+        "id": "w_pawn_1",
+        "hasMoved": true
+      },
+      {
+        "type": "pawn",
+        "color": "white",
+        "id": "w_pawn_0"
+      },
+      {
+        "type": "king",
+        "color": "blue",
+        "id": "bl_king_1"
+      },
+      {
+        "type": "king",
+        "color": "black",
+        "id": "b_king_2"
+      },
+      {
+        "type": "rook",
+        "color": "white",
+        "id": "w_rook_3",
+        "hasMoved": true
+      },
+      {
+        "type": "king",
+        "color": "white",
+        "id": "w_king_1"
       }
     ],
     "blue": [
@@ -2284,6 +3390,18 @@
         "color": "red",
         "id": "r_knight_0",
         "hasMoved": true
+      },
+      {
+        "type": "bishop",
+        "color": "black",
+        "id": "b_bishop_2",
+        "hasMoved": true
+      },
+      {
+        "type": "rook",
+        "color": "black",
+        "id": "b_rook_3",
+        "hasMoved": true
       }
     ]
   },
@@ -2294,13 +3412,10 @@
     "blue": "ai-player"
   },
   "activePlayers": [
-    "white",
-    "black",
-    "red",
-    "blue"
+    "red"
   ],
   "numHumanPlayers": 0,
-  "winner": null,
+  "winner": "red",
   "attackSettings": {
     "pawnSuccessRoll": 6,
     "bishopMinRoll": 0,

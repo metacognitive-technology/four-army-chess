@@ -248,11 +248,9 @@ export function GameBoard({
             const showBombTarget = isBombTarget(rowIndex, colIndex);
             const showWallBuildTarget = isWallBuildTarget(rowIndex, colIndex);
             
-            // During setup, only show walls on player's own half
-            const isOwnHalf = playerColor === 'white' 
-              ? rowIndex >= BOARD_SIZE / 2 
-              : rowIndex < BOARD_SIZE / 2;
-            const showWall = square.isWall && (phase !== 'setup' || isOwnHalf);
+            // During setup, show walls on player's own territory or permanent corner walls
+            const isOwnTerritory = !playerColor || isInPlayerTerritory(rowIndex, colIndex, playerColor);
+            const showWall = square.isWall && (phase !== 'setup' || isOwnTerritory || isPrePlacedWall(rowIndex, colIndex));
             
             return (
               <div
