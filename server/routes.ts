@@ -205,6 +205,27 @@ export async function registerRoutes(
     };
   }
 
+  function triggerAIMoves(gameId: string | null, initialDelay: number = 800) {
+    if (!gameId || !gameManager.isAITurn(gameId)) return;
+    setTimeout(async () => {
+      try {
+        const aiResult = await gameManager.makeAIMove(gameId, createPlyBroadcaster(gameId));
+        if (aiResult) {
+          const rm = gameManager.getRoom(gameId);
+          if (rm) {
+            broadcastToRoom(rm, {
+              type: 'state',
+              payload: { state: aiResult.state, diceRoll: aiResult.diceRoll },
+            });
+            triggerAIMoves(gameId, aiResult.diceRoll ? 1500 : 800);
+          }
+        }
+      } catch (err) {
+        console.error('AI move error:', err);
+      }
+    }, initialDelay);
+  }
+
   wss.on('connection', (ws: WebSocket) => {
     allClients.add(ws);
     let currentPlayerId: string | null = null;
@@ -463,20 +484,7 @@ export async function registerRoutes(
                   });
                   
                   // Check if AI should move after game starts
-                  if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(async () => {
-                      const aiResult = await gameManager.makeAIMove(currentGameId!, createPlyBroadcaster(currentGameId!));
-                      if (aiResult) {
-                        const aiRoom = gameManager.getRoom(currentGameId!);
-                        if (aiRoom) {
-                          broadcastToRoom(aiRoom, {
-                            type: 'state',
-                            payload: { state: aiResult.state },
-                          });
-                        }
-                      }
-                    }, 500);
-                  }
+                  triggerAIMoves(currentGameId, 500);
                 }
               }
             }
@@ -569,42 +577,8 @@ export async function registerRoutes(
                     payload: { state },
                   });
                   
-                  // Trigger AI move if it's now AI's turn
-                  if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(async () => {
-                      const result = await gameManager.makeAIMove(currentGameId, createPlyBroadcaster(currentGameId!));
-                      if (result) {
-                        const updatedRoom = gameManager.getRoom(currentGameId);
-                        if (updatedRoom) {
-                          broadcastToRoom(updatedRoom, {
-                            type: 'state',
-                            payload: { state: result.state, diceRoll: result.diceRoll },
-                          });
-                          
-                          // Continue AI moves if needed (with longer delay for special attacks)
-                          const checkAndMakeAIMove = (lastWasSpecial: boolean) => {
-                            if (gameManager.isAITurn(currentGameId)) {
-                              const delay = lastWasSpecial ? 1500 : 800;
-                              setTimeout(async () => {
-                                const aiResult = await gameManager.makeAIMove(currentGameId, createPlyBroadcaster(currentGameId!));
-                                if (aiResult) {
-                                  const rm = gameManager.getRoom(currentGameId);
-                                  if (rm) {
-                                    broadcastToRoom(rm, {
-                                      type: 'state',
-                                      payload: { state: aiResult.state, diceRoll: aiResult.diceRoll },
-                                    });
-                                    checkAndMakeAIMove(!!aiResult.diceRoll);
-                                  }
-                                }
-                              }, delay);
-                            }
-                          };
-                          checkAndMakeAIMove(!!result.diceRoll);
-                        }
-                      }
-                    }, 500);
-                  }
+                  // Trigger AI moves if it's now AI's turn
+                  triggerAIMoves(currentGameId, 500);
                 }
               }
             }
@@ -652,21 +626,8 @@ export async function registerRoutes(
                       payload: { state: result.state },
                     });
                     
-                    // Check if AI should move after human move
-                    if (gameManager.isAITurn(currentGameId)) {
-                      setTimeout(async () => {
-                        const aiResult = await gameManager.makeAIMove(currentGameId!, createPlyBroadcaster(currentGameId!));
-                        if (aiResult) {
-                          const aiRoom = gameManager.getRoom(currentGameId!);
-                          if (aiRoom) {
-                            broadcastToRoom(aiRoom, {
-                              type: 'state',
-                              payload: { state: aiResult.state },
-                            });
-                          }
-                        }
-                      }, 800);
-                    }
+                    // Trigger all subsequent AI moves after human move
+                    triggerAIMoves(currentGameId);
                   }
                 }
               }
@@ -689,21 +650,7 @@ export async function registerRoutes(
                     payload: { state: result.state },
                   });
                   
-                  // Check if AI should move after human arrow attack
-                  if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(async () => {
-                      const aiResult = await gameManager.makeAIMove(currentGameId!, createPlyBroadcaster(currentGameId!));
-                      if (aiResult) {
-                        const aiRoom = gameManager.getRoom(currentGameId!);
-                        if (aiRoom) {
-                          broadcastToRoom(aiRoom, {
-                            type: 'state',
-                            payload: { state: aiResult.state },
-                          });
-                        }
-                      }
-                    }, 800);
-                  }
+                  triggerAIMoves(currentGameId);
                 }
               }
             }
@@ -725,21 +672,7 @@ export async function registerRoutes(
                     payload: { state: result.state },
                   });
                   
-                  // Check if AI should move after human axe attack
-                  if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(async () => {
-                      const aiResult = await gameManager.makeAIMove(currentGameId!, createPlyBroadcaster(currentGameId!));
-                      if (aiResult) {
-                        const aiRoom = gameManager.getRoom(currentGameId!);
-                        if (aiRoom) {
-                          broadcastToRoom(aiRoom, {
-                            type: 'state',
-                            payload: { state: aiResult.state },
-                          });
-                        }
-                      }
-                    }, 800);
-                  }
+                  triggerAIMoves(currentGameId);
                 }
               }
             }
@@ -761,21 +694,7 @@ export async function registerRoutes(
                     payload: { state: result.state },
                   });
                   
-                  // Check if AI should move after human bomb attack
-                  if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(async () => {
-                      const aiResult = await gameManager.makeAIMove(currentGameId!, createPlyBroadcaster(currentGameId!));
-                      if (aiResult) {
-                        const aiRoom = gameManager.getRoom(currentGameId!);
-                        if (aiRoom) {
-                          broadcastToRoom(aiRoom, {
-                            type: 'state',
-                            payload: { state: aiResult.state },
-                          });
-                        }
-                      }
-                    }, 800);
-                  }
+                  triggerAIMoves(currentGameId);
                 }
               }
             }
@@ -797,21 +716,7 @@ export async function registerRoutes(
                     payload: { state: result.state },
                   });
                   
-                  // Check if AI should move after human wall attack
-                  if (gameManager.isAITurn(currentGameId)) {
-                    setTimeout(async () => {
-                      const aiResult = await gameManager.makeAIMove(currentGameId!, createPlyBroadcaster(currentGameId!));
-                      if (aiResult) {
-                        const aiRoom = gameManager.getRoom(currentGameId!);
-                        if (aiRoom) {
-                          broadcastToRoom(aiRoom, {
-                            type: 'state',
-                            payload: { state: aiResult.state },
-                          });
-                        }
-                      }
-                    }, 800);
-                  }
+                  triggerAIMoves(currentGameId);
                 }
               }
             }

@@ -3223,6 +3223,13 @@ class GameManager {
     // Depth 0: original heuristic-only selection
     possibleMoves.sort((a, b) => b.score - a.score);
     
+    if (possibleMoves.length === 0) {
+      // No valid moves — skip this player's turn
+      state.currentTurn = nextActiveColor(state, aiColor);
+      this.saveGame(state);
+      return { state };
+    }
+    
     // Pick from top 3 moves with weighted probability
     const topMoves = possibleMoves.slice(0, Math.min(3, possibleMoves.length));
     const selectedMove = topMoves[Math.floor(Math.random() * topMoves.length)];
@@ -3891,12 +3898,10 @@ class GameManager {
   // Check if a king at the given position would be in check
   // This is used to prevent kings from moving into check
   private wouldBeInCheck(board: Board, color: PlayerColor, kingPos: Position): boolean {
-    const opponentColor = color === 'white' ? 'black' : 'white';
-    
     for (let row = 0; row < BOARD_SIZE; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
         const piece = board[row][col].piece;
-        if (piece && piece.color === opponentColor) {
+        if (piece && piece.color !== color) {
           // Get raw attack squares (without recursively checking for check)
           const attacks = this.getRawAttacks(board, { row, col }, piece);
           if (attacks.some(pos => pos.row === kingPos.row && pos.col === kingPos.col)) {
@@ -3905,7 +3910,7 @@ class GameManager {
           
           // Check bishop arrow attacks (potential future attacks)
           if (piece.type === 'bishop') {
-            const arrowTargets = this.getArrowTargets(board, { row, col }, opponentColor);
+            const arrowTargets = this.getArrowTargets(board, { row, col }, piece.color);
             if (arrowTargets.some(pos => pos.row === kingPos.row && pos.col === kingPos.col)) {
               return true;
             }
