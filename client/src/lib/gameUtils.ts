@@ -14,10 +14,17 @@ export const PIECE_SYMBOLS: Record<PieceType, Record<string, string>> = {
   pawn: { white: '♟\uFE0E', black: '♟\uFE0E', red: '♟\uFE0E', blue: '♟\uFE0E' },
 };
 
+// Explicit 16 corner walls: 4-square diagonals at each board corner
+// a12,b11,c10,d9 | l12,k11,j10,i9 | a1,b2,c3,d4 | l1,k2,j3,i4
+const PRE_PLACED_WALLS = new Set<string>([
+  '0,0','1,1','2,2','3,3',         // top-left: a12,b11,c10,d9
+  '0,11','1,10','2,9','3,8',       // top-right: l12,k11,j10,i9
+  '11,0','10,1','9,2','8,3',       // bottom-left: a1,b2,c3,d4
+  '11,11','10,10','9,9','8,8',     // bottom-right: l1,k2,j3,i4
+]);
+
 export function isPrePlacedWall(r: number, c: number): boolean {
-  const N = BOARD_SIZE - 1;
-  // 4 diagonal corner walls: main diagonal and anti-diagonal at the 4 corners (depth 4)
-  return (r === c || r + c === N) && (r <= 3 || r >= N - 3);
+  return PRE_PLACED_WALLS.has(`${r},${c}`);
 }
 
 export function isInPlayerTerritory(r: number, c: number, color: PlayerColor): boolean {
