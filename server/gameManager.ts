@@ -11,12 +11,8 @@ const AI_PLAYER_ID = 'ai-player';
 
 function isPrePlacedWall(r: number, c: number): boolean {
   const N = BOARD_SIZE - 1;
-  if (r + c <= 3) return true;
-  if (r + (N - c) <= 3) return true;
-  if ((N - r) + c <= 3) return true;
-  if ((N - r) + (N - c) <= 3) return true;
-  if (r >= 4 && r <= 7 && c >= 4 && c <= 7) return true;
-  return false;
+  // 4 diagonal corner walls: main diagonal and anti-diagonal at the 4 corners (depth 4)
+  return (r === c || r + c === N) && (r <= 3 || r >= N - 3);
 }
 
 function isInPlayerTerritory(r: number, c: number, color: PlayerColor): boolean {
@@ -3636,7 +3632,7 @@ class GameManager {
       board.push(boardRow);
     }
 
-    // Pre-place walls: triangular staircase corners + center 4×4 block
+    // Pre-place walls: diagonal corner walls (a12,b11,c10,d9 / a1,b2,c3,d4 / l1,k2,j3,i4 / l12,k11,j10,i9)
     for (let r = 0; r < BOARD_SIZE; r++) {
       for (let c = 0; c < BOARD_SIZE; c++) {
         if (isPrePlacedWall(r, c)) board[r][c].isWall = true;

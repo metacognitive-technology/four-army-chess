@@ -16,12 +16,8 @@ export const PIECE_SYMBOLS: Record<PieceType, Record<string, string>> = {
 
 export function isPrePlacedWall(r: number, c: number): boolean {
   const N = BOARD_SIZE - 1;
-  if (r + c <= 3) return true;
-  if (r + (N - c) <= 3) return true;
-  if ((N - r) + c <= 3) return true;
-  if ((N - r) + (N - c) <= 3) return true;
-  if (r >= 4 && r <= 7 && c >= 4 && c <= 7) return true;
-  return false;
+  // 4 diagonal corner walls: main diagonal and anti-diagonal at the 4 corners (depth 4)
+  return (r === c || r + c === N) && (r <= 3 || r >= N - 3);
 }
 
 export function isInPlayerTerritory(r: number, c: number, color: PlayerColor): boolean {

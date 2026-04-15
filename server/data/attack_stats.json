@@ -19,6 +19,11 @@
       "bishopArrows": 0,
       "rookBombs": 0,
       "rookWallBuilds": 0
+    },
+    {
+      "bishopArrows": 3,
+      "rookBombs": 33,
+      "rookWallBuilds": 0
     }
   ]
 }
